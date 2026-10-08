@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="authorization.md" />
+    <File Path="conventions.md" />
+    <File Path="finance.md" />
+    <File Path="identity.md" />
+    <File Path="platform-services.md" />
+    <File Path="security.md" />
+    <File Path="workflow.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="UniCore.Api/UniCore.Api.csproj" />
+    <Project Path="UniCore.Application/UniCore.Application.csproj" />
+    <Project Path="UniCore.Domain/UniCore.Domain.csproj" />
+    <Project Path="UniCore.Infrastructure/UniCore.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="UniCore.ArchitectureTests/UniCore.ArchitectureTests.csproj" />
+    <Project Path="UniCore.IntegrationTests/UniCore.IntegrationTests.csproj" />
+    <Project Path="UniCore.UnitTests/UniCore.UnitTests.csproj" />
+  </Folder>
+</Solution>
