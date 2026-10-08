@@ -1,4 +1,5 @@
 
+using System.Text.Json.Serialization;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Infrastructure.Common;
 
@@ -15,6 +16,8 @@ namespace UniCore.Api
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             builder.Services.AddSingleton<IClock, SystemClock>();
 
