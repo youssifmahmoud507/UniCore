@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UniCore.Domain.Common.Results
 {

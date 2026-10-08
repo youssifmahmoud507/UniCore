@@ -1,8 +1,6 @@
-﻿using System.Text.Json.Serialization;
-
+﻿
 namespace UniCore.Domain.Common.Results
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ErrorType
     {
         Failure = 0,

@@ -5,11 +5,9 @@ using UniCore.Application.Common.Abstractions;
 
 namespace UniCore.UnitTests.Common
 {
-    public sealed class FakeClock : IClock
+    public sealed class FakeClock(DateTimeOffset now) : IClock
     {
-        public FakeClock(DateTimeOffset now) => UtcNow = now;
-
-        public DateTimeOffset UtcNow { get; private set; }
+        public DateTimeOffset UtcNow { get; private set; } = now;
         public DateOnly UtcToday => DateOnly.FromDateTime(UtcNow.UtcDateTime);
 
         public void Advance(TimeSpan by) => UtcNow = UtcNow.Add(by);
