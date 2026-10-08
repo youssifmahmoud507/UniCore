@@ -1,4 +1,7 @@
 
+using UniCore.Application.Common.Abstractions;
+using UniCore.Infrastructure.Common;
+
 namespace UniCore.Api
 {
     public class Program
@@ -12,6 +15,8 @@ namespace UniCore.Api
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddSingleton<IClock, SystemClock>();
 
             var app = builder.Build();
 
