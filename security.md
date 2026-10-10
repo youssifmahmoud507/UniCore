@@ -38,8 +38,7 @@ Rate limit responses must not reveal whether an account exists.
 - Never in the repository: no passwords, keys, connection strings with credentials, SMTP credentials, or JWT signing keys.
 - Local development: `dotnet user-secrets` and environment variables. Docker: environment variables from an untracked `.env` file. CI: GitHub Actions secrets.
 - `.env` and secret files are in `.gitignore`.
-- Options classes (`JwtOptions`, `SmtpOptions`, the OTP pepper) are validated at startup. A missing secret makes the app refuse to start, by returning a failed validation result, not by throwing.
-
+A missing or invalid secret makes the app refuse to start (the Options validation failure is raised by the framework at startup).
 ## 6. Logging and data
 
 - Never log passwords, tokens (access or refresh), OTPs, reset tokens, hashes, or full card/ID numbers. Never return password, token or OTP hashes in any response.

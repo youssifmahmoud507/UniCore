@@ -14,7 +14,7 @@ namespace UniCore.Api
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +58,7 @@ namespace UniCore.Api
             {
                 Predicate = check => check.Tags.Contains("ready")
             });
+            await app.Services.SeedIdentityAsync();
 
             app.Run();
         }
