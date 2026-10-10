@@ -47,4 +47,7 @@ namespace UniCore.UnitTests.Modules.Identity
 
         public Task<Result<AuthTokensResponse>> RefreshAsync(string? rawToken) => Refresh.HandleAsync(new RefreshCommand(rawToken, "10.0.0.2", "test-agent"));
     }
+
+
+
 }

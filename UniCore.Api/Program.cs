@@ -9,6 +9,7 @@ using UniCore.Api.Middleware;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Infrastructure;
 using UniCore.Infrastructure.Common;
+using UniCore.Infrastructure.Modules.Email;
 using UniCore.Infrastructure.Modules.Identity;
 
 
@@ -36,6 +37,8 @@ namespace UniCore.Api
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
             builder.Services.AddInfrastructure(connectionString);
             builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddEmailSending(builder.Configuration);
+            builder.Services.AddPasswordReset(builder.Configuration);
             builder.Services.AddApiRateLimiting();
 
             var app = builder.Build();

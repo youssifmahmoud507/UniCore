@@ -14,4 +14,5 @@ namespace UniCore.Application.Modules.Identity.Specifications
             UseTracking(); // the handler modifies the token
         }
     }
+
 }

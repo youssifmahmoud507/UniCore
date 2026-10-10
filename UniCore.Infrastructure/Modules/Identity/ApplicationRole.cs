@@ -21,4 +21,8 @@ namespace UniCore.Infrastructure.Modules.Identity
             return new ApplicationRole { Name = cleanName };
         }
     }
+
+
+
+
 }

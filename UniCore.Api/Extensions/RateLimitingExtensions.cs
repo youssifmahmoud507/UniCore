@@ -14,6 +14,10 @@ namespace UniCore.Api.Extensions
                 // Values from security.md. The per-account limit comes from the Identity lockout.
                 options.AddPolicy(RateLimitPolicies.Login, context => PerIp(context, permitLimit: 5, TimeSpan.FromMinutes(1)));
                 options.AddPolicy(RateLimitPolicies.Refresh, context => PerIp(context, permitLimit: 20, TimeSpan.FromMinutes(1)));
+                options.AddPolicy(RateLimitPolicies.ForgotPassword, context => PerIp(context, permitLimit: 10, TimeSpan.FromHours(1)));
+                options.AddPolicy(RateLimitPolicies.VerifyOtp, context => PerIp(context, permitLimit: 5, TimeSpan.FromMinutes(10)));
+                options.AddPolicy(RateLimitPolicies.ResetPassword, context => PerIp(context, permitLimit: 5, TimeSpan.FromMinutes(10)));
+
 
                 options.OnRejected = async (context, cancellationToken) =>
                 {

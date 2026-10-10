@@ -18,5 +18,13 @@ services:
       retries: 10
       start_period: 20s
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: unicore-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   unicore-sqlserver-data:

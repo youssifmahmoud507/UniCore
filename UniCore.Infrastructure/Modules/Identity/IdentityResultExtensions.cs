@@ -53,6 +53,13 @@ namespace UniCore.Infrastructure.Modules.Identity
                 return CommonErrors.ConcurrencyConflict;
             }
 
+
+            if (code.StartsWith("InvalidToken", StringComparison.Ordinal))
+            {
+                return IdentityErrors.ResetTokenInvalid;
+            }
+
+
             // Unknown codes: never expose the raw Identity description.
             return IdentityErrors.IdentityOperationFailed;
         }
