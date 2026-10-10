@@ -15,17 +15,14 @@ namespace UniCore.Infrastructure.Modules.Identity
 
             var errors = result.Errors.Select(Map).DistinctBy(e => e.Code).ToList();
 
-            return errors.Count == 0
-                ? Result.Fail(IdentityErrors.IdentityOperationFailed)
-                : Result.Fail(errors);
+            return errors.Count == 0 ? Result.Fail(IdentityErrors.IdentityOperationFailed) : Result.Fail(errors);
         }
 
         private static Error Map(IdentityError error)
         {
             var code = error.Code ?? string.Empty;
 
-            if (code.StartsWith("DuplicateUserName", StringComparison.Ordinal)
-                || code.StartsWith("DuplicateEmail", StringComparison.Ordinal))
+            if (code.StartsWith("DuplicateUserName", StringComparison.Ordinal) || code.StartsWith("DuplicateEmail", StringComparison.Ordinal))
             {
                 return IdentityErrors.UserAlreadyExists;
             }

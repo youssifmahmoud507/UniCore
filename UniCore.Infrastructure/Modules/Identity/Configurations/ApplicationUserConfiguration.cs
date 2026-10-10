@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using UniCore.Infrastructure.Modules.Identity;
 
-namespace UniCore.Infrastructure.Persistence.Configurations
+namespace UniCore.Infrastructure.Modules.Identity.Configurations
 {
     public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     {

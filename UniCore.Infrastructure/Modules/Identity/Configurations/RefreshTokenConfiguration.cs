@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UniCore.Domain.Modules.Identity;
 using UniCore.Infrastructure.Modules.Identity;
 
-namespace UniCore.Infrastructure.Persistence.Configurations
+namespace UniCore.Infrastructure.Modules.Identity.Configurations
 {
     public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
