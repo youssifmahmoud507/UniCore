@@ -20,11 +20,4 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             builder.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex").IsUnique();
         }
     }
-    public sealed class ApplicationRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
-    {
-        public void Configure(EntityTypeBuilder<ApplicationRole> builder)
-        {
-            builder.ToTable("Roles", "identity");
-        }
-    }
 }
