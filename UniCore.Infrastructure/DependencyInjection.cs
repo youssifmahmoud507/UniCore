@@ -11,6 +11,8 @@ using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Persistence;
 using UniCore.Infrastructure.Persistence.Repositories;
+using UniCore.Application.Modules.Identity;
+using UniCore.Infrastructure.Modules.Audit;
 
 namespace UniCore.Infrastructure
 {
@@ -37,8 +39,16 @@ namespace UniCore.Infrastructure
 
             services.AddScoped<IdentitySeeder>();
 
-            services.AddHealthChecks()
-                .AddDbContextCheck<AppDbContext>("database", tags: new[] { "ready" });
+
+            services.AddScoped<IUserAccountService, UserAccountService>();
+            services.AddSingleton<IAuditWriter, LoggingAuditWriter>();
+
+            // Use-case handlers (Application layer), registered here because this is the composition root.
+            services.AddScoped<LoginHandler>();
+            services.AddScoped<RefreshHandler>();
+            services.AddScoped<LogoutHandler>();
+
+            services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: new[] { "ready" });
 
             return services;
         }

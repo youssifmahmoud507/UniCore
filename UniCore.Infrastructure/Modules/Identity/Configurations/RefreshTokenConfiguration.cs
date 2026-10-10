@@ -23,10 +23,10 @@ namespace UniCore.Infrastructure.Modules.Identity.Configurations
             builder.HasIndex(t => t.ExpiresAt); // for the cleanup job
 
             // Users are deactivated, never deleted, so no cascade.
-            builder.HasOne<ApplicationUser>()
-                .WithMany()
-                .HasForeignKey(t => t.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne<ApplicationUser>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Restrict);
+
+            // Concurrency token (shadow property): stops two parallel refreshes from both succeeding.
+            builder.Property<byte[]>("RowVersion").IsRowVersion();
         }
     }
 }

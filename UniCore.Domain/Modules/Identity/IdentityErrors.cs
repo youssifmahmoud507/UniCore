@@ -16,5 +16,10 @@ namespace UniCore.Domain.Modules.Identity
         public static readonly Error RefreshTokenExpired = Error.Unauthorized("REFRESH_TOKEN_EXPIRED", "The refresh token has expired.");
         public static readonly Error RefreshTokenReused = Error.Unauthorized("REFRESH_TOKEN_REUSED", "The refresh token was already used.");
         public static readonly Error RefreshTokenAlreadyRevoked = Error.BusinessRule("REFRESH_TOKEN_ALREADY_REVOKED", "The refresh token is already revoked.");
+        public static readonly Error CredentialsRequired =Error.Validation("CREDENTIALS_REQUIRED", "Login and password are required.");
+        public static readonly Error InvalidCredentials = Error.InvalidCredentials();
+        public static readonly Error AccountLockedOut =Error.Forbidden("ACCOUNT_LOCKED_OUT", "The account is temporarily locked. Try again later.");
+        public static readonly Error AccountInactive =Error.Forbidden("ACCOUNT_INACTIVE", "The account is inactive.");
+        public static readonly Error RefreshTokenRequired =Error.Validation("REFRESH_TOKEN_REQUIRED", "A refresh token is required.");
     }
 }

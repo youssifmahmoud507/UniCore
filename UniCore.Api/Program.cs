@@ -4,10 +4,11 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using System.Text.Json.Serialization;
+using UniCore.Api.Extensions;
 using UniCore.Api.Middleware;
 using UniCore.Application.Common.Abstractions;
-using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure;
+using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Identity;
 
 
@@ -31,9 +32,11 @@ namespace UniCore.Api
 
             builder.Services.AddOpenApi();
 
+
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
             builder.Services.AddInfrastructure(connectionString);
             builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddApiRateLimiting();
 
             var app = builder.Build();
 
@@ -48,6 +51,7 @@ namespace UniCore.Api
             }
 
             app.UseHttpsRedirection();
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
 
