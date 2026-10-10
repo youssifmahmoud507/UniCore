@@ -1,0 +1,58 @@
+name: Test Coverage
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests with coverage
+        run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate merged coverage report
+        run: |
+          reportgenerator \
+            -reports:"**/coverage.cobertura.xml" \
+            -targetdir:"coverage-report" \
+            -reporttypes:"Cobertura;HtmlInline_AzurePipelines"
+
+      - name: Enforce minimum line coverage
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          minimum = 0.60
+          root = ET.parse("coverage-report/Cobertura.xml").getroot()
+          line_rate = float(root.attrib.get("line-rate", "0"))
+          print(f"Line coverage: {line_rate * 100:.2f}%")
+          if line_rate < minimum:
+              raise SystemExit(f"Coverage below threshold: {line_rate * 100:.2f}% < {minimum * 100:.0f}%")
+          PY
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
