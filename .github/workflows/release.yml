@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Publish API
+        run: dotnet publish UniCore.Api/UniCore.Api.csproj --configuration Release --output ./artifacts/unicore-api
+
+      - name: Archive published output
+        run: |
+          cd artifacts
+          zip -r unicore-api-${{ github.ref_name }}.zip unicore-api
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/unicore-api-${{ github.ref_name }}.zip
