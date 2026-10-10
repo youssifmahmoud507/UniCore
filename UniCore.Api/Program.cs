@@ -8,6 +8,7 @@ using UniCore.Api.Middleware;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure;
+using UniCore.Infrastructure.Modules.Identity;
 
 
 namespace UniCore.Api
@@ -32,6 +33,7 @@ namespace UniCore.Api
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
             builder.Services.AddInfrastructure(connectionString);
+            builder.Services.AddJwtAuthentication(builder.Configuration);
 
             var app = builder.Build();
 
@@ -46,6 +48,7 @@ namespace UniCore.Api
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

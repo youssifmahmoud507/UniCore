@@ -11,5 +11,10 @@ namespace UniCore.Domain.Modules.Identity
         public static readonly Error RoleAlreadyExists = Error.Conflict("ROLE_ALREADY_EXISTS", "A role with the same name already exists.");
         public static readonly Error PasswordPolicyViolation = Error.Validation("PASSWORD_POLICY_VIOLATION", "The password does not meet the password policy.");
         public static readonly Error IdentityOperationFailed = Error.Failure("IDENTITY_OPERATION_FAILED", "The identity operation could not be completed.");
+        public static readonly Error RefreshTokenDataInvalid = Error.Validation("REFRESH_TOKEN_DATA_INVALID", "The refresh token data is invalid.");
+        public static readonly Error RefreshTokenInvalid = Error.Unauthorized("REFRESH_TOKEN_INVALID", "The refresh token is invalid.");
+        public static readonly Error RefreshTokenExpired = Error.Unauthorized("REFRESH_TOKEN_EXPIRED", "The refresh token has expired.");
+        public static readonly Error RefreshTokenReused = Error.Unauthorized("REFRESH_TOKEN_REUSED", "The refresh token was already used.");
+        public static readonly Error RefreshTokenAlreadyRevoked = Error.BusinessRule("REFRESH_TOKEN_ALREADY_REVOKED", "The refresh token is already revoked.");
     }
 }

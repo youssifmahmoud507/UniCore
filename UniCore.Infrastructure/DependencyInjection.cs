@@ -22,6 +22,8 @@ namespace UniCore.Infrastructure
 
             services.AddSingleton<IClock, SystemClock>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
             services.AddDataProtection();

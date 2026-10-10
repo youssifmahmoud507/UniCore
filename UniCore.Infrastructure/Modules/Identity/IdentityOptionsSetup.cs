@@ -21,4 +21,5 @@ namespace UniCore.Infrastructure.Modules.Identity
             options.SignIn.RequireConfirmedEmail = false;
         }
     }
+
 }
