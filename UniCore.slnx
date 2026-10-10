@@ -8,6 +8,11 @@
     <File Path="security.md" />
     <File Path="workflow.md" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+    <File Path=".env.example" />
+    <File Path="docker-compose.yml" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="UniCore.Api/UniCore.Api.csproj" />
     <Project Path="UniCore.Application/UniCore.Application.csproj" />

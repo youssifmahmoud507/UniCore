@@ -41,8 +41,7 @@ namespace UniCore.Api.Extensions
             };
 
             problem.Extensions["errorCode"] = primary.Code;
-            problem.Extensions["traceId"] = Activity.Current?.Id ?? http.TraceIdentifier;
-
+            problem.Extensions["traceId"] = http.TraceIdentifier;
             if (primary.ErrorType == ErrorType.Validation && errors.Count > 0)
             {
                 problem.Extensions["errors"] = errors
