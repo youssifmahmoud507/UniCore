@@ -125,6 +125,55 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("UserTokens", "identity");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.PasswordResetOtp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("MaxAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OtpHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("RequestedByIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTimeOffset>("ResendAvailableAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("PasswordResetOtps", "identity");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Identity.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -331,6 +380,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.PasswordResetOtp", b =>
+                {
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
