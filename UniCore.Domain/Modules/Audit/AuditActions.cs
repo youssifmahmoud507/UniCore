@@ -21,5 +21,16 @@ namespace UniCore.Domain.Modules.Audit
         public const string AuthOtpAttemptsExceeded = "AUTH_OTP_ATTEMPTS_EXCEEDED";
         public const string AuthPasswordResetCompleted = "AUTH_PASSWORD_RESET_COMPLETED";
         public const string EmailEnqueueFailed = "EMAIL_ENQUEUE_FAILED";
+        public const string UserCreated = "USER_CREATED";
+        public const string UserActivated = "USER_ACTIVATED";
+        public const string UserDeactivated = "USER_DEACTIVATED";
+        public const string RoleCreated = "ROLE_CREATED";
+        public const string RoleDeleted = "ROLE_DELETED";
+        public const string RoleAssigned = "ROLE_ASSIGNED";
+        public const string RoleRemoved = "ROLE_REMOVED";
+        public const string PermissionGranted = "PERMISSION_GRANTED";
+        public const string PermissionRevoked = "PERMISSION_REVOKED";
+        public const string ScopeAssigned = "SCOPE_ASSIGNED";
+        public const string ScopeRemoved = "SCOPE_REMOVED";
     }
 }

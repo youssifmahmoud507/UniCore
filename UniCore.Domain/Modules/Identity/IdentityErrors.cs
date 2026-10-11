@@ -32,6 +32,20 @@ namespace UniCore.Domain.Modules.Identity
         public static readonly Error PermissionDataInvalid = Error.Validation("PERMISSION_DATA_INVALID", "The permission data is invalid.");
         public static readonly Error RolePermissionDataInvalid = Error.Validation("ROLE_PERMISSION_DATA_INVALID", "The role permission data is invalid.");
         public static readonly Error ScopeInvalid = Error.Validation("SCOPE_INVALID", "The scope is invalid.");
+        public static readonly Error RoleNotFound = Error.NotFound("ROLE_NOT_FOUND", "The role was not found.");
+        public static readonly Error UserNotFound = Error.NotFound("USER_NOT_FOUND", "The user was not found.");
+        public static readonly Error ScopeAssignmentNotFound = Error.NotFound("SCOPE_ASSIGNMENT_NOT_FOUND", "The scope assignment was not found.");
+        public static readonly Error RoleProtected = Error.BusinessRule("ROLE_PROTECTED", "Built-in roles cannot be deleted.");
+        public static readonly Error RoleImmutable = Error.BusinessRule("ROLE_IMMUTABLE", "The permissions of the SuperAdmin role cannot be changed.");
+        public static readonly Error RoleInUse = Error.Conflict("ROLE_IN_USE", "The role is still assigned to users.");
+        public static readonly Error LastSuperAdmin = Error.BusinessRule("LAST_SUPERADMIN", "There must be at least one active SuperAdmin.");
+        public static readonly Error CannotModifyOwnAccess = Error.Forbidden("CANNOT_MODIFY_OWN_ACCESS", "You cannot change your own roles, scopes or status.");
+        public static readonly Error OnlySuperAdminManagesSuperAdmin = Error.Forbidden("ONLY_SUPERADMIN_CAN_MANAGE_SUPERADMIN", "Only a SuperAdmin can manage the SuperAdmin role.");
+        public static readonly Error CannotGrantGlobalScope = Error.Forbidden("ONLY_SUPERADMIN_CAN_GRANT_GLOBAL_SCOPE", "Only a SuperAdmin can grant a Global scope.");
+        public static readonly Error CannotGrantPermission = Error.Forbidden("CANNOT_GRANT_PERMISSION_YOU_LACK", "You cannot grant a permission you do not hold yourself.");
+        public static readonly Error PermissionsRequired = Error.Validation("PERMISSIONS_REQUIRED", "A list of permission codes is required.");
+        public static Error PermissionNotFound(IEnumerable<string> codes) => Error.Validation("PERMISSION_NOT_FOUND","Unknown permission code(s): " + string.Join(", ", codes.Take(5).Select(c => c.Length > 60 ? c[..60] : c)));
+
 
     }
 }

@@ -47,6 +47,33 @@ namespace UniCore.Application.Modules.Identity
 
             return new EmailMessage(to, $"Your {appName} password was changed", html, text);
         }
+
+        public static EmailMessage AccountCreated(string to, string appName, string userName)
+        {
+            var app = WebUtility.HtmlEncode(appName);
+            var user = WebUtility.HtmlEncode(userName);
+
+            var text =
+                $"An account was created for you on {appName}.\n\n" +
+                $"User name: {userName}\n\n" +
+                "To set your password: open the sign-in page, choose \"Forgot password\" and enter this email address. " +
+                "You will receive a one-time code.\n" +
+                "If you did not expect this email, ignore it.";
+
+            var html = $$"""
+            <div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#222">
+              <h2 style="margin:0 0 16px">{{app}}</h2>
+              <p>An account was created for you.</p>
+              <p>User name: <strong>{{user}}</strong></p>
+              <p>To set your password, open the sign-in page, choose <em>Forgot password</em> and enter this email address.
+                 You will receive a one-time code.</p>
+              <p style="color:#666;font-size:13px">If you did not expect this email, ignore it.</p>
+            </div>
+            """;
+
+            return new EmailMessage(to, $"Your {appName} account was created", html, text);
+        }
+
     }
 
 

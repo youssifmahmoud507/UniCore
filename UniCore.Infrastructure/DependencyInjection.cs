@@ -48,6 +48,10 @@ namespace UniCore.Infrastructure
             services.AddScoped<IPermissionAuthorizer, PermissionAuthorizer>();
             services.AddScoped<IUserAccountService, UserAccountService>();
             services.AddSingleton<IAuditWriter, LoggingAuditWriter>();
+            services.AddScoped<IIdentityAdministration, IdentityAdministration>();
+            services.AddScoped<RolePermissionCatalog>();
+            services.AddScoped<RoleManagementHandler>();
+            services.AddScoped<UserManagementHandler>();
 
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();

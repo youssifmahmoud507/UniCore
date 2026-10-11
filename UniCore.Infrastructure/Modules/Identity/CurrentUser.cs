@@ -18,8 +18,27 @@ namespace UniCore.Infrastructure.Modules.Identity
 
         public Guid? PersonId => ReadGuid(AppClaimTypes.PersonId);
 
-        public IReadOnlyCollection<string> Roles => !IsAuthenticated || Principal is null ? [] : Principal.FindAll(AppClaimTypes.Role).Select(c => c.Value).Distinct().ToArray();
+        // Live roles from the database once the access middleware ran. The role claims inside the token
+        // can be up to 15 minutes old, so they are only a fallback.
+        public IReadOnlyCollection<string> Roles
+        {
+            get
+            {
+                if (!IsAuthenticated)
+                {
+                    return [];
+                }
 
+                if (_access?.Current is { } access)
+                {
+                    return [.. access.Grants.Select(g => g.Role).Distinct(StringComparer.Ordinal)];
+                }
+
+                return Principal is null
+                    ? []
+                    : Principal.FindAll(AppClaimTypes.Role).Select(c => c.Value).Distinct().ToArray();
+            }
+        }
         // Loaded per request from the database by the access middleware, never from the token.
         public IReadOnlyCollection<string> Permissions => !IsAuthenticated || _access?.Current is null ? [] : _access.Current.Grants.SelectMany(g => g.Permissions).Distinct(StringComparer.Ordinal).ToArray();
 
