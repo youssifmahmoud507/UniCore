@@ -6,6 +6,7 @@ using Serilog.Events;
 using System.Text.Json.Serialization;
 using UniCore.Api.Extensions;
 using UniCore.Api.Middleware;
+using UniCore.Api.Security;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Infrastructure;
 using UniCore.Infrastructure.Common;
@@ -40,6 +41,7 @@ namespace UniCore.Api
             builder.Services.AddEmailSending(builder.Configuration);
             builder.Services.AddPasswordReset(builder.Configuration);
             builder.Services.AddApiRateLimiting();
+            builder.Services.AddPermissionAuthorization();
 
             var app = builder.Build();
 
@@ -56,6 +58,7 @@ namespace UniCore.Api
             app.UseHttpsRedirection();
             app.UseRateLimiter();
             app.UseAuthentication();
+            app.UseMiddleware<UserAccessMiddleware>();
             app.UseAuthorization();
 
             app.MapControllers();

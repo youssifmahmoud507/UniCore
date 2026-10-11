@@ -22,11 +22,16 @@ namespace UniCore.Domain.Modules.Identity
         public static readonly Error AccountInactive = Error.Forbidden("ACCOUNT_INACTIVE", "The account is inactive.");
         public static readonly Error RefreshTokenRequired = Error.Validation("REFRESH_TOKEN_REQUIRED", "A refresh token is required.");
         public static readonly Error OtpInvalid = Error.Validation("OTP_INVALID", "The code is invalid or has expired.");
-        public static readonly Error OtpDataInvalid =
-            Error.Validation("OTP_DATA_INVALID", "The one-time password data is invalid.");
-        public static readonly Error ResetTokenInvalid =
-            Error.Validation("RESET_TOKEN_INVALID", "The reset token is invalid or has expired.");
-        public static readonly Error PasswordMismatch =
-            Error.Validation("PASSWORD_MISMATCH", "The passwords do not match.");
+        public static readonly Error OtpDataInvalid = Error.Validation("OTP_DATA_INVALID", "The one-time password data is invalid.");
+        public static readonly Error ResetTokenInvalid = Error.Validation("RESET_TOKEN_INVALID", "The reset token is invalid or has expired.");
+        public static readonly Error PasswordMismatch =Error.Validation("PASSWORD_MISMATCH", "The passwords do not match.");
+        public static readonly Error ForbiddenPermissionMissing = Error.Forbidden("FORBIDDEN_PERMISSION_MISSING", "You do not have the required permission.");
+        public static readonly Error ForbiddenOutOfScope = Error.Forbidden("FORBIDDEN_OUT_OF_SCOPE", "The resource is outside your scope.");
+        public static readonly Error ForbiddenNotOwner = Error.Forbidden("FORBIDDEN_NOT_OWNER", "You do not own this resource.");
+        public static readonly Error PermissionCodeInvalid = Error.Validation("PERMISSION_CODE_INVALID", "A permission code must look like Module.Action.");
+        public static readonly Error PermissionDataInvalid = Error.Validation("PERMISSION_DATA_INVALID", "The permission data is invalid.");
+        public static readonly Error RolePermissionDataInvalid = Error.Validation("ROLE_PERMISSION_DATA_INVALID", "The role permission data is invalid.");
+        public static readonly Error ScopeInvalid = Error.Validation("SCOPE_INVALID", "The scope is invalid.");
+
     }
 }

@@ -11,4 +11,7 @@ namespace UniCore.Domain.Modules.Identity
         Department = 2,
         Section = 3
     }
+
+
+
 }

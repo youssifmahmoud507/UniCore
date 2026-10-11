@@ -11,4 +11,6 @@ namespace UniCore.Infrastructure.Modules.Identity.Configurations
             builder.ToTable("Roles", "identity");
         }
     }
+
+
 }

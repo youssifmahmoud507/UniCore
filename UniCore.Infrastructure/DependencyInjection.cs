@@ -40,6 +40,12 @@ namespace UniCore.Infrastructure
             services.AddScoped<IdentitySeeder>();
 
 
+
+            services.AddScoped<AuthorizationSeeder>();
+            services.AddScoped<IUserAccessContext, UserAccessContext>();
+            services.AddScoped<IUserAccessProvider, UserAccessProvider>();
+            services.AddSingleton<IScopeHierarchy, FlatScopeHierarchy>();
+            services.AddScoped<IPermissionAuthorizer, PermissionAuthorizer>();
             services.AddScoped<IUserAccountService, UserAccountService>();
             services.AddSingleton<IAuditWriter, LoggingAuditWriter>();
 
@@ -57,13 +63,22 @@ namespace UniCore.Infrastructure
         {
             using var scope = services.CreateScope();
 
-            var seeder = scope.ServiceProvider.GetService<IdentitySeeder>();
-            if (seeder is null)
+            var identity = scope.ServiceProvider.GetService<IdentitySeeder>();
+            var authorization = scope.ServiceProvider.GetService<AuthorizationSeeder>();
+
+            if (identity is null || authorization is null)
             {
-                return Result.Fail(Error.Failure("IDENTITY_SEEDER_MISSING", "The identity seeder is not registered."));
+                return Result.Fail(Error.Failure("SEEDER_MISSING", "A seeder is not registered."));
             }
 
-            return await seeder.SeedAsync();
+            // Roles first: the default role permissions need them.
+            var roles = await identity.SeedAsync();
+            if (roles.IsFailure)
+            {
+                return roles;
+            }
+
+            return await authorization.SeedAsync();
         }
     }
 }

@@ -174,6 +174,38 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("PasswordResetOtps", "identity");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.Permission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Permissions", "identity");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Identity.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -222,6 +254,53 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens", "identity");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.RolePermission", b =>
+                {
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PermissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("RoleId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("RolePermissions", "identity");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.ScopeAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("RoleId", "UserId", "ScopeType", "ScopeId")
+                        .IsUnique();
+
+                    b.ToTable("ScopeAssignments", "identity");
                 });
 
             modelBuilder.Entity("UniCore.Infrastructure.Modules.Identity.ApplicationRole", b =>
@@ -399,6 +478,35 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.RolePermission", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Identity.Permission", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Identity.ScopeAssignment", b =>
+                {
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }
