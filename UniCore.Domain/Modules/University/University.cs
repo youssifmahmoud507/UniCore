@@ -25,8 +25,7 @@ namespace UniCore.Domain.Modules.University
         public DateTimeOffset CreatedAt { get; private set; }
         public DateTimeOffset? UpdatedAt { get; private set; }
 
-        public static Result<University> Create(
-            string? code, string? name, string? description, string? email, string? phone, string? website, DateTimeOffset now)
+        public static Result<University> Create(string? code, string? name, string? description, string? email, string? phone, string? website, DateTimeOffset now)
         {
             var cleanCode = code?.Trim().ToUpperInvariant();
 
