@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UniCore.Api.Contracts.Students;
 using UniCore.Api.Extensions;
 using UniCore.Application.Common.Pagination;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Modules.Students;
 
-namespace UniCore.Api.Contracts.Students
+namespace UniCore.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/students")]
