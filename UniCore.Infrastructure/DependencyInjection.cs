@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Text;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Repositories;
+using UniCore.Application.Modules.Identity;
+using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
+using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Identity;
+using UniCore.Infrastructure.Modules.Students;
 using UniCore.Infrastructure.Persistence;
 using UniCore.Infrastructure.Persistence.Repositories;
-using UniCore.Application.Modules.Identity;
-using UniCore.Infrastructure.Modules.Audit;
 
 namespace UniCore.Infrastructure
 {
@@ -52,6 +54,11 @@ namespace UniCore.Infrastructure
             services.AddScoped<RolePermissionCatalog>();
             services.AddScoped<RoleManagementHandler>();
             services.AddScoped<UserManagementHandler>();
+            services.AddScoped<IStudentNumberGenerator, StudentNumberGenerator>();
+            services.AddSingleton<IAcademicPlacementVerifier, UnverifiedAcademicPlacementVerifier>();
+            services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
+            services.AddScoped<StudentAdmissionService>();
+            services.AddScoped<StudentManagementHandler>();
 
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();

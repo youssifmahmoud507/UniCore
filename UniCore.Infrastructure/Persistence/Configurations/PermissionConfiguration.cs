@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UniCore.Domain.Modules.Identity;
 
-namespace UniCore.Infrastructure.Modules.Identity.Configurations
+namespace UniCore.Infrastructure.Persistence.Configurations
 {
     public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permission>
     {

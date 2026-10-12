@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UniCore.Infrastructure.Modules.Identity;
 
-namespace UniCore.Infrastructure.Modules.Identity.Configurations
+namespace UniCore.Infrastructure.Persistence.Configurations
 {
     public sealed class ApplicationRoleConfiguration : IEntityTypeConfiguration<ApplicationRole>
     {
@@ -11,6 +11,5 @@ namespace UniCore.Infrastructure.Modules.Identity.Configurations
             builder.ToTable("Roles", "identity");
         }
     }
-
 
 }

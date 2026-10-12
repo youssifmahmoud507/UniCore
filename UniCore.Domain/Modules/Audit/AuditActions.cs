@@ -32,5 +32,11 @@ namespace UniCore.Domain.Modules.Audit
         public const string PermissionRevoked = "PERMISSION_REVOKED";
         public const string ScopeAssigned = "SCOPE_ASSIGNED";
         public const string ScopeRemoved = "SCOPE_REMOVED";
+        public const string StudentCreated = "STUDENT_CREATED";
+        public const string StudentAccountCreated = "STUDENT_ACCOUNT_CREATED";
+        public const string StudentAccountFailed = "STUDENT_ACCOUNT_PROVISION_FAILED";
+        public const string StudentStatusChanged = "STUDENT_STATUS_CHANGED";
+        public const string StudentProgramChanged = "STUDENT_PROGRAM_CHANGED";
+        public const string StudentAcademicProfileUpdated = "STUDENT_ACADEMIC_PROFILE_UPDATED";
     }
 }

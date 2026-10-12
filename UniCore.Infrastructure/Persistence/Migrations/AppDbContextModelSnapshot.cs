@@ -303,6 +303,177 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("ScopeAssignments", "identity");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AcademicStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly>("AdmissionDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly?>("ExpectedGraduationDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("GraduationDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("PersonProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicStatus");
+
+                    b.HasIndex("PersonProfileId")
+                        .IsUnique();
+
+                    b.HasIndex("StudentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("Students", "students");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.StudentAcademicProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AcademicStanding")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("AdmissionAcademicYearId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CurrentAcademicLevelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CurrentStudyPlanVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdmissionAcademicYearId");
+
+                    b.HasIndex("CurrentStudyPlanVersionId");
+
+                    b.HasIndex("StudentId")
+                        .IsUnique();
+
+                    b.ToTable("StudentAcademicProfiles", "students");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.StudentProgramHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AcademicLevelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StudyPlanVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicProgramId");
+
+                    b.HasIndex("StudentId", "StartDate");
+
+                    b.ToTable("StudentProgramHistories", "students");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.StudentStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChangedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("EffectiveDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("OldStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId", "EffectiveDate");
+
+                    b.ToTable("StudentStatusHistories", "students");
+                });
+
             modelBuilder.Entity("UniCore.Infrastructure.Modules.Identity.ApplicationRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -411,6 +582,20 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Users", "identity");
                 });
 
+            modelBuilder.Entity("UniCore.Infrastructure.Modules.Students.StudentNumberCounter", b =>
+                {
+                    b.Property<string>("CounterKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("LastValue")
+                        .HasColumnType("int");
+
+                    b.HasKey("CounterKey");
+
+                    b.ToTable("StudentNumberCounters", "students");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationRole", null)
@@ -507,6 +692,50 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
+                {
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.StudentAcademicProfile", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithOne("Profile")
+                        .HasForeignKey("UniCore.Domain.Modules.Students.StudentAcademicProfile", "StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.StudentProgramHistory", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany("ProgramHistory")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.StudentStatusHistory", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
+                {
+                    b.Navigation("Profile");
+
+                    b.Navigation("ProgramHistory");
+
+                    b.Navigation("StatusHistory");
                 });
 #pragma warning restore 612, 618
         }
