@@ -26,6 +26,15 @@ namespace UniCore.IntegrationTests.Infrastructure
             }
         }
 
+        public IServiceProvider Services
+        {
+            get
+            {
+                Assert.NotNull(_factory);
+                return _factory.Services;
+            }
+        }
+
         public async Task InitializeAsync()
         {
             _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();

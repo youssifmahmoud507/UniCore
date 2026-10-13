@@ -39,4 +39,7 @@ namespace UniCore.Domain.Modules.Audit
         public const string StudentProgramChanged = "STUDENT_PROGRAM_CHANGED";
         public const string StudentAcademicProfileUpdated = "STUDENT_ACADEMIC_PROFILE_UPDATED";
     }
+
+
+
 }

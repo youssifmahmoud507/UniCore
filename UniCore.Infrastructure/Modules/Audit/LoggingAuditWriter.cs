@@ -39,7 +39,7 @@ namespace UniCore.Infrastructure.Modules.Audit
                 return null;
             }
 
-            var cleaned = new string(value.Where(c => !char.IsControl(c)).ToArray());
+            var cleaned = new string([.. value.Where(c => !char.IsControl(c))]);
 
             return cleaned.Length <= maxLength ? cleaned : cleaned[..maxLength];
         }

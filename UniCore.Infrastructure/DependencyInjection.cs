@@ -60,7 +60,7 @@ namespace UniCore.Infrastructure
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();
             services.AddScoped(typeof(IAggregateRepository<>), typeof(AggregateRepository<>));
-
+            services.AddSingleton<IAuditWriter, DbAuditWriter>();
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();
             services.AddScoped<RefreshHandler>();
