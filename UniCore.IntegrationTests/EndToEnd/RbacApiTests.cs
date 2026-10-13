@@ -117,7 +117,7 @@ namespace UniCore.IntegrationTests.EndToEnd
 
             var createUser = await Client.PostAsync("/api/v1/users", new { userName = "x", email = "x@uni.test" }, token);
             Assert.Equal(403, createUser.Code);
-            Assert.Equal("FORBIDDEN_PERMISSION_MISSING", createUser.ErrorCode);
+            Assert.Equal("GENERAL_FORBIDDEN", createUser.ErrorCode);
         }
 
         [Fact]
