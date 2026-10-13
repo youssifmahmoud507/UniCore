@@ -15,9 +15,8 @@
 #
 # 3. Add the API token as a secret in GitHub called "MAYHEM_TOKEN"
 #
-# 4. Update the "Start your API" step to run your API in the background before
-#    starting the Mayhem for API scan, and update the `api-url` & `api-spec`
-#    field.
+# 4. Ensure your API can run in CI with `ASPNETCORE_ENVIRONMENT=Development`
+#    and serves an OpenAPI document at the configured `api-spec` URL.
 #
 # If you have any questions, please contact us at mayhem4api@forallsecure.com
 
@@ -41,24 +40,51 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
+      - name: Setup .NET
+        if: ${{ secrets.MAYHEM_TOKEN != '' }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
 
       # Run your API in the background. Ideally, the API would run in debug
       # mode & send stacktraces back on "500 Internal Server Error" responses
       # (don't do this in production though!)
       - name: Start your API
-        run: ./run_your_api.sh & # <- ✏️ update this
+        if: ${{ secrets.MAYHEM_TOKEN != '' }}
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+        run: |
+          dotnet run --project UniCore.Api/UniCore.Api.csproj --urls http://localhost:8080 &
+
+      - name: Wait for API readiness
+        if: ${{ secrets.MAYHEM_TOKEN != '' }}
+        run: |
+          for i in {1..60}; do
+            if curl --silent --fail http://localhost:8080/openapi/v1.json >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become ready in time"
+          exit 1
 
       - name: Mayhem for API
+        if: ${{ secrets.MAYHEM_TOKEN != '' }}
         uses: ForAllSecure/mapi-action@v1
         continue-on-error: true
         with:
           mayhem-token: ${{ secrets.MAYHEM_TOKEN }}
-          api-url: http://localhost:8080 # <- ✏️ update this
-          api-spec: http://localhost:8080/openapi.json # <- ✏️ update this
+          api-url: http://localhost:8080
+          api-spec: http://localhost:8080/openapi/v1.json
           duration: 60
           sarif-report: mapi.sarif
 
+      - name: Mayhem token not configured
+        if: ${{ secrets.MAYHEM_TOKEN == '' }}
+        run: echo "MAYHEM_TOKEN is not configured; skipping Mayhem for API scan."
+
       - name: Upload SARIF file
+        if: ${{ hashFiles('mapi.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: mapi.sarif
