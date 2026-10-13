@@ -11,11 +11,11 @@ namespace UniCore.Application.Modules.Students
 {
     // The admission handoff. Developer 1 calls AdmitAsync when an admission is accepted (StudentAdmitted);
     // the API calls it after checking Students.Manage. This service does no permission check itself.
-    public sealed class StudentAdmissionService(IRepository<Student> students, IAcademicPlacementVerifier verifier, IStudentNumberGenerator numbers, IStudentAccountProvisioner provisioner, IUnitOfWork unitOfWork, IClock clock, IEmailQueue emailQueue, IPasswordResetSettings settings, IAuditWriter audit, ICurrentUser user)
+    public sealed class StudentAdmissionService(IAggregateRepository<Student> students, IAcademicPlacementVerifier verifier, IStudentNumberGenerator numbers, IStudentAccountProvisioner provisioner, IUnitOfWork unitOfWork, IClock clock, IEmailQueue emailQueue, IPasswordResetSettings settings, IAuditWriter audit, ICurrentUser user)
     {
         private const string ProbeNumber = "PROBE";
 
-        private readonly IRepository<Student> _students = students;
+        private readonly IAggregateRepository<Student> _students = students;
         private readonly IAcademicPlacementVerifier _verifier = verifier;
         private readonly IStudentNumberGenerator _numbers = numbers;
         private readonly IStudentAccountProvisioner _provisioner = provisioner;

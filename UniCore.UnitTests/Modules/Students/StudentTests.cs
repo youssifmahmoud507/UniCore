@@ -421,4 +421,5 @@ namespace UniCore.UnitTests.Modules.Students
             Assert.False(StudentStatusRules.RequiresReason(StudentAcademicStatus.Active));
         }
     }
+
 }

@@ -1,13 +1,13 @@
-﻿namespace UniCore.Domain.Modules.Students
+﻿using UniCore.Domain.Common.Entities;
+
+namespace UniCore.Domain.Modules.Students
 {
     // Append-only: a row is only ever closed, never edited or deleted.
-    public sealed class StudentProgramHistory
+    public sealed class StudentProgramHistory : BaseEntity
     {
         private StudentProgramHistory()
         {
         }
-
-        public Guid Id { get; private set; }
         public Guid StudentId { get; private set; }
         public Guid AcademicProgramId { get; private set; }
         public Guid StudyPlanVersionId { get; private set; }

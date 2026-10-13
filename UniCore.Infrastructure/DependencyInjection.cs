@@ -59,13 +59,14 @@ namespace UniCore.Infrastructure
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();
+            services.AddScoped(typeof(IAggregateRepository<>), typeof(AggregateRepository<>));
 
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();
             services.AddScoped<RefreshHandler>();
             services.AddScoped<LogoutHandler>();
 
-            services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: new[] { "ready" });
+            services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
 
             return services;
         }

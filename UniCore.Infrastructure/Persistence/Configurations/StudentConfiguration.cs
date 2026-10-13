@@ -23,6 +23,7 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             builder.Property<byte[]>("RowVersion").IsRowVersion();
 
             builder.Ignore(s => s.CurrentProgram);
+            builder.Ignore(s => s.DomainEvents);
 
             builder.HasIndex(s => s.StudentNumber).IsUnique();
             builder.HasIndex(s => s.PersonProfileId).IsUnique();
@@ -40,6 +41,7 @@ namespace UniCore.Infrastructure.Persistence.Configurations
 
             builder.Navigation(s => s.ProgramHistory).UsePropertyAccessMode(PropertyAccessMode.Field);
             builder.Navigation(s => s.StatusHistory).UsePropertyAccessMode(PropertyAccessMode.Field);
+
         }
     }
 

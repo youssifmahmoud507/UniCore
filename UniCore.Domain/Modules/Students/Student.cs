@@ -1,11 +1,12 @@
-﻿using UniCore.Domain.Common.Results;
+﻿using UniCore.Domain.Common.Entities;
+using UniCore.Domain.Common.Results;
 
 namespace UniCore.Domain.Modules.Students
 {
     // Aggregate root. A student is NOT a login account: UserId only links to one (optional).
     // There is no ProgramId here: the program lives in StudentProgramHistory.
     // Load it with Profile, ProgramHistory and StatusHistory before calling the behaviour methods.
-    public sealed class Student
+    public sealed class Student : AggregateRoot
     {
         private const int MaxNumberLength = 30;
         private const int MaxReasonLength = 500;
@@ -19,7 +20,6 @@ namespace UniCore.Domain.Modules.Students
         {
         }
 
-        public Guid Id { get; private set; }
         public Guid PersonProfileId { get; private set; }
         public Guid? UserId { get; private set; }
         public string StudentNumber { get; private set; } = string.Empty;

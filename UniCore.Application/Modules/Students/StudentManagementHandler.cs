@@ -10,7 +10,7 @@ using UniCore.Domain.Modules.Students;
 
 namespace UniCore.Application.Modules.Students
 {
-    public sealed class StudentManagementHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IRepository<Student> students, StudentAdmissionService admission, IAcademicPlacementVerifier verifier, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+    public sealed class StudentManagementHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IAggregateRepository<Student> students, StudentAdmissionService admission, IAcademicPlacementVerifier verifier, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private const int MaxSearchLength = 30;
 
@@ -20,7 +20,7 @@ namespace UniCore.Application.Modules.Students
 
         private readonly IPermissionAuthorizer _authorizer = authorizer;
         private readonly ICurrentUser _user = user;
-        private readonly IRepository<Student> _students = students;
+        private readonly IAggregateRepository<Student> _students = students;
         private readonly StudentAdmissionService _admission = admission;
         private readonly IAcademicPlacementVerifier _verifier = verifier;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
