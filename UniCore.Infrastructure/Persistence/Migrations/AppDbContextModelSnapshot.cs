@@ -307,6 +307,178 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("FeeStructureItems", "finance");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateOnly>("IssueDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("IssueDate");
+
+                    b.HasIndex("StudentId", "Status");
+
+                    b.ToTable("Invoices", "finance");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.InvoiceLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("StudentChargeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("StudentChargeId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_InvoiceLines_StudentCharge")
+                        .HasFilter("[StudentChargeId] IS NOT NULL");
+
+                    b.ToTable("InvoiceLines", "finance");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.StudentCharge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("FeeDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FeeStructureItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeeDefinitionId");
+
+                    b.HasIndex("FeeStructureItemId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("AcademicSemesterId", "Status");
+
+                    b.HasIndex("StudentId", "AcademicSemesterId", "FeeDefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_StudentCharges_Live")
+                        .HasFilter("[Status] <> 'Cancelled'");
+
+                    b.ToTable("StudentCharges", "finance");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Identity.PasswordResetOtp", b =>
                 {
                     b.Property<Guid>("Id")
@@ -708,6 +880,20 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("StudentStatusHistories", "students");
                 });
 
+            modelBuilder.Entity("UniCore.Infrastructure.Modules.Finance.InvoiceNumberCounter", b =>
+                {
+                    b.Property<string>("CounterKey")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("LastValue")
+                        .HasColumnType("int");
+
+                    b.HasKey("CounterKey");
+
+                    b.ToTable("InvoiceNumberCounters", "finance");
+                });
+
             modelBuilder.Entity("UniCore.Infrastructure.Modules.Identity.ApplicationRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -896,6 +1082,55 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.Invoice", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.InvoiceLine", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Finance.Invoice", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Finance.StudentCharge", null)
+                        .WithMany()
+                        .HasForeignKey("StudentChargeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.StudentCharge", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Finance.FeeDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("FeeDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Finance.FeeStructureItem", null)
+                        .WithMany()
+                        .HasForeignKey("FeeStructureItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Finance.Invoice", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Identity.PasswordResetOtp", b =>
                 {
                     b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
@@ -981,6 +1216,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructure", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.Invoice", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>

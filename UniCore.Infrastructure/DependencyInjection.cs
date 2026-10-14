@@ -7,6 +7,7 @@ using System.Text;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Repositories;
 using UniCore.Application.Modules.Audit;
+using UniCore.Application.Modules.Finance;
 using UniCore.Application.Modules.Identity;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
@@ -75,7 +76,9 @@ namespace UniCore.Infrastructure
             services.AddFinance();
             services.AddBackgroundJobs(connectionString);
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
-
+            services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
+            services.AddScoped<ChargeHandler>();
+            services.AddScoped<InvoiceHandler>();
 
 
             return services;

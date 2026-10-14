@@ -50,6 +50,9 @@ namespace UniCore.Domain.Modules.Audit
         public const string FeeStructureItemRemoved = "FEE_STRUCTURE_ITEM_REMOVED";
         public const string FeeStructureActivated = "FEE_STRUCTURE_ACTIVATED";
         public const string FeeStructureArchived = "FEE_STRUCTURE_ARCHIVED";
+        public const string ChargesGenerated = "CHARGES_GENERATED";
+        public const string StudentChargeCancelled = "STUDENT_CHARGE_CANCELLED";
+        public const string InvoiceIssued = "INVOICE_ISSUED";
     }
 
 

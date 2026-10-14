@@ -31,6 +31,23 @@ namespace UniCore.Domain.Modules.Finance
         public static readonly Error FeeStructureScopeTaken = Error.Conflict("FEE_STRUCTURE_SCOPE_TAKEN", "Another active fee structure already covers this program and semester.");
         public static readonly Error FeeItemNotFound = Error.NotFound("FEE_ITEM_NOT_FOUND", "The fee structure item was not found.");
         public static readonly Error FeeItemDuplicate = Error.Conflict("FEE_ITEM_DUPLICATE", "This fee is already in the fee structure.");
+
+
+        // ----- student charge -----
+        public static readonly Error ChargeNotFound = Error.NotFound("STUDENT_CHARGE_NOT_FOUND", "The student charge was not found.");
+        public static readonly Error ChargeDataInvalid = Error.Validation("STUDENT_CHARGE_DATA_INVALID", "The student charge data is invalid.");
+        public static readonly Error ChargeNotPending = Error.BusinessRule("STUDENT_CHARGE_NOT_PENDING", "Only a pending charge can be invoiced or cancelled.");
+        public static readonly Error ChargeDueDateInvalid = Error.Validation("CHARGE_DUE_DATE_INVALID", "The due date cannot be in the past.");
+        public static readonly Error ChargeGenerationConflict = Error.Conflict("CHARGE_GENERATION_CONFLICT", "Another charge generation ran at the same time. Run it again; it is safe to repeat.");
+
+        // ----- invoice -----
+        public static readonly Error InvoiceNotFound = Error.NotFound("INVOICE_NOT_FOUND", "The invoice was not found.");
+        public static readonly Error InvoiceDataInvalid = Error.Validation("INVOICE_DATA_INVALID", "The invoice data is invalid.");
+        public static readonly Error InvoiceTooManyLines = Error.BusinessRule("INVOICE_TOO_MANY_LINES", "An invoice cannot have that many lines.");
+        public static readonly Error NoPendingCharges = Error.BusinessRule("NO_PENDING_CHARGES", "The student has no pending charges to invoice.");
+        public static readonly Error InvoiceNumberGenerationFailed = Error.Failure("INVOICE_NUMBER_GENERATION_FAILED", "An invoice number could not be generated.");
+
+
     }
 
 
