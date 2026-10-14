@@ -12,6 +12,7 @@ namespace UniCore.Infrastructure.Modules.Finance
 
             services.AddScoped<FeeCatalogHandler>();
             services.AddScoped<FeeStructureHandler>();
+            services.AddScoped<PaymentHandler>();
 
             return services;
         }

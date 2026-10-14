@@ -9,6 +9,7 @@ namespace UniCore.Application.Modules.Finance.Specifications
         {
             SetCriteria(i => i.Id == id);
             AddInclude("Lines");
+            AddInclude("Payments");
 
             if (tracking)
             {

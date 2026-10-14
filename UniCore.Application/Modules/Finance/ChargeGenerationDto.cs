@@ -2,6 +2,4 @@
 {
     public sealed record ChargeGenerationDto(int StudentsProcessed, int StudentsWithoutStructure, int ChargesCreated, int ChargesAlreadyExisting);
 
-
-
 }

@@ -90,6 +90,21 @@ namespace UniCore.Domain.Modules.Finance
 
             return Result.Ok();
         }
+
+        // When the invoice that holds this charge is cancelled, the charge is cancelled with it.
+        // A cancelled charge can be generated again.
+        public Result CancelWithInvoice(Guid invoiceId, DateTimeOffset now)
+        {
+            if (Status != ChargeStatus.Invoiced || InvoiceId != invoiceId)
+            {
+                return Result.Fail(FinanceErrors.ChargeNotInvoiced);
+            }
+
+            Status = ChargeStatus.Cancelled;
+            UpdatedAt = now;
+
+            return Result.Ok();
+        }
     }
 
 

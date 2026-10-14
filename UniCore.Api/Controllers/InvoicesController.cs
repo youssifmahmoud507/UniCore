@@ -28,5 +28,32 @@ namespace UniCore.Api.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id, [FromServices] InvoiceHandler handler, CancellationToken cancellationToken)
             => (await handler.GetAsync(id, cancellationToken)).ToActionResult(HttpContext);
+
+        [HttpPost("{id:guid}/payments")]
+        public async Task<IActionResult> RecordPayment(Guid id, [FromBody] RecordPaymentRequest request, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, [FromServices] PaymentHandler handler, CancellationToken cancellationToken)
+        {
+            var command = new RecordPaymentCommand(request.Amount, request.Method, request.Reference, request.PaymentDate);
+
+            var result = await handler.RecordAsync(id, command, idempotencyKey, this.GetRequestInfo(), cancellationToken);
+
+            return result.ToActionResult(HttpContext, outcome =>
+            {
+                if (outcome.IsReplay)
+                {
+                    Response.Headers["Idempotent-Replayed"] = "true";
+                    return Ok(outcome.Payment);
+                }
+
+                return Created($"/api/v1/invoices/{id}/payments", outcome.Payment);
+            });
+        }
+
+        [HttpGet("{id:guid}/payments")]
+        public async Task<IActionResult> ListPayments(Guid id, [FromServices] PaymentHandler handler, CancellationToken cancellationToken)
+            => (await handler.ListForInvoiceAsync(id, cancellationToken)).ToActionResult(HttpContext);
+
+        [HttpPost("{id:guid}/cancel")]
+        public async Task<IActionResult> Cancel(Guid id, [FromServices] InvoiceHandler handler, CancellationToken cancellationToken, [FromBody] CancelInvoiceRequest? request = null)
+            => (await handler.CancelAsync(id, request?.Reason, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
     }
 }

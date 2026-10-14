@@ -10,6 +10,7 @@ namespace UniCore.Domain.Modules.Finance
         public const int MaxNumberLength = 30;
 
         private readonly List<InvoiceLine> _lines = [];
+        private readonly List<Payment> _payments = [];
 
         private Invoice()
         {
@@ -29,6 +30,7 @@ namespace UniCore.Domain.Modules.Finance
         public DateTimeOffset? UpdatedAt { get; private set; }
 
         public IReadOnlyList<InvoiceLine> Lines => _lines.AsReadOnly();
+        public IReadOnlyList<Payment> Payments => _payments.AsReadOnly();
 
         public static Result<Invoice> Issue(Guid studentId, string? invoiceNumber, DateOnly issueDate, DateOnly dueDate, IReadOnlyList<InvoiceLineInput> lines, DateTimeOffset now)
         {
@@ -91,6 +93,88 @@ namespace UniCore.Domain.Modules.Finance
 
             return invoice;
         }
+
+        // Partial payments are fine. Paying more than the balance is not. The payment, the paid amount, the balance
+        // and the status change together; the RowVersion keeps two parallel payments from both succeeding.
+        // today is passed in so the domain stays free of the clock.
+        public Result<Payment> RecordPayment(Money amount, DateOnly paymentDate, DateOnly today, PaymentMethod method, string? reference, string? idempotencyKey, Guid? recordedByUserId, DateTimeOffset now)
+        {
+            if (Status == InvoiceStatus.Cancelled)
+            {
+                return FinanceErrors.InvoiceCancelled;
+            }
+
+            if (Status == InvoiceStatus.Paid)
+            {
+                return FinanceErrors.InvoiceAlreadyPaid;
+            }
+
+            if (!amount.IsPositive)
+            {
+                return FinanceErrors.AmountMustBePositive;
+            }
+
+            if (amount > Balance)
+            {
+                return FinanceErrors.PaymentExceedsBalance;
+            }
+
+            if (paymentDate > today || paymentDate < IssueDate)
+            {
+                return FinanceErrors.PaymentDateInvalid;
+            }
+
+            var created = Payment.Create(Id, amount, paymentDate, method, reference, idempotencyKey, recordedByUserId, now);
+            if (!created.TryGetValue(out var payment))
+            {
+                return Result<Payment>.Fail(created.Errors);
+            }
+
+            var paid = PaidAmount.Add(amount);
+            if (!paid.TryGetValue(out var newPaid))
+            {
+                return Result<Payment>.Fail(paid.Errors);
+            }
+
+            var remaining = TotalAmount.Subtract(newPaid);
+            if (!remaining.TryGetValue(out var newBalance))
+            {
+                return Result<Payment>.Fail(remaining.Errors);
+            }
+
+            // Everything is valid: change the state.
+            PaidAmount = newPaid;
+            Balance = newBalance;
+            Status = newBalance.IsZero ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid;
+            UpdatedAt = now;
+            _payments.Add(payment);
+
+            RaiseDomainEvent(new PaymentRecorded(Guid.NewGuid(), now, payment.Id, Id, StudentId, amount.Amount, paymentDate, newBalance.IsZero));
+
+            return payment;
+        }
+
+        // Only an invoice nobody has paid anything on. The total stays as history; nothing is owed any more.
+        public Result Cancel(DateTimeOffset now)
+        {
+            if (Status == InvoiceStatus.Cancelled)
+            {
+                return Result.Fail(FinanceErrors.InvoiceCancelled);
+            }
+
+            if (Status != InvoiceStatus.Issued || PaidAmount.IsPositive)
+            {
+                return Result.Fail(FinanceErrors.InvoiceHasPayments);
+            }
+
+            Status = InvoiceStatus.Cancelled;
+            Balance = Money.Zero;
+            UpdatedAt = now;
+
+            return Result.Ok();
+        }
+
+
     }
 
 

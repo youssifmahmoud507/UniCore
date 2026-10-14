@@ -212,7 +212,7 @@ namespace UniCore.Application.Modules.Finance
             var items = await _charges.ListAsync(specification, cancellationToken);
             var total = await _charges.CountAsync(specification, cancellationToken);
 
-            return PagedResult<StudentChargeDto>.Create(items.Select(InvoicingMapper.ToDto).ToList(), query, total);
+            return PagedResult<StudentChargeDto>.Create(items.Select(c => InvoicingMapper.ToDto(c)).ToList(), query, total);
         }
 
         public async Task<Result<StudentChargeDto>> GetAsync(Guid chargeId, CancellationToken cancellationToken = default)

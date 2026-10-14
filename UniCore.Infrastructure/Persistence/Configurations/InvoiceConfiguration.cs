@@ -25,18 +25,24 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             builder.Property(i => i.Status).IsRequired();
             builder.Property(i => i.CreatedAt).IsRequired();
 
+
             builder.Property<byte[]>("RowVersion").IsRowVersion();
 
             builder.Ignore(i => i.DomainEvents);
 
             builder.HasMany(i => i.Lines).WithOne().HasForeignKey(l => l.InvoiceId).IsRequired().OnDelete(DeleteBehavior.Cascade);
             builder.Navigation(i => i.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.HasMany(i => i.Payments).WithOne().HasForeignKey(p => p.InvoiceId).IsRequired().OnDelete(DeleteBehavior.Cascade);
+            builder.Navigation(i => i.Payments).UsePropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne<Student>().WithMany().HasForeignKey(i => i.StudentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(i => i.InvoiceNumber).IsUnique();
             builder.HasIndex(i => new { i.StudentId, i.Status });
             builder.HasIndex(i => i.IssueDate);
+
+
+
         }
     }
 

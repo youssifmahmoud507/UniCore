@@ -13,6 +13,7 @@ namespace UniCore.Application.Modules.Finance
     public sealed class InvoiceHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IAggregateRepository<Invoice> invoices, IAggregateRepository<StudentCharge> charges, IInvoiceNumberGenerator numbers, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private static readonly ResourceContext GlobalResource = ResourceContext.InScope(ScopeType.Global, Guid.Empty);
+        private const int MaxReasonLength = 200;
 
         private readonly IPermissionAuthorizer _authorizer = authorizer;
         private readonly ICurrentUser _user = user;
@@ -99,6 +100,63 @@ namespace UniCore.Application.Modules.Finance
 
             await _audit.WriteAsync(
                 new AuditEntry(AuditActions.InvoiceIssued, _user.UserId, "Invoice", invoice.Id.ToString(), request.IpAddress, request.UserAgent, null, $"{invoice.InvoiceNumber} total {invoice.TotalAmount} lines {invoice.Lines.Count}"),
+                cancellationToken);
+
+            return InvoicingMapper.ToDto(invoice);
+        }
+
+        // Cancels an invoice nobody has paid anything on, and the charges on it. All in one transaction.
+        public async Task<Result<InvoiceDto>> CancelAsync(Guid invoiceId, string? reason, RequestInfo request, CancellationToken cancellationToken = default)
+        {
+            var auth = await RequireAsync(Permissions.Invoices.Manage, cancellationToken);
+            if (auth.IsFailure)
+            {
+                return Result<InvoiceDto>.Fail(auth.Errors);
+            }
+
+            var cleanReason = reason?.Trim();
+            if (string.IsNullOrEmpty(cleanReason))
+            {
+                cleanReason = null;
+            }
+            else if (cleanReason.Length > MaxReasonLength)
+            {
+                return FinanceErrors.InvoiceDataInvalid;
+            }
+
+            var invoice = await _invoices.FirstOrDefaultAsync(new InvoiceByIdSpecification(invoiceId, tracking: true), cancellationToken);
+            if (invoice is null)
+            {
+                return FinanceErrors.InvoiceNotFound;
+            }
+
+            var now = _clock.UtcNow;
+
+            var cancelled = invoice.Cancel(now);
+            if (cancelled.IsFailure)
+            {
+                return Result<InvoiceDto>.Fail(cancelled.Errors);
+            }
+
+            var charges = await _charges.ListAsync(new ChargesForInvoiceSpecification(invoice.Id), cancellationToken);
+
+            foreach (var charge in charges)
+            {
+                var released = charge.CancelWithInvoice(invoice.Id, now);
+                if (released.IsFailure)
+                {
+                    return Result<InvoiceDto>.Fail(released.Errors);
+                }
+            }
+
+            var saved = await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (saved.IsFailure)
+            {
+                return Result<InvoiceDto>.Fail(saved.Errors);
+            }
+
+            await _audit.WriteAsync(
+                new AuditEntry(AuditActions.InvoiceCancelled, _user.UserId, "Invoice", invoice.Id.ToString(), request.IpAddress, request.UserAgent, InvoiceStatus.Issued.ToString(), cleanReason is null ? invoice.InvoiceNumber : $"{invoice.InvoiceNumber} reason: {cleanReason}"),
                 cancellationToken);
 
             return InvoicingMapper.ToDto(invoice);

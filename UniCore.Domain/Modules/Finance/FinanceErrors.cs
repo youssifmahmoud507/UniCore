@@ -47,7 +47,17 @@ namespace UniCore.Domain.Modules.Finance
         public static readonly Error NoPendingCharges = Error.BusinessRule("NO_PENDING_CHARGES", "The student has no pending charges to invoice.");
         public static readonly Error InvoiceNumberGenerationFailed = Error.Failure("INVOICE_NUMBER_GENERATION_FAILED", "An invoice number could not be generated.");
 
-
+        // ----- payments and cancellation -----
+        public static readonly Error InvoiceCancelled = Error.BusinessRule("INVOICE_CANCELLED", "The invoice is cancelled.");
+        public static readonly Error InvoiceAlreadyPaid = Error.BusinessRule("INVOICE_ALREADY_PAID", "The invoice is already fully paid.");
+        public static readonly Error InvoiceHasPayments = Error.BusinessRule("INVOICE_HAS_PAYMENTS", "Only an invoice with no payments can be cancelled.");
+        public static readonly Error PaymentExceedsBalance = Error.BusinessRule("PAYMENT_EXCEEDS_BALANCE", "The payment is more than the invoice balance.");
+        public static readonly Error PaymentDateInvalid = Error.Validation("PAYMENT_DATE_INVALID", "The payment date cannot be in the future or before the invoice was issued.");
+        public static readonly Error PaymentDataInvalid = Error.Validation("PAYMENT_DATA_INVALID", "The payment data is invalid.");
+        public static readonly Error PaymentReferenceRequired = Error.Validation("PAYMENT_REFERENCE_REQUIRED", "A bank transfer or a cheque needs a reference.");
+        public static readonly Error IdempotencyKeyInvalid = Error.Validation("IDEMPOTENCY_KEY_INVALID", "The Idempotency-Key header is required: 8 to 100 visible characters, no spaces.");
+        public static readonly Error IdempotencyKeyReused = Error.Conflict("IDEMPOTENCY_KEY_REUSED", "This Idempotency-Key was already used for a different payment.");
+        public static readonly Error ChargeNotInvoiced = Error.BusinessRule("STUDENT_CHARGE_NOT_INVOICED", "The charge is not on this invoice.");
     }
 
 

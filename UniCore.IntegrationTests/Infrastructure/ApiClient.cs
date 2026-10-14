@@ -34,7 +34,10 @@ namespace UniCore.IntegrationTests.Infrastructure
         public Task<ApiResponse> DeleteAsync(string url, string? token = null)
             => SendAsync(HttpMethod.Delete, url, null, token);
 
-        public async Task<ApiResponse> SendAsync(HttpMethod method, string url, object? body, string? token)
+        public Task<ApiResponse> PostAsync(string url, object? body, string? token, IReadOnlyDictionary<string, string> headers)
+            => SendAsync(HttpMethod.Post, url, body, token, headers);
+
+        public async Task<ApiResponse> SendAsync(HttpMethod method, string url, object? body, string? token, IReadOnlyDictionary<string, string>? headers = null)
         {
             using var request = new HttpRequestMessage(method, url);
 
@@ -47,6 +50,15 @@ namespace UniCore.IntegrationTests.Infrastructure
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
+
+            if (headers is not null)
+            {
+                foreach (var header in headers)
+                {
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
 
             using var response = await _http.SendAsync(request);
             var raw = await response.Content.ReadAsStringAsync();

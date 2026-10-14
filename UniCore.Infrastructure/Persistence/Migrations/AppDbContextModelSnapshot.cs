@@ -413,6 +413,52 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("InvoiceLines", "finance");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly>("PaymentDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("RecordedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Payments_IdempotencyKey");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("Payments", "finance");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.StudentCharge", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1105,6 +1151,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.Payment", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Finance.Invoice", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.StudentCharge", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.Finance.FeeDefinition", null)
@@ -1221,6 +1276,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.Invoice", b =>
                 {
                     b.Navigation("Lines");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
