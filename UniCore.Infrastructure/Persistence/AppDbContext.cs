@@ -34,4 +34,5 @@ namespace UniCore.Infrastructure.Persistence
             configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
         }
     }
+
 }

@@ -98,6 +98,11 @@
             public const string Read = "Finance.Read";
         }
 
+        public static class Fees
+        {
+            public const string Manage = "Fees.Manage";
+        }
+
         public static class Invoices
         {
             public const string Manage = "Invoices.Manage";
@@ -195,7 +200,8 @@
         new PermissionDefinition(Documents.Manage, "Documents", "Manage documents and access"),
         new PermissionDefinition(Audit.Read, "Audit", "View the audit log"),
         new PermissionDefinition(Settings.Manage, "Platform", "Manage system settings"),
-        new PermissionDefinition(Reports.Read, "Platform", "View reports")
+        new PermissionDefinition(Reports.Read, "Platform", "View reports"),
+        new PermissionDefinition(Fees.Manage, "Finance", "Manage fee definitions and fee structures"),
     ];
 
         // Declared after All: static initializers run in the order they are written.

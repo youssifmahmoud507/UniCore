@@ -12,6 +12,7 @@ using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Audit;
+using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.Jobs;
 using UniCore.Infrastructure.Modules.Outbox;
@@ -71,8 +72,11 @@ namespace UniCore.Infrastructure
             services.AddScoped<RefreshHandler>();
             services.AddScoped<LogoutHandler>();
             services.AddOutbox();
+            services.AddFinance();
             services.AddBackgroundJobs(connectionString);
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
+
+
 
             return services;
         }
