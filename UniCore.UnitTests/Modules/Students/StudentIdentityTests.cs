@@ -18,12 +18,39 @@ namespace UniCore.UnitTests.Modules.Students
         }
 
         [Fact]
-        public void Student_is_an_aggregate_root_with_an_identity_and_no_events_yet()
+        public void Student_is_an_aggregate_root_with_an_identity_and_one_admission_event()
         {
             var student = NewStudent();
 
             Assert.IsAssignableFrom<AggregateRoot>(student);
             Assert.NotEqual(Guid.Empty, student.Id);
+            Assert.IsType<StudentAdmitted>(Assert.Single(student.DomainEvents));
+        }
+
+        [Fact]
+        public void The_admission_event_describes_the_new_student()
+        {
+            var student = NewStudent("2026CS0007");
+
+            var admitted = Assert.IsType<StudentAdmitted>(Assert.Single(student.DomainEvents));
+            Assert.NotEqual(Guid.Empty, admitted.EventId);
+            Assert.Equal(Now, admitted.OccurredAt);
+            Assert.Equal(student.Id, admitted.StudentId);
+            Assert.Equal(student.PersonProfileId, admitted.PersonProfileId);
+            Assert.Equal("2026CS0007", admitted.StudentNumber);
+            Assert.Equal(student.CurrentProgram?.AcademicProgramId, admitted.AcademicProgramId);
+            Assert.Equal(Admission, admitted.AdmissionDate);
+        }
+
+        [Fact]
+        public void A_rejected_student_raises_no_event_and_clearing_events_empties_the_list()
+        {
+            var rejected = Student.Create(Guid.Empty, "2026CS0001", Admission, null, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, Now);
+            Assert.True(rejected.IsFailure);
+
+            var student = NewStudent();
+            student.ClearDomainEvents();
+
             Assert.Empty(student.DomainEvents);
         }
 

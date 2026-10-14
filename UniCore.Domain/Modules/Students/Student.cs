@@ -75,6 +75,8 @@ namespace UniCore.Domain.Modules.Students
             };
             student._programHistory.Add(StudentProgramHistory.Open(id, academicProgramId, studyPlanVersionId, academicLevelId, admissionDate, null));
 
+            student.RaiseDomainEvent(new StudentAdmitted(Guid.NewGuid(), now, id, personProfileId, number, academicProgramId, studyPlanVersionId, admissionAcademicYearId, admissionDate));
+
             return student;
         }
 
