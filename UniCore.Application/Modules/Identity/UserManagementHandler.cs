@@ -84,8 +84,7 @@ namespace UniCore.Application.Modules.Identity
                 return Result<UserSummary>.Fail(created.Errors);
             }
 
-            var queued = _emailQueue.TryEnqueue(AuthEmails.AccountCreated(user.Email, _settings.AppName, user.UserName));
-
+            var queued = await _emailQueue.TryEnqueueAsync(AuthEmails.AccountCreated(user.Email, _settings.AppName, user.UserName), cancellationToken);
             await AuditAsync(AuditActions.UserCreated, user.Id, request, null, user.UserName, cancellationToken);
 
             if (!queued)

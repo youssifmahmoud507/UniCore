@@ -86,7 +86,7 @@ namespace UniCore.Application.Modules.Identity
                     command.IpAddress, command.UserAgent),
                 cancellationToken);
 
-            if (!_emailQueue.TryEnqueue(AuthEmails.PasswordChanged(account.Email, _settings.AppName)))
+            if (!await _emailQueue.TryEnqueueAsync(AuthEmails.PasswordChanged(account.Email, _settings.AppName), cancellationToken))
             {
                 await _audit.WriteAsync(
                     new AuditEntry(AuditActions.EmailEnqueueFailed, account.UserId, "User", account.UserId.ToString(),

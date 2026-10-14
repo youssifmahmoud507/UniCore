@@ -32,5 +32,29 @@ namespace UniCore.Domain.Modules.Audit
         public const string PermissionRevoked = "PERMISSION_REVOKED";
         public const string ScopeAssigned = "SCOPE_ASSIGNED";
         public const string ScopeRemoved = "SCOPE_REMOVED";
+        public const string StudentCreated = "STUDENT_CREATED";
+        public const string StudentAdmitted = "STUDENT_ADMITTED";
+        public const string StudentAccountCreated = "STUDENT_ACCOUNT_CREATED";
+        public const string StudentAccountFailed = "STUDENT_ACCOUNT_PROVISION_FAILED";
+        public const string StudentStatusChanged = "STUDENT_STATUS_CHANGED";
+        public const string StudentProgramChanged = "STUDENT_PROGRAM_CHANGED";
+        public const string StudentAcademicProfileUpdated = "STUDENT_ACADEMIC_PROFILE_UPDATED";
+
+        public const string FeeDefinitionCreated = "FEE_DEFINITION_CREATED";
+        public const string FeeDefinitionUpdated = "FEE_DEFINITION_UPDATED";
+        public const string FeeDefinitionActivated = "FEE_DEFINITION_ACTIVATED";
+        public const string FeeDefinitionDeactivated = "FEE_DEFINITION_DEACTIVATED";
+        public const string FeeStructureCreated = "FEE_STRUCTURE_CREATED";
+        public const string FeeStructureItemAdded = "FEE_STRUCTURE_ITEM_ADDED";
+        public const string FeeStructureItemChanged = "FEE_STRUCTURE_ITEM_CHANGED";
+        public const string FeeStructureItemRemoved = "FEE_STRUCTURE_ITEM_REMOVED";
+        public const string FeeStructureActivated = "FEE_STRUCTURE_ACTIVATED";
+        public const string FeeStructureArchived = "FEE_STRUCTURE_ARCHIVED";
+        public const string ChargesGenerated = "CHARGES_GENERATED";
+        public const string StudentChargeCancelled = "STUDENT_CHARGE_CANCELLED";
+        public const string InvoiceIssued = "INVOICE_ISSUED";
     }
+
+
+
 }

@@ -12,6 +12,7 @@ using UniCore.Infrastructure;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Email;
 using UniCore.Infrastructure.Modules.Identity;
+using UniCore.Infrastructure.Modules.Jobs;
 
 
 namespace UniCore.Api
@@ -72,6 +73,8 @@ namespace UniCore.Api
                 Predicate = check => check.Tags.Contains("ready")
             });
             await app.Services.SeedIdentityAsync();
+            app.MapBackgroundJobsDashboard();
+            app.Services.UseBackgroundJobs();
 
             app.Run();
         }

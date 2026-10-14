@@ -47,14 +47,24 @@ namespace UniCore.Api.Extensions
         }
 
         private static RateLimitPartition<string> PerIp(HttpContext context, int permitLimit, TimeSpan window)
-            => RateLimitPartition.GetFixedWindowLimiter(
-                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                _ => new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = permitLimit,
-                    Window = window,
-                    QueueLimit = 0,
-                    AutoReplenishment = true
-                });
+        {
+            // Integration tests switch the limiter off with RateLimiting:Disabled=true.
+            // It is honoured only in the Development environment, so production can never lose it.
+            var environment = context.RequestServices.GetService<IWebHostEnvironment>();
+            var configuration = context.RequestServices.GetService<IConfiguration>();
+
+            if (environment?.IsDevelopment() == true && configuration?.GetValue<bool>("RateLimiting:Disabled") == true)
+            {
+                return RateLimitPartition.GetNoLimiter("disabled");
+            }
+
+            return RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = window,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+        }
     }
 }

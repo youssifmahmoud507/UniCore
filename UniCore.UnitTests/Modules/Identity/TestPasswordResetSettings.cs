@@ -12,6 +12,4 @@ namespace UniCore.UnitTests.Modules.Identity
         public int ResetTokenMinutes { get; set; } = 10;
     }
 
-
-
 }
