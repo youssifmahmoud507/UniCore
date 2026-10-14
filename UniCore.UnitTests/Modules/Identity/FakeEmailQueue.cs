@@ -7,15 +7,15 @@ namespace UniCore.UnitTests.Modules.Identity
         public List<EmailMessage> Messages { get; } = new();
         public bool Full { get; set; }
 
-        public bool TryEnqueue(EmailMessage message)
+        public Task<bool> TryEnqueueAsync(EmailMessage message, CancellationToken cancellationToken = default)
         {
             if (Full)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
             Messages.Add(message);
-            return true;
+            return Task.FromResult(true);
         }
     }
 

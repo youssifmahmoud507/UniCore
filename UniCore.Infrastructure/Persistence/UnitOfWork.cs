@@ -9,13 +9,14 @@ using UniCore.Infrastructure.Modules.Outbox;
 
 namespace UniCore.Infrastructure.Persistence
 {
-    public sealed class UnitOfWork(AppDbContext db, IClock clock, ILogger<UnitOfWork> logger) : IUnitOfWork
+    public sealed class UnitOfWork(AppDbContext db, IClock clock, IOutboxSignal outboxSignal, ILogger<UnitOfWork> logger) : IUnitOfWork
     {
         private const int UniqueIndexViolation = 2601;
         private const int UniqueConstraintViolation = 2627;
         private const int SqlTimeout = -2;
         private readonly AppDbContext _db = db;
         private readonly IClock _clock = clock;
+        private readonly IOutboxSignal _outboxSignal = outboxSignal;
         private readonly ILogger<UnitOfWork> _logger = logger;
 
         private sealed record StagedEvents(IReadOnlyList<AggregateRoot> Aggregates, IReadOnlyList<OutboxMessage> Messages);
@@ -38,6 +39,11 @@ namespace UniCore.Infrastructure.Persistence
                 foreach (var aggregate in events.Aggregates)
                 {
                     aggregate.ClearDomainEvents();
+                }
+                if (events.Messages.Count > 0)
+                {
+                    // Wake the outbox job up now. The scheduled run would pick the messages up anyway.
+                    _outboxSignal.Signal();
                 }
             }
             else

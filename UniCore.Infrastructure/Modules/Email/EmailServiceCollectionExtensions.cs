@@ -16,9 +16,6 @@ namespace UniCore.Infrastructure.Modules.Email
                 .ValidateOnStart();
 
             services.AddSingleton<IEmailSender, SmtpEmailSender>();
-            services.AddSingleton<EmailQueue>();
-            services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
-            services.AddHostedService<EmailDispatchService>();
 
             return services;
         }

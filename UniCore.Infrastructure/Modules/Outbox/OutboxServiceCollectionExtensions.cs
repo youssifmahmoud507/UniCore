@@ -23,8 +23,12 @@ namespace UniCore.Infrastructure.Modules.Outbox
             // Consumers of domain events.
             services.AddScoped<IDomainEventHandler<StudentAdmitted>, StudentAdmittedAuditHandler>();
 
-            services.AddHostedService<OutboxPollingService>();
+            // Replaced by the Hangfire-backed signal in AddBackgroundJobs.
+            services.AddSingleton<IOutboxSignal, NoOpOutboxSignal>();
 
+            // Email goes through the outbox too.
+            services.AddSingleton<IEmailQueue, OutboxEmailQueue>();
+            services.AddSingleton<IOutboxMessageHandler, EmailOutboxHandler>();
             return services;
         }
     }

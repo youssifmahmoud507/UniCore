@@ -2,8 +2,9 @@
 {
     public interface IEmailQueue
     {
-        // Returns false when the queue is full. Delivery happens in the background.
-        bool TryEnqueue(EmailMessage message);
+        // Saves the email in the outbox; a background job delivers it (with retries).
+        // Returns false when the email could not be saved.
+        Task<bool> TryEnqueueAsync(EmailMessage message, CancellationToken cancellationToken = default);
     }
 
 }

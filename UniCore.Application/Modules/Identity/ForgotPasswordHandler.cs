@@ -7,7 +7,7 @@ using UniCore.Domain.Modules.Identity;
 
 namespace UniCore.Application.Modules.Identity
 {
-    public sealed class ForgotPasswordHandler(IPasswordResetAccountService accounts,IOtpService otpService,IRepository<PasswordResetOtp> otps,IUnitOfWork unitOfWork,IClock clock,IEmailQueue emailQueue,IAuditWriter audit,IPasswordResetSettings settings)
+    public sealed class ForgotPasswordHandler(IPasswordResetAccountService accounts, IOtpService otpService, IRepository<PasswordResetOtp> otps, IUnitOfWork unitOfWork, IClock clock, IEmailQueue emailQueue, IAuditWriter audit, IPasswordResetSettings settings)
     {
         private readonly IPasswordResetAccountService _accounts = accounts;
         private readonly IOtpService _otpService = otpService;
@@ -86,17 +86,13 @@ namespace UniCore.Application.Modules.Identity
                 return Result.Ok();
             }
 
-            var queued = _emailQueue.TryEnqueue(
-                AuthEmails.PasswordResetOtp(account.Email, _settings.AppName, otp, _settings.OtpLifetimeMinutes));
-
-            await AuditAsync(
-                queued ? AuditActions.AuthPasswordResetRequested : AuditActions.EmailEnqueueFailed,
-                account.UserId, command, cancellationToken);
+            var queued = await _emailQueue.TryEnqueueAsync(AuthEmails.PasswordResetOtp(account.Email, _settings.AppName, otp, _settings.OtpLifetimeMinutes), cancellationToken);
+            await AuditAsync(queued ? AuditActions.AuthPasswordResetRequested : AuditActions.EmailEnqueueFailed, account.UserId, command, cancellationToken);
 
             return Result.Ok();
         }
 
-        private Task AuditAsync(string action, Guid userId, ForgotPasswordCommand command, CancellationToken cancellationToken) => _audit.WriteAsync(new AuditEntry(action, userId, "User", userId.ToString(), command.IpAddress, command.UserAgent),cancellationToken);
+        private Task AuditAsync(string action, Guid userId, ForgotPasswordCommand command, CancellationToken cancellationToken) => _audit.WriteAsync(new AuditEntry(action, userId, "User", userId.ToString(), command.IpAddress, command.UserAgent), cancellationToken);
     }
 
 

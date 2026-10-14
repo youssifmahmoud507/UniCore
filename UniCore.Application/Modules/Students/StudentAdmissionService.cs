@@ -142,9 +142,9 @@ namespace UniCore.Application.Modules.Students
                 return Result.Fail(saved.Errors);
             }
 
-            var queued = _emailQueue.TryEnqueue(
-                AuthEmails.AccountCreated(cleanEmail, _settings.AppName, student.StudentNumber));
-
+            var queued = await _emailQueue.TryEnqueueAsync(
+                AuthEmails.AccountCreated(cleanEmail, _settings.AppName, student.StudentNumber),
+                cancellationToken);
             await _audit.WriteAsync(
                 new AuditEntry(AuditActions.StudentAccountCreated, _user.UserId, "Student", student.Id.ToString(), request.IpAddress, request.UserAgent, NewValues: userId.ToString()),
                 cancellationToken);
