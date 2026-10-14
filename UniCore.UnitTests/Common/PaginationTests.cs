@@ -37,7 +37,7 @@ namespace UniCore.UnitTests.Common
         public void PagedResult_computes_pages_and_navigation_flags()
         {
             var query = new PaginationQuery(2, 10);
-            var result = PagedResult<int>.Create(new[] { 1, 2, 3 }, query, totalCount: 25);
+            var result = PagedResult<int>.Create([1, 2, 3], query, totalCount: 25);
 
             Assert.Equal(3, result.TotalPages);
             Assert.True(result.HasPrevious);
@@ -49,7 +49,7 @@ namespace UniCore.UnitTests.Common
         [Fact]
         public void PagedResult_last_page_has_no_next()
         {
-            var result = PagedResult<int>.Create(Array.Empty<int>(), new PaginationQuery(3, 10), 25);
+            var result = PagedResult<int>.Create([], new PaginationQuery(3, 10), 25);
 
             Assert.False(result.HasNext);
         }

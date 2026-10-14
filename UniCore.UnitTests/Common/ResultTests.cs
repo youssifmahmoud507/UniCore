@@ -31,7 +31,7 @@ namespace UniCore.UnitTests.Common
         public void Fail_with_list_keeps_all_errors()
         {
             var second = Error.Conflict("SECOND", "second");
-            var result = Result.Fail(new[] { TestError, second });
+            var result = Result.Fail([TestError, second]);
 
             Assert.Equal(2, result.Errors.Count);
             Assert.Equal(TestError, result.Error);

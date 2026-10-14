@@ -56,9 +56,7 @@ namespace UniCore.UnitTests.Modules.Identity
             Assert.All(roles, r => Assert.True(r.IsBuiltIn));
 
             Assert.Equal(Permissions.AllCodes.Count, roles.First(r => r.Name == RoleNames.SuperAdmin).PermissionCount);
-            Assert.Equal(
-                DefaultRolePermissions.ByRole[RoleNames.Dean].Count,
-                roles.First(r => r.Name == RoleNames.Dean).PermissionCount);
+            Assert.Equal(DefaultRolePermissions.ByRole[RoleNames.Dean].Count, roles.First(r => r.Name == RoleNames.Dean).PermissionCount);
         }
 
         [Fact]

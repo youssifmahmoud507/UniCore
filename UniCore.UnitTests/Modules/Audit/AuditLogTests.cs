@@ -84,4 +84,7 @@ namespace UniCore.UnitTests.Modules.Audit
             Assert.Null(log.CorrelationId);
         }
     }
+
+
+
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Repositories;
+using UniCore.Application.Modules.Audit;
 using UniCore.Application.Modules.Identity;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
@@ -49,7 +50,7 @@ namespace UniCore.Infrastructure
             services.AddSingleton<IScopeHierarchy, FlatScopeHierarchy>();
             services.AddScoped<IPermissionAuthorizer, PermissionAuthorizer>();
             services.AddScoped<IUserAccountService, UserAccountService>();
-            services.AddSingleton<IAuditWriter, LoggingAuditWriter>();
+            //services.AddSingleton<IAuditWriter, LoggingAuditWriter>();
             services.AddScoped<IIdentityAdministration, IdentityAdministration>();
             services.AddScoped<RolePermissionCatalog>();
             services.AddScoped<RoleManagementHandler>();
@@ -61,6 +62,8 @@ namespace UniCore.Infrastructure
             services.AddScoped<StudentManagementHandler>();
             services.AddScoped(typeof(IAggregateRepository<>), typeof(AggregateRepository<>));
             services.AddSingleton<IAuditWriter, DbAuditWriter>();
+            services.AddScoped<IAuditLogReader, AuditLogReader>();
+            services.AddScoped<AuditLogQueryHandler>();
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();
             services.AddScoped<RefreshHandler>();
