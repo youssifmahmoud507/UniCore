@@ -9,6 +9,7 @@ using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Identity;
+using UniCore.Infrastructure.Modules.Platform;
 using UniCore.Infrastructure.Modules.Students;
 using UniCore.Infrastructure.Modules.University;
 using UniCore.Infrastructure.Persistence;
@@ -65,6 +66,9 @@ namespace UniCore.Infrastructure
             services.AddScoped<LogoutHandler>();
 
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
+
+            services.AddPlatformModules(connectionString);
+
 
             return services;
         }
