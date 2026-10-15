@@ -1,23 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Repositories;
-using UniCore.Application.Modules.Audit;
-using UniCore.Application.Modules.Finance;
 using UniCore.Application.Modules.Identity;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Audit;
-using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Identity;
-using UniCore.Infrastructure.Modules.Jobs;
-using UniCore.Infrastructure.Modules.Outbox;
 using UniCore.Infrastructure.Modules.Students;
+using UniCore.Infrastructure.Modules.University;
 using UniCore.Infrastructure.Persistence;
 using UniCore.Infrastructure.Persistence.Repositories;
 
@@ -51,35 +44,27 @@ namespace UniCore.Infrastructure
             services.AddScoped<AuthorizationSeeder>();
             services.AddScoped<IUserAccessContext, UserAccessContext>();
             services.AddScoped<IUserAccessProvider, UserAccessProvider>();
-            services.AddSingleton<IScopeHierarchy, FlatScopeHierarchy>();
+            // IScopeHierarchy and IAcademicPlacementVerifier are registered by AddUniversityModule below.
             services.AddScoped<IPermissionAuthorizer, PermissionAuthorizer>();
             services.AddScoped<IUserAccountService, UserAccountService>();
-            //services.AddSingleton<IAuditWriter, LoggingAuditWriter>();
+            services.AddSingleton<IAuditWriter, DbAuditWriter>();
             services.AddScoped<IIdentityAdministration, IdentityAdministration>();
             services.AddScoped<RolePermissionCatalog>();
             services.AddScoped<RoleManagementHandler>();
             services.AddScoped<UserManagementHandler>();
             services.AddScoped<IStudentNumberGenerator, StudentNumberGenerator>();
-            services.AddSingleton<IAcademicPlacementVerifier, UnverifiedAcademicPlacementVerifier>();
+            services.AddUniversityModule();
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();
             services.AddScoped(typeof(IAggregateRepository<>), typeof(AggregateRepository<>));
-            services.AddSingleton<IAuditWriter, DbAuditWriter>();
-            services.AddScoped<IAuditLogReader, AuditLogReader>();
-            services.AddScoped<AuditLogQueryHandler>();
+
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();
             services.AddScoped<RefreshHandler>();
             services.AddScoped<LogoutHandler>();
-            services.AddOutbox();
-            services.AddFinance();
-            services.AddBackgroundJobs(connectionString);
-            services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
-            services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
-            services.AddScoped<ChargeHandler>();
-            services.AddScoped<InvoiceHandler>();
 
+            services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
 
             return services;
         }
