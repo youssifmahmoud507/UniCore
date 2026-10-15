@@ -926,6 +926,57 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("StudentStatusHistories", "students");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.University.AcademicProgram", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DegreeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DurationYears")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("TotalRequiredCredits")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("AcademicPrograms", "university", t =>
+                        {
+                            t.HasCheckConstraint("CK_AcademicPrograms_DurationYears", "[DurationYears] >= 1 AND [DurationYears] <= 10");
+
+                            t.HasCheckConstraint("CK_AcademicPrograms_TotalRequiredCredits", "[TotalRequiredCredits] >= 1 AND [TotalRequiredCredits] <= 400");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.University.Building", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1505,6 +1556,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasOne("UniCore.Domain.Modules.Students.Student", null)
                         .WithMany("StatusHistory")
                         .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.University.AcademicProgram", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.Department", null)
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
