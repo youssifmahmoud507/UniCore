@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UniCore.Application.Common.Abstractions;
@@ -8,7 +8,9 @@ using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Audit;
+using UniCore.Infrastructure.Modules.Calendar;
 using UniCore.Infrastructure.Modules.Identity;
+using UniCore.Infrastructure.Modules.People;
 using UniCore.Infrastructure.Modules.Platform;
 using UniCore.Infrastructure.Modules.Students;
 using UniCore.Infrastructure.Modules.University;
@@ -55,6 +57,8 @@ namespace UniCore.Infrastructure
             services.AddScoped<UserManagementHandler>();
             services.AddScoped<IStudentNumberGenerator, StudentNumberGenerator>();
             services.AddUniversityModule();
+            services.AddCalendarModule();//
+            services.AddPeopleModule();//
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();

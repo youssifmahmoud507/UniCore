@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/docs/">
+    <File Path="../../../Documents/UNICORE PROJECT/Unicore week4/developer1-integration-notes.md" />
     <File Path="authorization.md" />
     <File Path="conventions.md" />
     <File Path="finance.md" />
