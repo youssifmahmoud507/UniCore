@@ -8,10 +8,7 @@ namespace UniCore.Application.Modules.Finance.Specifications
     {
         public ActiveAwardsValidOnSpecification(Guid studentId, DateOnly date)
         {
-            SetCriteria(a => a.StudentId == studentId
-                && a.Status == StudentScholarshipStatus.Active
-                && a.ValidFrom <= date
-                && (a.ValidTo == null || a.ValidTo >= date));
+            SetCriteria(a => a.StudentId == studentId && a.Status == StudentScholarshipStatus.Active && a.ValidFrom <= date && (a.ValidTo == null || a.ValidTo >= date));
         }
     }
 

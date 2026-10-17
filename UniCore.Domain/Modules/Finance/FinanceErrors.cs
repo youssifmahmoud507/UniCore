@@ -86,6 +86,12 @@ namespace UniCore.Domain.Modules.Finance
         public static readonly Error ReferenceCheckUnavailable = Error.External("FINANCE_REFERENCE_CHECK_UNAVAILABLE", "The university data could not be checked right now.");
 
 
+        // ----- financial holds -----
+        public static readonly Error FinancialHold = Error.BusinessRule("FINANCIAL_HOLD", "The student has a financial hold.");
+        public static readonly Error FinancialHoldNotFound = Error.NotFound("FINANCIAL_HOLD_NOT_FOUND", "The financial hold was not found.");
+        public static readonly Error FinancialHoldDataInvalid = Error.Validation("FINANCIAL_HOLD_DATA_INVALID", "The financial hold data is invalid: choose at least one area and give a note.");
+        public static readonly Error FinancialHoldNotActive = Error.BusinessRule("FINANCIAL_HOLD_NOT_ACTIVE", "The financial hold is not active.");
+
     }
 
 

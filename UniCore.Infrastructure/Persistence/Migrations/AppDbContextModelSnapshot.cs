@@ -365,6 +365,71 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("FeeStructureItems", "finance");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.FinancialHold", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Areas")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("OverdueAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("PlacedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PlacedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ReleaseNote")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset?>("ReleasedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReleasedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_FinancialHolds_ActiveAutomatic")
+                        .HasFilter("[Status] = 'Active' AND [Reason] = 'OverdueBalance'");
+
+                    b.HasIndex("StudentId", "Status");
+
+                    b.ToTable("FinancialHolds", "finance");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1701,6 +1766,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany("Items")
                         .HasForeignKey("FeeStructureId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Finance.FinancialHold", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

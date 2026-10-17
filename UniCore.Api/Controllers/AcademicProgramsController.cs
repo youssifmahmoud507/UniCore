@@ -50,4 +50,7 @@ namespace UniCore.Api.Controllers
         public async Task<IActionResult> Deactivate(Guid programId, [FromServices] ProgramManagementHandler handler, CancellationToken cancellationToken)
             => (await handler.DeactivateAsync(programId, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
     }
+
+
+
 }

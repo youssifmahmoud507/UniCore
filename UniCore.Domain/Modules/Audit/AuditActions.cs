@@ -70,6 +70,8 @@ namespace UniCore.Domain.Modules.Audit
         public const string RefundApproved = "REFUND_APPROVED";
         public const string RefundRejected = "REFUND_REJECTED";
         public const string RefundProcessed = "REFUND_PROCESSED";
+        public const string FinancialHoldPlaced = "FINANCIAL_HOLD_PLACED";
+        public const string FinancialHoldReleased = "FINANCIAL_HOLD_RELEASED";
     }
 
 

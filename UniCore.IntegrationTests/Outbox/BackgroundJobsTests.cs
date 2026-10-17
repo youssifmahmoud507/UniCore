@@ -36,6 +36,17 @@ namespace UniCore.IntegrationTests.Outbox
 
             Assert.Equal(404, response.Code);
         }
+
+        [Fact]
+        public void The_financial_hold_job_is_registered_to_run_every_day()
+        {
+            var storage = fixture.Services.GetRequiredService<JobStorage>();
+
+            using var connection = storage.GetConnection();
+            var job = Assert.Single(connection.GetRecurringJobs(), j => j.Id == FinancialHoldEvaluationJob.RecurringJobId);
+
+            Assert.Equal("0 2 * * *", job.Cron);
+        }
     }
 
 }
