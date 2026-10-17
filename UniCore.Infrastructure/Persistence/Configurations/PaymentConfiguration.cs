@@ -14,6 +14,8 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             builder.Property(p => p.Id).ValueGeneratedNever();
 
             builder.Property(p => p.Amount).HasMoneyConversion();
+            builder.Property(p => p.RefundCommittedAmount).HasMoneyConversion();
+            builder.Property(p => p.RefundedAmount).HasMoneyConversion();
             builder.Property(p => p.PaymentDate).IsRequired();
             builder.Property(p => p.Method).IsRequired();
             builder.Property(p => p.Reference).HasMaxLength(Payment.MaxReferenceLength);

@@ -10,15 +10,19 @@ using UniCore.Domain.Modules.Identity;
 
 namespace UniCore.Application.Modules.Finance
 {
-    public sealed class InvoiceHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IAggregateRepository<Invoice> invoices, IAggregateRepository<StudentCharge> charges, IInvoiceNumberGenerator numbers, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+    public sealed class InvoiceHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IAggregateRepository<Invoice> invoices, IAggregateRepository<StudentCharge> charges, IAggregateRepository<StudentScholarship> awards, IAggregateRepository<Scholarship> scholarships, IAggregateRepository<Discount> discounts, IInvoiceNumberGenerator numbers, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private static readonly ResourceContext GlobalResource = ResourceContext.InScope(ScopeType.Global, Guid.Empty);
         private const int MaxReasonLength = 200;
+        private const int MaxDiscountsPerInvoice = 5;
 
         private readonly IPermissionAuthorizer _authorizer = authorizer;
         private readonly ICurrentUser _user = user;
         private readonly IAggregateRepository<Invoice> _invoices = invoices;
         private readonly IAggregateRepository<StudentCharge> _charges = charges;
+        private readonly IAggregateRepository<StudentScholarship> _awards = awards;
+        private readonly IAggregateRepository<Scholarship> _scholarships = scholarships;
+        private readonly IAggregateRepository<Discount> _discounts = discounts;
         private readonly IInvoiceNumberGenerator _numbers = numbers;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IClock _clock = clock;
@@ -62,6 +66,12 @@ namespace UniCore.Application.Modules.Finance
                 return FinanceErrors.InvoiceTooManyLines;
             }
 
+            var reductionResult = await BuildReductionsAsync(studentId, today, command.DiscountIds, cancellationToken);
+            if (!reductionResult.TryGetValue(out var reductionInputs))
+            {
+                return Result<InvoiceDto>.Fail(reductionResult.Errors);
+            }
+
             var latest = pending.Max(c => c.DueDate);
             var dueDate = command.DueDate ?? (latest < today ? today : latest);
 
@@ -75,7 +85,7 @@ namespace UniCore.Application.Modules.Finance
 
             var now = _clock.UtcNow;
 
-            var issued = Invoice.Issue(studentId, invoiceNumber, today, dueDate, lines, now);
+            var issued = Invoice.Issue(studentId, invoiceNumber, today, dueDate, lines, now, reductionInputs);
             if (!issued.TryGetValue(out var invoice))
             {
                 return Result<InvoiceDto>.Fail(issued.Errors);
@@ -99,7 +109,7 @@ namespace UniCore.Application.Modules.Finance
             }
 
             await _audit.WriteAsync(
-                new AuditEntry(AuditActions.InvoiceIssued, _user.UserId, "Invoice", invoice.Id.ToString(), request.IpAddress, request.UserAgent, null, $"{invoice.InvoiceNumber} total {invoice.TotalAmount} lines {invoice.Lines.Count}"),
+                new AuditEntry(AuditActions.InvoiceIssued, _user.UserId, "Invoice", invoice.Id.ToString(), request.IpAddress, request.UserAgent, null, $"{invoice.InvoiceNumber} total {invoice.TotalAmount} discount {invoice.DiscountAmount} lines {invoice.Lines.Count}"),
                 cancellationToken);
 
             return InvoicingMapper.ToDto(invoice);
@@ -190,6 +200,52 @@ namespace UniCore.Application.Modules.Finance
 
             return invoice is null ? FinanceErrors.InvoiceNotFound : InvoicingMapper.ToDto(invoice);
         }
+
+        // 1. The scholarships the student holds on the invoice date apply by themselves.
+        // 2. Discounts are chosen by the person issuing the invoice. They must exist, be active and be valid today.
+        private async Task<Result<List<ReductionInput>>> BuildReductionsAsync(Guid studentId, DateOnly today, IReadOnlyList<Guid>? discountIds, CancellationToken cancellationToken)
+        {
+            var inputs = new List<ReductionInput>();
+
+            var awards = await _awards.ListAsync(new ActiveAwardsValidOnSpecification(studentId, today), cancellationToken);
+
+            if (awards.Count > 0)
+            {
+                var ids = awards.Select(a => a.ScholarshipId).Distinct().ToList();
+                var definitions = await _scholarships.ListAsync(new ScholarshipsByIdsSpecification(ids), cancellationToken);
+
+                inputs.AddRange(definitions
+                    .Where(s => s.IsActive)
+                    .Select(s => new ReductionInput(ReductionKind.Scholarship, s.Id, s.Name, s.Type, s.Value)));
+            }
+
+            var requested = discountIds?.Distinct().ToList() ?? [];
+
+            if (requested.Count > MaxDiscountsPerInvoice || requested.Contains(Guid.Empty))
+            {
+                return FinanceErrors.InvoiceDataInvalid;
+            }
+
+            if (requested.Count > 0)
+            {
+                var found = await _discounts.ListAsync(new DiscountsByIdsSpecification(requested), cancellationToken);
+
+                if (found.Count != requested.Count)
+                {
+                    return FinanceErrors.DiscountNotFound;
+                }
+
+                if (found.Any(d => !d.IsValidOn(today)))
+                {
+                    return FinanceErrors.DiscountNotValid;
+                }
+
+                inputs.AddRange(found.Select(d => new ReductionInput(ReductionKind.Discount, d.Id, d.Name, d.Type, d.Value)));
+            }
+
+            return inputs;
+        }
+
     }
 
 

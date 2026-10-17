@@ -58,7 +58,36 @@ namespace UniCore.Domain.Modules.Finance
         public static readonly Error IdempotencyKeyInvalid = Error.Validation("IDEMPOTENCY_KEY_INVALID", "The Idempotency-Key header is required: 8 to 100 visible characters, no spaces.");
         public static readonly Error IdempotencyKeyReused = Error.Conflict("IDEMPOTENCY_KEY_REUSED", "This Idempotency-Key was already used for a different payment.");
         public static readonly Error ChargeNotInvoiced = Error.BusinessRule("STUDENT_CHARGE_NOT_INVOICED", "The charge is not on this invoice.");
+
+        // ----- reductions (discounts and scholarships) -----
+        public static readonly Error ReductionCodeInvalid = Error.Validation("REDUCTION_CODE_INVALID", "The code must be 2 to 30 characters: letters A-Z, digits and underscore.");
+        public static readonly Error ReductionDataInvalid = Error.Validation("REDUCTION_DATA_INVALID", "The name, description or type is invalid.");
+        public static readonly Error ReductionPeriodInvalid = Error.Validation("REDUCTION_PERIOD_INVALID", "The end date cannot be before the start date.");
+        public static readonly Error DiscountNotFound = Error.NotFound("DISCOUNT_NOT_FOUND", "The discount was not found.");
+        public static readonly Error DiscountCodeAlreadyExists = Error.Conflict("DISCOUNT_CODE_ALREADY_EXISTS", "A discount with this code already exists.");
+        public static readonly Error DiscountNotValid = Error.BusinessRule("DISCOUNT_NOT_VALID", "The discount is inactive or not valid on the invoice date.");
+        public static readonly Error ScholarshipNotFound = Error.NotFound("SCHOLARSHIP_NOT_FOUND", "The scholarship was not found.");
+        public static readonly Error ScholarshipCodeAlreadyExists = Error.Conflict("SCHOLARSHIP_CODE_ALREADY_EXISTS", "A scholarship with this code already exists.");
+        public static readonly Error ScholarshipInactive = Error.BusinessRule("SCHOLARSHIP_INACTIVE", "The scholarship is not active.");
+        public static readonly Error ScholarshipAwardNotFound = Error.NotFound("SCHOLARSHIP_AWARD_NOT_FOUND", "The scholarship award was not found.");
+        public static readonly Error ScholarshipAwardInvalid = Error.Validation("SCHOLARSHIP_AWARD_INVALID", "The scholarship award data is invalid.");
+        public static readonly Error ScholarshipAwardExists = Error.Conflict("SCHOLARSHIP_AWARD_EXISTS", "The student already has this scholarship. Revoke it first to award it again.");
+        public static readonly Error ScholarshipAwardNotActive = Error.BusinessRule("SCHOLARSHIP_AWARD_NOT_ACTIVE", "The scholarship award is not active.");
+
+        // ----- refunds -----
+        public static readonly Error PaymentNotFound = Error.NotFound("PAYMENT_NOT_FOUND", "The payment was not found.");
+        public static readonly Error RefundNotFound = Error.NotFound("REFUND_NOT_FOUND", "The refund was not found.");
+        public static readonly Error RefundDataInvalid = Error.Validation("REFUND_DATA_INVALID", "The refund data is invalid: a reason is required.");
+        public static readonly Error RefundExceedsPayment = Error.BusinessRule("REFUND_EXCEEDS_PAYMENT", "The refunds on this payment would be more than the payment.");
+        public static readonly Error RefundInvalidState = Error.BusinessRule("REFUND_INVALID_STATE", "The refund is not in a state that allows this action.");
+        public static readonly Error RefundSelfApproval = Error.BusinessRule("REFUND_SELF_APPROVAL", "A refund cannot be approved by the person who requested it.");
+
+        // ----- references -----
+        public static readonly Error ReferenceCheckUnavailable = Error.External("FINANCE_REFERENCE_CHECK_UNAVAILABLE", "The university data could not be checked right now.");
+
+
     }
+
 
 
 }

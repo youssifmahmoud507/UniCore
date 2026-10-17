@@ -23,6 +23,11 @@ namespace UniCore.Domain.Modules.Finance
         public string IdempotencyKey { get; private set; } = string.Empty;
         public Guid? RecordedByUserId { get; private set; }
         public DateTimeOffset CreatedAt { get; private set; }
+        // Refunds requested or approved or processed (not rejected). Never more than Amount.
+        public Money RefundCommittedAmount { get; private set; }
+
+        // Refunds already processed.
+        public Money RefundedAmount { get; private set; }
 
         // 8 to 100 visible ASCII characters, no spaces. Null means invalid.
         public static string? NormalizeKey(string? key)
@@ -81,6 +86,64 @@ namespace UniCore.Domain.Modules.Finance
                 CreatedAt = now
             };
         }
+
+        internal Result CommitRefund(Money amount)
+        {
+            var sum = RefundCommittedAmount.Add(amount);
+
+            if (!sum.TryGetValue(out var committed))
+            {
+                return Result.Fail(sum.Errors);
+            }
+
+            if (committed > Amount)
+            {
+                return Result.Fail(FinanceErrors.RefundExceedsPayment);
+            }
+
+            RefundCommittedAmount = committed;
+
+            return Result.Ok();
+        }
+
+        internal Result ReleaseRefund(Money amount)
+        {
+            var left = RefundCommittedAmount.Subtract(amount);
+
+            if (!left.TryGetValue(out var committed))
+            {
+                return Result.Fail(left.Errors);
+            }
+
+            if (committed.IsNegative || committed < RefundedAmount)
+            {
+                return Result.Fail(FinanceErrors.RefundInvalidState);
+            }
+
+            RefundCommittedAmount = committed;
+
+            return Result.Ok();
+        }
+
+        internal Result CompleteRefund(Money amount)
+        {
+            var sum = RefundedAmount.Add(amount);
+
+            if (!sum.TryGetValue(out var refunded))
+            {
+                return Result.Fail(sum.Errors);
+            }
+
+            if (refunded > RefundCommittedAmount)
+            {
+                return Result.Fail(FinanceErrors.RefundInvalidState);
+            }
+
+            RefundedAmount = refunded;
+
+            return Result.Ok();
+        }
+
     }
 
 

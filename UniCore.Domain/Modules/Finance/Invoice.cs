@@ -11,6 +11,7 @@ namespace UniCore.Domain.Modules.Finance
 
         private readonly List<InvoiceLine> _lines = [];
         private readonly List<Payment> _payments = [];
+        private readonly List<InvoiceReduction> _reductions = [];
 
         private Invoice()
         {
@@ -31,8 +32,11 @@ namespace UniCore.Domain.Modules.Finance
 
         public IReadOnlyList<InvoiceLine> Lines => _lines.AsReadOnly();
         public IReadOnlyList<Payment> Payments => _payments.AsReadOnly();
+        public IReadOnlyList<InvoiceReduction> Reductions => _reductions.AsReadOnly();
 
-        public static Result<Invoice> Issue(Guid studentId, string? invoiceNumber, DateOnly issueDate, DateOnly dueDate, IReadOnlyList<InvoiceLineInput> lines, DateTimeOffset now)
+        // reductions (scholarships and discounts) are optional. See ReductionCalculator for the order they apply in.
+        // A total of zero (a full scholarship) is issued already Paid: there is nothing to collect.
+        public static Result<Invoice> Issue(Guid studentId, string? invoiceNumber, DateOnly issueDate, DateOnly dueDate, IReadOnlyList<InvoiceLineInput> lines, DateTimeOffset now, IReadOnlyList<ReductionInput>? reductions = null)
         {
             var number = invoiceNumber?.Trim();
 
@@ -85,15 +89,47 @@ namespace UniCore.Domain.Modules.Finance
                 invoice._lines.Add(line);
             }
 
+            var calculated = ReductionCalculator.Apply(subtotal, reductions ?? []);
+            if (!calculated.TryGetValue(out var applied))
+            {
+                return Result<Invoice>.Fail(calculated.Errors);
+            }
+
+            var discount = Money.Zero;
+
+            foreach (var item in applied)
+            {
+                var sum = discount.Add(item.Amount);
+                if (!sum.TryGetValue(out var next))
+                {
+                    return Result<Invoice>.Fail(sum.Errors);
+                }
+
+                discount = next;
+
+                invoice._reductions.Add(InvoiceReduction.Create(invoice.Id, item.Input.Kind, item.Input.SourceId, item.Input.Name, item.Input.Type, item.Input.Value, item.Amount));
+            }
+
+            var remaining = subtotal.Subtract(discount);
+            if (!remaining.TryGetValue(out var total))
+            {
+                return Result<Invoice>.Fail(remaining.Errors);
+            }
+
             invoice.Subtotal = subtotal;
-            invoice.DiscountAmount = Money.Zero;
-            invoice.TotalAmount = subtotal;
+            invoice.DiscountAmount = discount;
+            invoice.TotalAmount = total;
             invoice.PaidAmount = Money.Zero;
-            invoice.Balance = subtotal;
+            invoice.Balance = total;
+
+            if (total.IsZero)
+            {
+                invoice.Status = InvoiceStatus.Paid;
+            }
 
             return invoice;
         }
-
+        
         // Partial payments are fine. Paying more than the balance is not. The payment, the paid amount, the balance
         // and the status change together; the RowVersion keeps two parallel payments from both succeeding.
         // today is passed in so the domain stays free of the clock.
@@ -162,7 +198,7 @@ namespace UniCore.Domain.Modules.Finance
                 return Result.Fail(FinanceErrors.InvoiceCancelled);
             }
 
-            if (Status != InvoiceStatus.Issued || PaidAmount.IsPositive)
+            if (PaidAmount.IsPositive || _payments.Count > 0)
             {
                 return Result.Fail(FinanceErrors.InvoiceHasPayments);
             }
@@ -170,6 +206,105 @@ namespace UniCore.Domain.Modules.Finance
             Status = InvoiceStatus.Cancelled;
             Balance = Money.Zero;
             UpdatedAt = now;
+
+            return Result.Ok();
+        }
+
+        // Reserves part of a payment for a refund request. Setting UpdatedAt makes this invoice row part of the save,
+        // so its RowVersion stops two parallel requests from both reserving the last of the payment.
+        public Result ReserveRefund(Guid paymentId, Money amount, DateTimeOffset now)
+        {
+            var payment = _payments.FirstOrDefault(p => p.Id == paymentId);
+
+            if (payment is null)
+            {
+                return Result.Fail(FinanceErrors.PaymentNotFound);
+            }
+
+            if (!amount.IsPositive)
+            {
+                return Result.Fail(FinanceErrors.AmountMustBePositive);
+            }
+
+            var committed = payment.CommitRefund(amount);
+
+            if (committed.IsFailure)
+            {
+                return committed;
+            }
+
+            UpdatedAt = now;
+
+            return Result.Ok();
+        }
+
+        // A rejected refund gives its reservation back.
+        public Result ReleaseRefund(Guid paymentId, Money amount, DateTimeOffset now)
+        {
+            var payment = _payments.FirstOrDefault(p => p.Id == paymentId);
+
+            if (payment is null)
+            {
+                return Result.Fail(FinanceErrors.PaymentNotFound);
+            }
+
+            var released = payment.ReleaseRefund(amount);
+
+            if (released.IsFailure)
+            {
+                return released;
+            }
+
+            UpdatedAt = now;
+
+            return Result.Ok();
+        }
+
+        // The money has gone back: the paid amount goes down, the balance goes up and the status follows.
+        // Paid becomes PartiallyPaid; if everything was refunded the invoice is Issued again.
+        public Result ApplyRefund(Guid refundId, Guid paymentId, Money amount, DateTimeOffset now)
+        {
+            if (Status == InvoiceStatus.Cancelled)
+            {
+                return Result.Fail(FinanceErrors.InvoiceCancelled);
+            }
+
+            var payment = _payments.FirstOrDefault(p => p.Id == paymentId);
+
+            if (payment is null)
+            {
+                return Result.Fail(FinanceErrors.PaymentNotFound);
+            }
+
+            var reduced = PaidAmount.Subtract(amount);
+            if (!reduced.TryGetValue(out var newPaid))
+            {
+                return Result.Fail(reduced.Errors);
+            }
+
+            if (newPaid.IsNegative)
+            {
+                return Result.Fail(FinanceErrors.RefundExceedsPayment);
+            }
+
+            var remaining = TotalAmount.Subtract(newPaid);
+            if (!remaining.TryGetValue(out var newBalance))
+            {
+                return Result.Fail(remaining.Errors);
+            }
+
+            var completed = payment.CompleteRefund(amount);
+            if (completed.IsFailure)
+            {
+                return completed;
+            }
+
+            PaidAmount = newPaid;
+            Balance = newBalance;
+            Status = newPaid.IsZero ? InvoiceStatus.Issued : (newBalance.IsZero ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid);
+            UpdatedAt = now;
+
+            RaiseDomainEvent(new RefundProcessed(Guid.NewGuid(), now, refundId, paymentId, Id, StudentId, amount.Amount, newBalance.Amount));
 
             return Result.Ok();
         }

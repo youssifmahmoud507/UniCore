@@ -7,12 +7,18 @@ namespace UniCore.Infrastructure.Modules.Finance
     {
         public static IServiceCollection AddFinance(this IServiceCollection services)
         {
-            services.AddScoped<IFinanceReferenceVerifier, UnverifiedFinanceReferenceVerifier>();
+            // The real verifier. UnverifiedFinanceReferenceVerifier stays in the project for the integration tests.
+            services.AddScoped<IFinanceReferenceVerifier, FinanceReferenceVerifier>();
             services.AddScoped<IFinancialEligibilityService, PlaceholderFinancialEligibilityService>();
 
             services.AddScoped<FeeCatalogHandler>();
             services.AddScoped<FeeStructureHandler>();
             services.AddScoped<PaymentHandler>();
+
+            services.AddScoped<DiscountHandler>();
+            services.AddScoped<ScholarshipHandler>();
+            services.AddScoped<StudentScholarshipHandler>();
+            services.AddScoped<RefundHandler>();
 
             return services;
         }

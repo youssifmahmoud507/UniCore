@@ -16,8 +16,7 @@ namespace UniCore.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Issue([FromBody] IssueInvoiceRequest request, [FromServices] InvoiceHandler handler, CancellationToken cancellationToken)
         {
-            var result = await handler.IssueAsync(new IssueInvoiceCommand(request.StudentId, request.AcademicSemesterId, request.DueDate), this.GetRequestInfo(), cancellationToken);
-
+            var result = await handler.IssueAsync(new IssueInvoiceCommand(request.StudentId, request.AcademicSemesterId, request.DueDate, request.DiscountIds), this.GetRequestInfo(), cancellationToken);
             return result.ToActionResult(HttpContext, issued => Created($"/api/v1/invoices/{issued.Id}", issued));
         }
 
@@ -56,4 +55,5 @@ namespace UniCore.Api.Controllers
         public async Task<IActionResult> Cancel(Guid id, [FromServices] InvoiceHandler handler, CancellationToken cancellationToken, [FromBody] CancelInvoiceRequest? request = null)
             => (await handler.CancelAsync(id, request?.Reason, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
     }
+
 }

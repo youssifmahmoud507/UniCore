@@ -5,12 +5,15 @@ using System.Text.Json.Serialization;
 
 namespace UniCore.IntegrationTests.Infrastructure
 {
-    // Builds the whole chain for a test: admitted student, active fee structure, generated charges, issued invoice.
+    // Builds the chain for a test: admitted student, active fee structure, generated charges, and (IssueAsync) the invoice.
     public static class InvoiceScenario
     {
+        public sealed record Prepared(Guid StudentId, Guid Semester, AdmitSpec Spec, decimal Total);
+
         public sealed record Issued(Guid InvoiceId, Guid StudentId, Guid Semester, AdmitSpec Spec, decimal Total);
 
-        public static async Task<Issued> IssueAsync(TestApi api, string admin, params decimal[] amounts)
+        // Everything except the invoice itself, so a test can award scholarships first.
+        public static async Task<Prepared> PrepareAsync(TestApi api, string admin, params decimal[] amounts)
         {
             var client = api.Client;
             var spec = new AdmitSpec();
@@ -39,11 +42,17 @@ namespace UniCore.IntegrationTests.Infrastructure
             var generated = await client.PostAsync("/api/v1/student-charges/generate", new { academicSemesterId = semester, academicProgramId = spec.Program, dueDate = AdmitSpec.Today.AddDays(30) }, admin);
             Assert.Equal(200, generated.Code);
 
-            var invoice = await client.PostAsync("/api/v1/invoices", new { studentId, academicSemesterId = semester }, admin);
+            return new Prepared(studentId, semester, spec, amounts.Sum());
+        }
+
+        public static async Task<Issued> IssueAsync(TestApi api, string admin, params decimal[] amounts)
+        {
+            var prepared = await PrepareAsync(api, admin, amounts);
+
+            var invoice = await api.Client.PostAsync("/api/v1/invoices", new { studentId = prepared.StudentId, academicSemesterId = prepared.Semester }, admin);
             Assert.Equal(201, invoice.Code);
 
-            return new Issued(invoice.GuidOf("id"), studentId, semester, spec, amounts.Sum());
+            return new Issued(invoice.GuidOf("id"), prepared.StudentId, prepared.Semester, prepared.Spec, prepared.Total);
         }
     }
-
 }
