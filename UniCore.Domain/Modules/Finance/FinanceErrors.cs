@@ -92,6 +92,9 @@ namespace UniCore.Domain.Modules.Finance
         public static readonly Error FinancialHoldDataInvalid = Error.Validation("FINANCIAL_HOLD_DATA_INVALID", "The financial hold data is invalid: choose at least one area and give a note.");
         public static readonly Error FinancialHoldNotActive = Error.BusinessRule("FINANCIAL_HOLD_NOT_ACTIVE", "The financial hold is not active.");
 
+        public static readonly Error FeeCodeAmbiguous = Error.Conflict("FEE_CODE_AMBIGUOUS", "More than one university has a fee with this code.");
+        public static readonly Error ServiceReferenceInvalid = Error.Validation("SERVICE_REFERENCE_INVALID", "The service reference is required (up to 100 characters).");
+
     }
 
 

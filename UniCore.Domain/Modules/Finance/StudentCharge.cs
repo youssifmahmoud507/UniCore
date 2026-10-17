@@ -3,20 +3,24 @@ using UniCore.Domain.Common.Results;
 
 namespace UniCore.Domain.Modules.Finance
 {
-    // One fee that one student owes for one semester. Generated from an active FeeStructure.
+    // One fee that one student owes. Two kinds:
+    //  - a semester charge, generated from an active FeeStructure (it has a semester and a structure item);
+    //  - a service charge (certificate, transcript...), created for one request (it has a ServiceReference).
     // Description and Amount are snapshots: changing the fee catalog later never changes a charge.
     public sealed class StudentCharge : AggregateRoot
     {
         public const int MaxDescriptionLength = 150;
+        public const int MaxReferenceLength = 100;
 
         private StudentCharge()
         {
         }
 
         public Guid StudentId { get; private set; }
-        public Guid AcademicSemesterId { get; private set; }
-        public Guid FeeStructureItemId { get; private set; }
+        public Guid? AcademicSemesterId { get; private set; }
+        public Guid? FeeStructureItemId { get; private set; }
         public Guid FeeDefinitionId { get; private set; }
+        public string? ServiceReference { get; private set; }
         public string Description { get; private set; } = string.Empty;
         public Money Amount { get; private set; }
         public DateOnly DueDate { get; private set; }
@@ -24,6 +28,8 @@ namespace UniCore.Domain.Modules.Finance
         public Guid? InvoiceId { get; private set; }
         public DateTimeOffset CreatedAt { get; private set; }
         public DateTimeOffset? UpdatedAt { get; private set; }
+
+        public bool IsService => FeeStructureItemId is null;
 
         public static Result<StudentCharge> Create(Guid studentId, Guid academicSemesterId, Guid feeStructureItemId, Guid feeDefinitionId, string? description, Money amount, DateOnly dueDate, DateTimeOffset now)
         {
@@ -51,6 +57,42 @@ namespace UniCore.Domain.Modules.Finance
                 AcademicSemesterId = academicSemesterId,
                 FeeStructureItemId = feeStructureItemId,
                 FeeDefinitionId = feeDefinitionId,
+                Description = text,
+                Amount = amount,
+                DueDate = dueDate,
+                Status = ChargeStatus.Pending,
+                CreatedAt = now
+            };
+        }
+
+        // A fee for one service request. The reference is the id of that request in the module that owns it.
+        public static Result<StudentCharge> CreateService(Guid studentId, Guid feeDefinitionId, string? description, Money amount, DateOnly dueDate, string? reference, DateTimeOffset now)
+        {
+            var text = description?.Trim();
+
+            if (studentId == Guid.Empty || feeDefinitionId == Guid.Empty || string.IsNullOrEmpty(text) || text.Length > MaxDescriptionLength)
+            {
+                return FinanceErrors.ChargeDataInvalid;
+            }
+
+            var cleanReference = reference?.Trim();
+
+            if (string.IsNullOrEmpty(cleanReference) || cleanReference.Length > MaxReferenceLength)
+            {
+                return FinanceErrors.ServiceReferenceInvalid;
+            }
+
+            if (!amount.IsPositive)
+            {
+                return FinanceErrors.AmountMustBePositive;
+            }
+
+            return new StudentCharge
+            {
+                Id = Guid.NewGuid(),
+                StudentId = studentId,
+                FeeDefinitionId = feeDefinitionId,
+                ServiceReference = cleanReference,
                 Description = text,
                 Amount = amount,
                 DueDate = dueDate,
@@ -106,6 +148,5 @@ namespace UniCore.Domain.Modules.Finance
             return Result.Ok();
         }
     }
-
 
 }

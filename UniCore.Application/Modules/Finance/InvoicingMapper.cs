@@ -4,8 +4,7 @@ namespace UniCore.Application.Modules.Finance
 {
     public static class InvoicingMapper
     {
-        public static StudentChargeDto ToDto(StudentCharge c) => new(c.Id, c.StudentId, c.AcademicSemesterId, c.FeeDefinitionId, c.Description, c.Amount.Amount, c.DueDate, c.Status, c.InvoiceId, c.CreatedAt);
-
+        public static StudentChargeDto ToDto(StudentCharge c) => new(c.Id, c.StudentId, c.AcademicSemesterId, c.FeeDefinitionId, c.Description, c.Amount.Amount, c.DueDate, c.Status, c.InvoiceId, c.CreatedAt, c.ServiceReference);
         public static PaymentDto ToDto(Payment p) => new(p.Id, p.InvoiceId, p.Amount.Amount, p.PaymentDate, p.Method, p.Reference, p.RecordedByUserId, p.CreatedAt, p.RefundCommittedAmount.Amount, p.RefundedAmount.Amount);
 
         public static InvoiceDto ToDto(Invoice i) => new(i.Id, i.StudentId, i.InvoiceNumber, i.IssueDate, i.DueDate, i.Subtotal.Amount, i.DiscountAmount.Amount, i.TotalAmount.Amount, i.PaidAmount.Amount, i.Balance.Amount, i.Status,

@@ -756,7 +756,7 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AcademicSemesterId")
+                    b.Property<Guid?>("AcademicSemesterId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
@@ -777,7 +777,7 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("FeeDefinitionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("FeeStructureItemId")
+                    b.Property<Guid?>("FeeStructureItemId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("InvoiceId")
@@ -787,6 +787,10 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<string>("ServiceReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -809,10 +813,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AcademicSemesterId", "Status");
 
+                    b.HasIndex("StudentId", "ServiceReference")
+                        .IsUnique()
+                        .HasDatabaseName("UX_StudentCharges_ServiceReference")
+                        .HasFilter("[ServiceReference] IS NOT NULL AND [Status] <> 'Cancelled'");
+
                     b.HasIndex("StudentId", "AcademicSemesterId", "FeeDefinitionId")
                         .IsUnique()
                         .HasDatabaseName("UX_StudentCharges_Live")
-                        .HasFilter("[Status] <> 'Cancelled'");
+                        .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL");
 
                     b.ToTable("StudentCharges", "finance");
                 });
@@ -1851,8 +1860,7 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasOne("UniCore.Domain.Modules.Finance.FeeStructureItem", null)
                         .WithMany()
                         .HasForeignKey("FeeStructureItemId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("UniCore.Domain.Modules.Finance.Invoice", null)
                         .WithMany()

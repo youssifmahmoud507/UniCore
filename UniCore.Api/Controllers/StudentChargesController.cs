@@ -28,5 +28,13 @@ namespace UniCore.Api.Controllers
         [HttpPost("{id:guid}/cancel")]
         public async Task<IActionResult> Cancel(Guid id, [FromServices] ChargeHandler handler, CancellationToken cancellationToken)
             => (await handler.CancelAsync(id, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
+
+        [HttpPost("service")]
+        public async Task<IActionResult> CreateService([FromBody] CreateServiceChargeRequest request, [FromServices] ServiceChargeHandler handler, CancellationToken cancellationToken)
+        {
+            var result = await handler.CreateAsync(new CreateServiceChargeCommand(request.StudentId, request.FeeCode, request.Reference, request.DueDate, request.Amount, request.IssueInvoice), this.GetRequestInfo(), cancellationToken);
+
+            return result.ToActionResult(HttpContext, outcome => outcome.Created ? (IActionResult)Created($"/api/v1/student-charges/{outcome.Charge.Id}", outcome) : Ok(outcome));
+        }
     }
 }

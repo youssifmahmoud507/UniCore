@@ -72,6 +72,8 @@ namespace UniCore.Domain.Modules.Audit
         public const string RefundProcessed = "REFUND_PROCESSED";
         public const string FinancialHoldPlaced = "FINANCIAL_HOLD_PLACED";
         public const string FinancialHoldReleased = "FINANCIAL_HOLD_RELEASED";
+        public const string ServiceChargeCreated = "SERVICE_CHARGE_CREATED";
+        public const string InvoicesBulkIssued = "INVOICES_BULK_ISSUED";
     }
 
 

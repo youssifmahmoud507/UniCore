@@ -2,7 +2,7 @@
 
 namespace UniCore.Application.Modules.Finance
 {
-    public sealed record StudentChargeDto(Guid Id, Guid StudentId, Guid AcademicSemesterId, Guid FeeDefinitionId, string Description, decimal Amount, DateOnly DueDate, ChargeStatus Status, Guid? InvoiceId, DateTimeOffset CreatedAt);
+    public sealed record StudentChargeDto(Guid Id, Guid StudentId, Guid? AcademicSemesterId, Guid FeeDefinitionId, string Description, decimal Amount, DateOnly DueDate, ChargeStatus Status, Guid? InvoiceId, DateTimeOffset CreatedAt, string? ServiceReference = null);
 
 
 

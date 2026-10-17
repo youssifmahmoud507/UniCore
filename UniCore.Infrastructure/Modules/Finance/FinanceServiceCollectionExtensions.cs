@@ -40,6 +40,14 @@ namespace UniCore.Infrastructure.Modules.Finance
             services.AddScoped<IDomainEventHandler<PaymentRecorded>, PaymentRecordedHoldHandler>();
             services.AddScoped<IDomainEventHandler<RefundProcessed>, RefundProcessedHoldHandler>();
 
+            // F6: service charges, the invoice issuer, bulk invoicing and the student's own finance.
+            services.AddScoped<InvoiceIssuer>();
+            services.AddScoped<IStudentChargeService, StudentChargeService>();
+            services.AddScoped<ServiceChargeHandler>();
+            services.AddScoped<BulkInvoiceHandler>();
+            services.AddScoped<MyFinanceHandler>();
+            services.AddSingleton<IInvoiceBatchRunner, InvoiceBatchRunner>();
+
             return services;
         }
     }
