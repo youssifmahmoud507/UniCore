@@ -61,6 +61,10 @@ namespace UniCore.Application.Modules.University
 
             return program;
         }
+        /// <summary>
+        //
+        /// </summary>
+         
 
         // ---------- queries ----------
 
