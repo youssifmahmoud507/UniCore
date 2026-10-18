@@ -12,4 +12,9 @@ namespace UniCore.Application.Modules.Finance.Specifications
         }
     }
 
+
+
+
+
+
 }

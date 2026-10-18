@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UniCore.Api;
 using UniCore.Application.Common.Abstractions;
+using UniCore.Application.Modules.Finance;
 using UniCore.Application.Modules.Students;
+using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Students;
 
 namespace UniCore.IntegrationTests.Infrastructure
@@ -25,6 +27,10 @@ namespace UniCore.IntegrationTests.Infrastructure
                 // The real verifier is covered by the University tests.
                 services.RemoveAll<IAcademicPlacementVerifier>();
                 services.AddScoped<IAcademicPlacementVerifier, UnverifiedAcademicPlacementVerifier>();
+                // Same for the finance references: these tests use made-up university and program ids.
+                // FinanceReferenceVerifierTests covers the real verifier.
+                services.RemoveAll<IFinanceReferenceVerifier>();
+                services.AddScoped<IFinanceReferenceVerifier, UnverifiedFinanceReferenceVerifier>();
             });
         }
     }

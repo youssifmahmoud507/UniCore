@@ -98,6 +98,11 @@
             public const string Read = "Finance.Read";
         }
 
+        public static class Scholarships
+        {
+            public const string Manage = "Scholarships.Manage";
+        }
+
         public static class Fees
         {
             public const string Manage = "Fees.Manage";
@@ -202,6 +207,7 @@
         new PermissionDefinition(Settings.Manage, "Platform", "Manage system settings"),
         new PermissionDefinition(Reports.Read, "Platform", "View reports"),
         new PermissionDefinition(Fees.Manage, "Finance", "Manage fee definitions and fee structures"),
+        new PermissionDefinition(Scholarships.Manage, "Finance", "Manage scholarships and award them to students"),
     ];
 
         // Declared after All: static initializers run in the order they are written.

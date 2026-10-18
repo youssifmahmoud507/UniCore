@@ -18,11 +18,7 @@ namespace UniCore.Infrastructure.Modules.Jobs
         // and a worker server inside the API process. Call it after AddOutbox (it replaces the signal).
         public static IServiceCollection AddBackgroundJobs(this IServiceCollection services, string connectionString)
         {
-            services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+            services.AddHangfire(configuration => configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180).UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString, new SqlServerStorageOptions
                 {
                     SchemaName = "hangfire",
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
@@ -35,6 +31,7 @@ namespace UniCore.Infrastructure.Modules.Jobs
             services.AddHangfireServer();
 
             services.AddSingleton<OutboxProcessingJob>();
+            services.AddSingleton<FinancialHoldEvaluationJob>();
             services.Replace(ServiceDescriptor.Singleton<IOutboxSignal, HangfireOutboxSignal>());
 
             return services;
@@ -45,10 +42,9 @@ namespace UniCore.Infrastructure.Modules.Jobs
         {
             var recurring = services.GetRequiredService<IRecurringJobManager>();
 
-            recurring.AddOrUpdate<OutboxProcessingJob>(
-                OutboxProcessingJob.RecurringJobId,
-                job => job.RunAsync(CancellationToken.None),
-                Cron.Minutely());
+            recurring.AddOrUpdate<OutboxProcessingJob>(OutboxProcessingJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Minutely());
+
+            recurring.AddOrUpdate<FinancialHoldEvaluationJob>(FinancialHoldEvaluationJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Daily(2));
 
             return services;
         }
@@ -71,7 +67,6 @@ namespace UniCore.Infrastructure.Modules.Jobs
             return app;
         }
     }
-
 
 
 }

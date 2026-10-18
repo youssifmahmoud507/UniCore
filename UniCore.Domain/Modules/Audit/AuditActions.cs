@@ -55,6 +55,25 @@ namespace UniCore.Domain.Modules.Audit
         public const string InvoiceIssued = "INVOICE_ISSUED";
         public const string PaymentRecorded = "PAYMENT_RECORDED";
         public const string InvoiceCancelled = "INVOICE_CANCELLED";
+
+        public const string DiscountCreated = "DISCOUNT_CREATED";
+        public const string DiscountUpdated = "DISCOUNT_UPDATED";
+        public const string DiscountActivated = "DISCOUNT_ACTIVATED";
+        public const string DiscountDeactivated = "DISCOUNT_DEACTIVATED";
+        public const string ScholarshipCreated = "SCHOLARSHIP_CREATED";
+        public const string ScholarshipUpdated = "SCHOLARSHIP_UPDATED";
+        public const string ScholarshipActivated = "SCHOLARSHIP_ACTIVATED";
+        public const string ScholarshipDeactivated = "SCHOLARSHIP_DEACTIVATED";
+        public const string ScholarshipAwarded = "SCHOLARSHIP_AWARDED";
+        public const string ScholarshipRevoked = "SCHOLARSHIP_REVOKED";
+        public const string RefundRequested = "REFUND_REQUESTED";
+        public const string RefundApproved = "REFUND_APPROVED";
+        public const string RefundRejected = "REFUND_REJECTED";
+        public const string RefundProcessed = "REFUND_PROCESSED";
+        public const string FinancialHoldPlaced = "FINANCIAL_HOLD_PLACED";
+        public const string FinancialHoldReleased = "FINANCIAL_HOLD_RELEASED";
+        public const string ServiceChargeCreated = "SERVICE_CHARGE_CREATED";
+        public const string InvoicesBulkIssued = "INVOICES_BULK_ISSUED";
     }
 
 

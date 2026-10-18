@@ -16,11 +16,15 @@ namespace UniCore.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Issue([FromBody] IssueInvoiceRequest request, [FromServices] InvoiceHandler handler, CancellationToken cancellationToken)
         {
-            var result = await handler.IssueAsync(new IssueInvoiceCommand(request.StudentId, request.AcademicSemesterId, request.DueDate), this.GetRequestInfo(), cancellationToken);
-
+            var result = await handler.IssueAsync(new IssueInvoiceCommand(request.StudentId, request.AcademicSemesterId, request.DueDate, request.DiscountIds, request.ChargeIds), this.GetRequestInfo(), cancellationToken);
             return result.ToActionResult(HttpContext, issued => Created($"/api/v1/invoices/{issued.Id}", issued));
         }
 
+        [HttpPost("issue-semester")]
+        public async Task<IActionResult> IssueSemester([FromBody] IssueSemesterInvoicesRequest request, [FromServices] BulkInvoiceHandler handler, CancellationToken cancellationToken)
+            => (await handler.IssueSemesterAsync(new IssueSemesterInvoicesCommand(request.AcademicSemesterId, request.DueDate), this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
+        
+        
         [HttpGet]
         public async Task<IActionResult> List([FromServices] InvoiceHandler handler, CancellationToken cancellationToken, [FromQuery] int page = 1, [FromQuery] int pageSize = PaginationQuery.DefaultPageSize, [FromQuery] Guid? studentId = null, [FromQuery] InvoiceStatus? status = null)
             => (await handler.ListAsync(new PaginationQuery(page, pageSize), studentId, status, cancellationToken)).ToActionResult(HttpContext);
@@ -56,4 +60,5 @@ namespace UniCore.Api.Controllers
         public async Task<IActionResult> Cancel(Guid id, [FromServices] InvoiceHandler handler, CancellationToken cancellationToken, [FromBody] CancelInvoiceRequest? request = null)
             => (await handler.CancelAsync(id, request?.Reason, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
     }
+
 }

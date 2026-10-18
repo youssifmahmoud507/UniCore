@@ -35,6 +35,9 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             builder.HasMany(i => i.Payments).WithOne().HasForeignKey(p => p.InvoiceId).IsRequired().OnDelete(DeleteBehavior.Cascade);
             builder.Navigation(i => i.Payments).UsePropertyAccessMode(PropertyAccessMode.Field);
 
+            builder.HasMany(i => i.Reductions).WithOne().HasForeignKey(r => r.InvoiceId).IsRequired().OnDelete(DeleteBehavior.Cascade);
+            builder.Navigation(i => i.Reductions).UsePropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasOne<Student>().WithMany().HasForeignKey(i => i.StudentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(i => i.InvoiceNumber).IsUnique();
