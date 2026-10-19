@@ -2,6 +2,7 @@
 using System.Data.Common;
 using UniCore.Application.Modules.Finance;
 using UniCore.Domain.Common.Results;
+using UniCore.Domain.Modules.Calendar;
 using UniCore.Domain.Modules.Finance;
 using UniCore.Domain.Modules.University;
 using UniCore.Infrastructure.Persistence;
@@ -56,8 +57,28 @@ namespace UniCore.Infrastructure.Modules.Finance
         }
 
         // TODO (Developer 1, Week 4): check the semester against his AcademicSemester.
-        public Task<Result> VerifySemesterAsync(Guid academicSemesterId, CancellationToken cancellationToken = default)
-            => Task.FromResult(Result.Ok());
+        public async Task<Result> VerifySemesterAsync(Guid academicSemesterId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var semester = await _db.Set<AcademicSemester>().AsNoTracking().Where(s => s.Id == academicSemesterId).Select(s => new { s.Status }).FirstOrDefaultAsync(cancellationToken);
+
+                if (semester is null)
+                {
+                    return Result.Fail(CalendarErrors.SemesterNotFound);
+                }
+
+                return semester.Status == SemesterStatus.Closed ? Result.Fail(CalendarErrors.SemesterClosed) : Result.Ok();
+            }
+            catch (OperationCanceledException)
+            {
+                return Result.Fail(CommonErrors.OperationCancelled);
+            }
+            catch (Exception ex) when (ex is DbException or TimeoutException or InvalidOperationException)
+            {
+                return Result.Fail(FinanceErrors.ReferenceCheckUnavailable);
+            }
+        }
     }
 
 
