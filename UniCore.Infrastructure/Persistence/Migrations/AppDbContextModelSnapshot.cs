@@ -1948,6 +1948,234 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Universities", "university");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("PerformedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("PerformedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WorkflowStepId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowStepId");
+
+                    b.HasIndex("WorkflowInstanceId", "PerformedAt");
+
+                    b.ToTable("WorkflowActions", "workflow");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowApproval", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApproverUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Decision")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkflowStepId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.HasIndex("WorkflowStepId");
+
+                    b.ToTable("WorkflowApprovals", "workflow");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("UX_WorkflowDefinitions_ActiveCode")
+                        .HasFilter("[IsActive] = 1");
+
+                    b.HasIndex("Code", "Version")
+                        .IsUnique();
+
+                    b.ToTable("WorkflowDefinitions", "workflow");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowInstance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CurrentRole")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("CurrentStepId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CurrentStepName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("CurrentStepOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DefinitionCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("DefinitionVersion")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("RequesterUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("SubjectStudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TotalSteps")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("WorkflowDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequesterUserId");
+
+                    b.HasIndex("WorkflowDefinitionId");
+
+                    b.HasIndex("ReferenceType", "ReferenceId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_WorkflowInstances_ActiveReference")
+                        .HasFilter("[Status] IN ('InProgress', 'Returned')");
+
+                    b.HasIndex("Status", "CurrentRole");
+
+                    b.ToTable("WorkflowInstances", "workflow");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequiredRole")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("WorkflowDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowDefinitionId", "Order")
+                        .IsUnique();
+
+                    b.ToTable("WorkflowSteps", "workflow");
+                });
+
             modelBuilder.Entity("UniCore.Infrastructure.Modules.Finance.InvoiceNumberCounter", b =>
                 {
                     b.Property<string>("CounterKey")
@@ -2501,6 +2729,53 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowAction", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Workflow.WorkflowInstance", null)
+                        .WithMany("Actions")
+                        .HasForeignKey("WorkflowInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Workflow.WorkflowStep", null)
+                        .WithMany()
+                        .HasForeignKey("WorkflowStepId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowApproval", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Workflow.WorkflowInstance", null)
+                        .WithMany("Approvals")
+                        .HasForeignKey("WorkflowInstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Workflow.WorkflowStep", null)
+                        .WithMany()
+                        .HasForeignKey("WorkflowStepId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowInstance", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Workflow.WorkflowDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("WorkflowDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowStep", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Workflow.WorkflowDefinition", null)
+                        .WithMany("Steps")
+                        .HasForeignKey("WorkflowDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructure", b =>
                 {
                     b.Navigation("Items");
@@ -2522,6 +2797,18 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("ProgramHistory");
 
                     b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowDefinition", b =>
+                {
+                    b.Navigation("Steps");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowInstance", b =>
+                {
+                    b.Navigation("Actions");
+
+                    b.Navigation("Approvals");
                 });
 #pragma warning restore 612, 618
         }

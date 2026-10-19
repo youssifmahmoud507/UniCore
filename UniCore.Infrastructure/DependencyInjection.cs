@@ -14,6 +14,7 @@ using UniCore.Infrastructure.Modules.People;
 using UniCore.Infrastructure.Modules.Platform;
 using UniCore.Infrastructure.Modules.Students;
 using UniCore.Infrastructure.Modules.University;
+using UniCore.Infrastructure.Modules.Workflow;
 using UniCore.Infrastructure.Persistence;
 using UniCore.Infrastructure.Persistence.Repositories;
 
@@ -63,6 +64,8 @@ namespace UniCore.Infrastructure
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();
             services.AddScoped(typeof(IAggregateRepository<>), typeof(AggregateRepository<>));
+
+            services.AddWorkflowModule();
 
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();

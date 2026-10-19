@@ -13,6 +13,7 @@ using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Email;
 using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.Jobs;
+using UniCore.Infrastructure.Modules.Workflow;
 
 
 namespace UniCore.Api
@@ -73,6 +74,7 @@ namespace UniCore.Api
                 Predicate = check => check.Tags.Contains("ready")
             });
             await app.Services.SeedIdentityAsync();
+            await app.Services.SeedWorkflowAsync();
             app.MapBackgroundJobsDashboard();
             app.Services.UseBackgroundJobs();
 

@@ -41,4 +41,6 @@ namespace UniCore.Api.Controllers
         public async Task<IActionResult> Deactivate(Guid levelId, [FromServices] AcademicLevelHandler handler, CancellationToken cancellationToken)
             => (await handler.DeactivateAsync(levelId, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
     }
+
+
 }
