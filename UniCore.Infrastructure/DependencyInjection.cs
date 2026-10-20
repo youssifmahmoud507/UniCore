@@ -11,6 +11,7 @@ using UniCore.Infrastructure.Modules.Admissions;
 using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Calendar;
 using UniCore.Infrastructure.Modules.Identity;
+using UniCore.Infrastructure.Modules.Notifications;
 using UniCore.Infrastructure.Modules.People;
 using UniCore.Infrastructure.Modules.Platform;
 using UniCore.Infrastructure.Modules.Students;
@@ -74,6 +75,7 @@ namespace UniCore.Infrastructure
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
 
             services.AddPlatformModules(connectionString);
+            services.AddNotificationsModule();
 
 
             return services;
