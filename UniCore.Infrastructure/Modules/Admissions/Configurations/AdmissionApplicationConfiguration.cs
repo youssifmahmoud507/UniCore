@@ -35,10 +35,15 @@ namespace UniCore.Infrastructure.Modules.Admissions.Configurations
 
             // One application per (applicant, program, academic year) unless it ended without admission.
             // Keep the status list identical to AdmissionApplication.FinishedWithoutAdmission.
-            builder.HasIndex(a => new { a.ApplicantId, a.AcademicProgramId, a.AcademicYearId })
-                .IsUnique()
-                .HasDatabaseName("UX_AdmissionApplications_ActivePerApplicantProgramYear")
-                .HasFilter("[Status] NOT IN ('Rejected', 'Withdrawn', 'Expired')");
+            builder.HasIndex(a => new
+            {
+                a.ApplicantId,
+                a.AcademicProgramId,
+                a.AcademicYearId
+            }).IsUnique().HasDatabaseName("UX_AdmissionApplications_ActivePerApplicantProgramYear").HasFilter(
+                                                                                                                    "[Status] <> 'Rejected' AND " +
+                                                                                                                    "[Status] <> 'Withdrawn' AND " +
+                                                                                                                    "[Status] <> 'Expired'");
 
             // The expiry job and the review queues.
             builder.HasIndex(a => new { a.Status, a.Deadline });

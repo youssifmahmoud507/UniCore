@@ -1,3 +1,4 @@
+using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Pagination;
 using UniCore.Application.Modules.Admissions;
 using UniCore.Domain.Common.Results;

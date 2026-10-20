@@ -125,6 +125,234 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("UserTokens", "identity");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicYearId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApplicantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("Deadline")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ReviewStartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicProgramId", "Status");
+
+                    b.HasIndex("Status", "Deadline");
+
+                    b.HasIndex("ApplicantId", "AcademicProgramId", "AcademicYearId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AdmissionApplications_ActivePerApplicantProgramYear")
+                        .HasFilter("[Status] <> 'Rejected' AND [Status] <> 'Withdrawn' AND [Status] <> 'Expired'");
+
+                    b.ToTable("AdmissionApplications", "admissions");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionApplicationRequirement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdmissionApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdmissionRequirementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset?>("DocumentAttachedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ReviewStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReviewedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdmissionRequirementId");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("AdmissionApplicationId", "AdmissionRequirementId")
+                        .IsUnique();
+
+                    b.ToTable("AdmissionApplicationRequirements", "admissions");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdmissionApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DecidedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdmissionApplicationId");
+
+                    b.ToTable("AdmissionDecisions", "admissions");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionRequirement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicProgramId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("AdmissionRequirements", "admissions");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.Applicant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("Applicants", "admissions");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Audit.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2363,6 +2591,54 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionApplication", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.AcademicProgram", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicProgramId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Admissions.Applicant", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionApplicationRequirement", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Admissions.AdmissionApplication", null)
+                        .WithMany("Requirements")
+                        .HasForeignKey("AdmissionApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Admissions.AdmissionRequirement", null)
+                        .WithMany()
+                        .HasForeignKey("AdmissionRequirementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionDecision", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Admissions.AdmissionApplication", null)
+                        .WithMany("Decisions")
+                        .HasForeignKey("AdmissionApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionRequirement", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.AcademicProgram", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicProgramId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Calendar.AcademicLevel", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.University.AcademicProgram", null)
@@ -2774,6 +3050,13 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .HasForeignKey("WorkflowDefinitionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Admissions.AdmissionApplication", b =>
+                {
+                    b.Navigation("Decisions");
+
+                    b.Navigation("Requirements");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructure", b =>
