@@ -109,8 +109,10 @@ namespace UniCore.IntegrationTests.EndToEnd
             Assert.Equal(403, denied.Code);
             Assert.Equal("WORKFLOW_SELF_APPROVAL", denied.ErrorCode);
 
-            var inbox = await Client.GetAsync("/api/v1/workflows/inbox", token);
-            Assert.Equal(0, inbox.Prop("items").GetArrayLength());
+            // Other tests' requests may wait for a department head, but this user's own request never reaches them.
+            var inbox = await Client.GetAsync("/api/v1/workflows/inbox?pageSize=100", token);
+            Assert.Equal(200, inbox.Code);
+            Assert.DoesNotContain(inbox.Prop("items").EnumerateArray(), item => item.GetProperty("id").GetGuid() == id);
         }
 
         [Fact]
