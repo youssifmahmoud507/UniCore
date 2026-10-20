@@ -8,6 +8,7 @@ using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Jobs;
 using UniCore.Infrastructure.Modules.Outbox;
+using UniCore.Infrastructure.Modules.Workflow;
 
 namespace UniCore.Infrastructure.Modules.Platform
 {
@@ -27,6 +28,7 @@ namespace UniCore.Infrastructure.Modules.Platform
             services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
             services.AddScoped<ChargeHandler>();
             services.AddScoped<InvoiceHandler>();
+            services.AddWorkflowModule();
 
             return services;
         }
