@@ -46,6 +46,8 @@ namespace UniCore.Infrastructure.Modules.Jobs
 
             recurring.AddOrUpdate<FinancialHoldEvaluationJob>(FinancialHoldEvaluationJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Daily(2));
 
+            recurring.AddOrUpdate<AdmissionExpiryJob>(AdmissionExpiryJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Daily(3));
+
             return services;
         }
 

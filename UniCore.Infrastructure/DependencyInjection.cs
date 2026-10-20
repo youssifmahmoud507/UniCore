@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UniCore.Application.Common.Abstractions;
@@ -7,6 +7,7 @@ using UniCore.Application.Modules.Identity;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
+using UniCore.Infrastructure.Modules.Admissions;
 using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Calendar;
 using UniCore.Infrastructure.Modules.Identity;
@@ -14,7 +15,6 @@ using UniCore.Infrastructure.Modules.People;
 using UniCore.Infrastructure.Modules.Platform;
 using UniCore.Infrastructure.Modules.Students;
 using UniCore.Infrastructure.Modules.University;
-using UniCore.Infrastructure.Modules.Workflow;
 using UniCore.Infrastructure.Persistence;
 using UniCore.Infrastructure.Persistence.Repositories;
 
@@ -60,12 +60,11 @@ namespace UniCore.Infrastructure
             services.AddUniversityModule();
             services.AddCalendarModule();//
             services.AddPeopleModule();//
+            services.AddAdmissionsModule();
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();
             services.AddScoped(typeof(IAggregateRepository<>), typeof(AggregateRepository<>));
-
-            services.AddWorkflowModule();
 
             // Use-case handlers (Application layer), registered here because this is the composition root.
             services.AddScoped<LoginHandler>();
