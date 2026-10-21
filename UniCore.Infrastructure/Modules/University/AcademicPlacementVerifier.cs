@@ -1,6 +1,7 @@
 using System.Data.Common;
 using Microsoft.Extensions.Logging;
 using UniCore.Application.Common.Repositories;
+using UniCore.Application.Modules.Curriculum;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Calendar;
@@ -11,15 +12,16 @@ namespace UniCore.Infrastructure.Modules.University
     // Real implementation of the partner's IAcademicPlacementVerifier (replaces UnverifiedAcademicPlacementVerifier).
     // WHAT IT CHECKS NOW: the program exists, is active, and ProgramCode (when given) matches it;
     // the academic year exists, is not closed, and AdmissionYear matches its start year;
-    // the academic level (when given) exists, is active and belongs to the program.
-    // WHAT IT CANNOT CHECK YET: the study plan version (StudyPlanVersion arrives in Week 6).
+    // the academic level (when given) exists, is active and belongs to the program;
+    // the study plan version exists, is Active and belongs to the program (through IStudyPlanReadService, Week 6).
     public sealed class AcademicPlacementVerifier(
         IRepository<AcademicProgram> programs, IRepository<AcademicYear> years, IRepository<AcademicLevel> levels,
-        ILogger<AcademicPlacementVerifier> logger) : IAcademicPlacementVerifier
+        IStudyPlanReadService studyPlans, ILogger<AcademicPlacementVerifier> logger) : IAcademicPlacementVerifier
     {
         private readonly IRepository<AcademicProgram> _programs = programs;
         private readonly IRepository<AcademicYear> _years = years;
         private readonly IRepository<AcademicLevel> _levels = levels;
+        private readonly IStudyPlanReadService _studyPlans = studyPlans;
         private readonly ILogger<AcademicPlacementVerifier> _logger = logger;
 
         public async Task<Result> VerifyAdmissionAsync(AdmissionPlacement placement, CancellationToken cancellationToken = default)
@@ -48,8 +50,7 @@ namespace UniCore.Infrastructure.Modules.University
                 return level;
             }
 
-            // TODO Week 6: study plan version belongs to the program.
-            return Result.Ok();
+            return await CheckStudyPlanVersionAsync(found.Id, placement.StudyPlanVersionId, cancellationToken);
         }
 
         public async Task<Result> VerifyProgramChangeAsync(Guid academicProgramId, Guid studyPlanVersionId, Guid? academicLevelId, CancellationToken cancellationToken = default)
@@ -66,8 +67,25 @@ namespace UniCore.Infrastructure.Modules.University
                 return level;
             }
 
-            // TODO Week 6: study plan version belongs to the program.
-            return Result.Ok();
+            return await CheckStudyPlanVersionAsync(found.Id, studyPlanVersionId, cancellationToken);
+        }
+
+        // The version exists, is Active and belongs to the program. A database failure is reported, never treated as "not found".
+        private async Task<Result> CheckStudyPlanVersionAsync(Guid programId, Guid studyPlanVersionId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await _studyPlans.VerifyVersionForProgramAsync(studyPlanVersionId, programId, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return Result.Fail(CommonErrors.OperationCancelled);
+            }
+            catch (DbException)
+            {
+                _logger.LogError("Could not read study plan version {StudyPlanVersionId} while verifying a placement.", studyPlanVersionId);
+                return Result.Fail(CommonErrors.DatabaseTimeout);
+            }
         }
 
         // The year exists, is not closed, and the admission year is the calendar year the academic year starts in.

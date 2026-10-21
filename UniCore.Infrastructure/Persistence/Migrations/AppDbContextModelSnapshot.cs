@@ -604,6 +604,162 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.CourseRequirement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RequirementType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudyPlanVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudyPlanVersionId", "CourseVersionId")
+                        .IsUnique();
+
+                    b.ToTable("CourseRequirements", "curriculum");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicProgramId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("StudyPlans", "curriculum");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlanCourse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AcademicLevelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RecommendedTermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("RequiredCredits")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequirementType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudyPlanVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicLevelId");
+
+                    b.HasIndex("CourseVersionId");
+
+                    b.HasIndex("RecommendedTermId");
+
+                    b.HasIndex("StudyPlanVersionId", "CourseVersionId")
+                        .IsUnique();
+
+                    b.ToTable("StudyPlanCourses", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("CK_StudyPlanCourses_RequiredCredits", "[RequiredCredits] IS NULL OR ([RequiredCredits] >= 1 AND [RequiredCredits] <= 30)");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("EffectiveTo")
+                        .HasColumnType("date");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudyPlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudyPlanId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_StudyPlanVersions_OneDraftPerPlan")
+                        .HasFilter("[Status] = 'Draft'");
+
+                    b.HasIndex("StudyPlanId", "VersionNumber")
+                        .IsUnique();
+
+                    b.ToTable("StudyPlanVersions", "curriculum", t =>
+                        {
+                            t.HasCheckConstraint("CK_StudyPlanVersions_EffectiveTo", "[EffectiveTo] IS NULL OR [EffectiveTo] >= [EffectiveFrom]");
+
+                            t.HasCheckConstraint("CK_StudyPlanVersions_VersionNumber", "[VersionNumber] >= 1");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.Discount", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1481,6 +1637,132 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ScopeAssignments", "identity");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReferenceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("SourceEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ReadAt", "CreatedAt");
+
+                    b.HasIndex("UserId", "SourceEventId", "Type")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Notifications_Source")
+                        .HasFilter("[SourceEventId] IS NOT NULL");
+
+                    b.ToTable("Notifications", "notifications");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.NotificationDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("FailedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId", "Channel")
+                        .IsUnique();
+
+                    b.ToTable("NotificationDeliveries", "notifications");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.NotificationPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("EmailEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("InAppEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NotificationType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "NotificationType")
+                        .IsUnique();
+
+                    b.ToTable("NotificationPreferences", "notifications");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Outbox.OutboxMessage", b =>
@@ -2663,6 +2945,52 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.CourseRequirement", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", null)
+                        .WithMany("Requirements")
+                        .HasForeignKey("StudyPlanVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlan", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.AcademicProgram", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicProgramId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlanCourse", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicLevel", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicLevelId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicTerm", null)
+                        .WithMany()
+                        .HasForeignKey("RecommendedTermId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", null)
+                        .WithMany("Courses")
+                        .HasForeignKey("StudyPlanVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Curriculum.StudyPlan", null)
+                        .WithMany()
+                        .HasForeignKey("StudyPlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructureItem", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.Finance.FeeDefinition", null)
@@ -2834,6 +3162,33 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.Notification", b =>
+                {
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.NotificationDelivery", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Notifications.Notification", null)
+                        .WithMany("Deliveries")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.NotificationPreference", b =>
+                {
+                    b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.People.Employee", b =>
@@ -3059,6 +3414,13 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("Requirements");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", b =>
+                {
+                    b.Navigation("Courses");
+
+                    b.Navigation("Requirements");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructure", b =>
                 {
                     b.Navigation("Items");
@@ -3071,6 +3433,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("Payments");
 
                     b.Navigation("Reductions");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Notifications.Notification", b =>
+                {
+                    b.Navigation("Deliveries");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
