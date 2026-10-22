@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using UniCore.Domain.Modules.Courses;
 using UniCore.Domain.Modules.Curriculum;
 
 namespace UniCore.Infrastructure.Modules.Curriculum.Configurations
@@ -15,7 +16,9 @@ namespace UniCore.Infrastructure.Modules.Curriculum.Configurations
 
             builder.Property(r => r.RequirementType).IsRequired();
 
-            // One graduation rule per course of a version. CourseVersionId: foreign key arrives with Week 7.
+            // One graduation rule per course of a version. CourseVersionId is a real foreign key to CourseVersions.
+            builder.HasOne<CourseVersion>().WithMany().HasForeignKey(r => r.CourseVersionId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(r => new { r.StudyPlanVersionId, r.CourseVersionId }).IsUnique();
         }
     }

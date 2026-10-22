@@ -8,7 +8,7 @@ namespace UniCore.Infrastructure.Modules.Curriculum
     {
         public static IServiceCollection AddCurriculumModule(this IServiceCollection services)
         {
-            services.AddScoped<ICourseVersionVerifier, UnverifiedCourseVersionVerifier>();
+            // ICourseVersionVerifier is registered by AddCoursesModule (the Courses module answers it).
             services.AddScoped<IStudyPlanReadService, StudyPlanReadService>();
 
             services.AddScoped<StudyPlanHandler>();

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UniCore.Domain.Modules.Calendar;
+using UniCore.Domain.Modules.Courses;
 using UniCore.Domain.Modules.Curriculum;
 
 namespace UniCore.Infrastructure.Modules.Curriculum.Configurations
@@ -23,7 +24,9 @@ namespace UniCore.Infrastructure.Modules.Curriculum.Configurations
             builder.HasOne<AcademicLevel>().WithMany().HasForeignKey(c => c.AcademicLevelId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne<AcademicTerm>().WithMany().HasForeignKey(c => c.RecommendedTermId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
-            // CourseVersionId has no foreign key yet: CourseVersion arrives in Week 7, which adds the key in its migration.
+            // A plan course points at a real CourseVersion (a course version in use cannot be deleted).
+            builder.HasOne<CourseVersion>().WithMany().HasForeignKey(c => c.CourseVersionId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(c => new { c.StudyPlanVersionId, c.CourseVersionId }).IsUnique();
             builder.HasIndex(c => c.CourseVersionId);
         }
