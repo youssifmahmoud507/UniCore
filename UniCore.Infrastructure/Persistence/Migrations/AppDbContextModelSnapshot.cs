@@ -604,6 +604,123 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Courses.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CourseType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Courses", "courses");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Courses.CourseVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Credits")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("EffectiveTo")
+                        .HasColumnType("date");
+
+                    b.Property<int>("LectureHours")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PracticalHours")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_CourseVersions_OneDraftPerCourse")
+                        .HasFilter("[Status] = 'Draft'");
+
+                    b.HasIndex("CourseId", "VersionNumber")
+                        .IsUnique();
+
+                    b.ToTable("CourseVersions", "courses", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseVersions_Credits", "[Credits] >= 1 AND [Credits] <= 30");
+
+                            t.HasCheckConstraint("CK_CourseVersions_EffectiveTo", "[EffectiveTo] IS NULL OR [EffectiveTo] >= [EffectiveFrom]");
+
+                            t.HasCheckConstraint("CK_CourseVersions_Hours", "[LectureHours] >= 0 AND [LectureHours] <= 60 AND [PracticalHours] >= 0 AND [PracticalHours] <= 60 AND [LectureHours] + [PracticalHours] > 0");
+
+                            t.HasCheckConstraint("CK_CourseVersions_VersionNumber", "[VersionNumber] >= 1");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.CourseRequirement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -621,6 +738,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseVersionId");
 
                     b.HasIndex("StudyPlanVersionId", "CourseVersionId")
                         .IsUnique();
@@ -2945,8 +3064,32 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Courses.Course", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.Department", null)
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Courses.CourseVersion", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Courses.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.CourseRequirement", b =>
                 {
+                    b.HasOne("UniCore.Domain.Modules.Courses.CourseVersion", null)
+                        .WithMany()
+                        .HasForeignKey("CourseVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", null)
                         .WithMany("Requirements")
                         .HasForeignKey("StudyPlanVersionId")
@@ -2969,6 +3112,12 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("AcademicLevelId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UniCore.Domain.Modules.Courses.CourseVersion", null)
+                        .WithMany()
+                        .HasForeignKey("CourseVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("UniCore.Domain.Modules.Calendar.AcademicTerm", null)
                         .WithMany()
