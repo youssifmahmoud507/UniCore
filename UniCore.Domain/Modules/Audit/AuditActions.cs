@@ -74,6 +74,14 @@ namespace UniCore.Domain.Modules.Audit
         public const string FinancialHoldReleased = "FINANCIAL_HOLD_RELEASED";
         public const string ServiceChargeCreated = "SERVICE_CHARGE_CREATED";
         public const string InvoicesBulkIssued = "INVOICES_BULK_ISSUED";
+
+        public const string DocumentTypeCreated = "DOCUMENT_TYPE_CREATED";
+        public const string DocumentUploaded = "DOCUMENT_UPLOADED";
+        public const string DocumentVersionAdded = "DOCUMENT_VERSION_ADDED";
+        public const string DocumentAccessed = "DOCUMENT_ACCESSED";
+        public const string DocumentDeleted = "DOCUMENT_DELETED";
+        public const string DocumentAccessGranted = "DOCUMENT_ACCESS_GRANTED";
+        public const string DocumentAccessRevoked = "DOCUMENT_ACCESS_REVOKED";
     }
 
 

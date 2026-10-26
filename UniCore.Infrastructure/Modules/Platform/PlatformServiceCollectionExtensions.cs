@@ -5,6 +5,7 @@ using System.Text;
 using UniCore.Application.Modules.Audit;
 using UniCore.Application.Modules.Finance;
 using UniCore.Infrastructure.Modules.Audit;
+using UniCore.Infrastructure.Modules.Documents;
 using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Jobs;
 using UniCore.Infrastructure.Modules.Notifications;
@@ -32,9 +33,8 @@ namespace UniCore.Infrastructure.Modules.Platform
             services.AddWorkflowModule();
             services.AddNotificationsModule();
             // Notifications after the finance and workflow handlers, so holds are handled before people are told.
-            //services.AddNotificationsModule();
-            //services.AddRealtime();
-            //services.AddDocumentsModule();
+            services.AddRealtime();
+            services.AddDocumentsModule();
             return services;
         }
     }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 using Testcontainers.MsSql;
 using UniCore.Infrastructure.Persistence;
 
@@ -12,10 +13,16 @@ namespace UniCore.IntegrationTests.Infrastructure
         public const string AdminLogin = "admin";
         public const string AdminEmail = "admin@test.local";
         public const string AdminPassword = "TestAdmin#2026xK9";
+        public static string DocumentsRoot { get; private set; } = string.Empty;
+
 
         private MsSqlContainer? _container;
         private UniCoreApiFactory? _factory;
         private TestApi? _api;
+
+        public HttpClient CreateHttpClient() => _factory.CreateClient();
+
+        public HttpMessageHandler CreateHandler() => _factory.Server.CreateHandler();
 
         public TestApi Api
         {
@@ -63,6 +70,11 @@ namespace UniCore.IntegrationTests.Infrastructure
             Set("SeedAdmin__Password", AdminPassword);
             Set("RateLimiting__Disabled", "true");
 
+            DocumentsRoot = Path.Combine(Path.GetTempPath(), "unicore-tests-docs-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(DocumentsRoot);
+            Set("Documents__StoragePath", DocumentsRoot);
+            Set("Documents__MaxFileSizeBytes", "1048576");
+
             _factory = new UniCoreApiFactory();
             var client = _factory.CreateClient(); // starts the API
 
@@ -77,9 +89,20 @@ namespace UniCore.IntegrationTests.Infrastructure
             {
                 await _container.DisposeAsync();
             }
+            try { Directory.Delete(DocumentsRoot, recursive: true); } catch (IOException) { }
         }
 
         private static void Set(string name, string value) => Environment.SetEnvironmentVariable(name, value);
+    }
+
+
+    public sealed record RawResult(int Code, byte[] Bytes, string? ContentType, string? Disposition, string? NoSniff, JsonElement Json)
+    {
+        public string? Str(string name) => Json.ValueKind == JsonValueKind.Object && Json.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+        public string? ErrorCode => Str("errorCode");
+
+        public JsonElement Prop(string name) => Json.GetProperty(name);
     }
 
 }

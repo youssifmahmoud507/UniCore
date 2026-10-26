@@ -13,6 +13,7 @@ using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Email;
 using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.Jobs;
+using UniCore.Infrastructure.Modules.Notifications;
 using UniCore.Infrastructure.Modules.Workflow;
 
 
@@ -64,6 +65,7 @@ namespace UniCore.Api
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<NotificationHub>(NotificationHub.Path);
 
             app.MapHealthChecks("/health/live", new HealthCheckOptions
             {

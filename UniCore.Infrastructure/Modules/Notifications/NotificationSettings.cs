@@ -1,4 +1,6 @@
-﻿using UniCore.Application.Modules.Identity;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
+using UniCore.Application.Modules.Identity;
 using UniCore.Application.Modules.Notifications;
 
 namespace UniCore.Infrastructure.Modules.Notifications

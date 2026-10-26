@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using UniCore.Application.Modules.Identity;
+using UniCore.Infrastructure.Modules.Notifications;
 
 namespace UniCore.Infrastructure.Modules.Identity
 {
@@ -69,7 +70,20 @@ namespace UniCore.Infrastructure.Modules.Identity
                             ["errorCode"] = "GENERAL_FORBIDDEN",
                             ["traceId"] = context.HttpContext.TraceIdentifier
                         }).ExecuteAsync(context.HttpContext);
-                }
+                },
+                // A browser WebSocket cannot send an Authorization header, so SignalR sends the token in the
+                // query string. It is accepted ONLY for the notification hub, nowhere else.
+                OnMessageReceived = context =>
+                {
+                    var token = context.Request.Query["access_token"];
+
+                    if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments(NotificationHub.Path))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                },
             };
         }
     }
