@@ -11,6 +11,7 @@ using UniCore.Infrastructure.Modules.Admissions;
 using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Courses;
 using UniCore.Infrastructure.Modules.Curriculum;
+using UniCore.Infrastructure.Modules.Offerings;
 using UniCore.Infrastructure.Modules.Calendar;
 using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.People;
@@ -65,6 +66,7 @@ namespace UniCore.Infrastructure
             services.AddAdmissionsModule();
             services.AddCurriculumModule();
             services.AddCoursesModule();
+            services.AddOfferingsModule();
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
             services.AddScoped<StudentManagementHandler>();
