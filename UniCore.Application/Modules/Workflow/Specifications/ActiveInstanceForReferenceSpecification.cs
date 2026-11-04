@@ -11,4 +11,5 @@ namespace UniCore.Application.Modules.Workflow.Specifications
             SetCriteria(i => i.ReferenceType == referenceType && i.ReferenceId == referenceId && (i.Status == WorkflowInstanceStatus.InProgress || i.Status == WorkflowInstanceStatus.Returned));
         }
     }
+
 }

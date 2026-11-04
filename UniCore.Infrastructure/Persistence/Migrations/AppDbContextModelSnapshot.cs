@@ -2088,6 +2088,134 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("NotificationPreferences", "notifications");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Offerings.CourseOffering", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("MaxSections")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicSemesterId");
+
+                    b.HasIndex("CourseVersionId", "AcademicSemesterId")
+                        .IsUnique();
+
+                    b.ToTable("CourseOfferings", "offerings", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseOfferings_MaxSections", "[MaxSections] IS NULL OR ([MaxSections] >= 1 AND [MaxSections] <= 50)");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Offerings.CourseSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("CourseOfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SectionCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseOfferingId", "SectionCode")
+                        .IsUnique();
+
+                    b.ToTable("CourseSections", "offerings", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseSections_Capacity", "[Capacity] >= 1 AND [Capacity] <= 1000");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Offerings.InstructorAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AssignedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("InstructorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseSectionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_InstructorAssignments_OneActivePrimary")
+                        .HasFilter("[Role] = 'Primary' AND [EndedAt] IS NULL");
+
+                    b.HasIndex("InstructorId");
+
+                    b.HasIndex("CourseSectionId", "InstructorId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_InstructorAssignments_ActivePerInstructor")
+                        .HasFilter("[EndedAt] IS NULL");
+
+                    b.ToTable("InstructorAssignments", "offerings", t =>
+                        {
+                            t.HasCheckConstraint("CK_InstructorAssignments_EndedAt", "[EndedAt] IS NULL OR [EndedAt] >= [AssignedAt]");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Outbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3578,6 +3706,45 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Offerings.CourseOffering", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicSemester", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Courses.CourseVersion", null)
+                        .WithMany()
+                        .HasForeignKey("CourseVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Offerings.CourseSection", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseOffering", null)
+                        .WithMany()
+                        .HasForeignKey("CourseOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Offerings.InstructorAssignment", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.People.Instructor", null)
+                        .WithMany()
+                        .HasForeignKey("InstructorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

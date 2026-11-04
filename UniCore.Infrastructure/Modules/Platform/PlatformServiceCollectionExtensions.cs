@@ -8,6 +8,7 @@ using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Documents;
 using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Jobs;
+using UniCore.Infrastructure.Modules.Maintenance;
 using UniCore.Infrastructure.Modules.Notifications;
 using UniCore.Infrastructure.Modules.Outbox;
 using UniCore.Infrastructure.Modules.Workflow;
@@ -35,6 +36,7 @@ namespace UniCore.Infrastructure.Modules.Platform
             // Notifications after the finance and workflow handlers, so holds are handled before people are told.
             services.AddRealtime();
             services.AddDocumentsModule();
+            services.AddMaintenanceModule();
             return services;
         }
     }
