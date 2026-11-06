@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using UniCore.Api.Contracts.Documents;
 using UniCore.Api.Extensions;
 using UniCore.Application.Common.Pagination;
@@ -20,6 +21,8 @@ namespace UniCore.Api.Controllers
         [HttpPost]
         [Consumes("multipart/form-data")]
         [RequestFormLimits(MultipartBodyLengthLimit = MaxFormBytes)]
+        [RequestSizeLimit(MaxFormBytes)]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         public async Task<IActionResult> Upload([FromForm] UploadDocumentForm form, [FromServices] DocumentHandler handler, CancellationToken cancellationToken)
         {
             if (form.File is null)
@@ -61,6 +64,8 @@ namespace UniCore.Api.Controllers
         [HttpPost("{id:guid}/versions")]
         [Consumes("multipart/form-data")]
         [RequestFormLimits(MultipartBodyLengthLimit = MaxFormBytes)]
+        [RequestSizeLimit(MaxFormBytes)]
+        [EnableRateLimiting(RateLimitPolicies.Upload)]
         public async Task<IActionResult> AddVersion(Guid id, [FromForm] UploadVersionForm form, [FromServices] DocumentHandler handler, CancellationToken cancellationToken)
         {
             if (form.File is null)

@@ -28,9 +28,7 @@ namespace UniCore.Application.Modules.Documents
         private readonly IClock _clock = clock;
         private readonly IAuditWriter _audit = audit;
 
-        private Task AuditAsync(string action, Guid entityId, RequestInfo request, string? newValues, CancellationToken cancellationToken) => _audit.WriteAsync(
-            new AuditEntry(action, _user.UserId, "Document", entityId.ToString(), request.IpAddress, request.UserAgent, null, newValues),
-            cancellationToken);
+        private Task AuditAsync(string action, Guid entityId, RequestInfo request, string? newValues, CancellationToken cancellationToken) => _audit.WriteAsync(new AuditEntry(action, _user.UserId, "Document", entityId.ToString(), request.IpAddress, request.UserAgent, null, newValues), cancellationToken);
 
         // Everybody who is signed in and holds the permission can upload their own documents.
         private Task<Result> RequireUploadAsync(CancellationToken cancellationToken)
@@ -79,16 +77,18 @@ namespace UniCore.Application.Modules.Documents
 
         public async Task<Result<DocumentDto>> AddVersionAsync(Guid documentId, DocumentUpload upload, RequestInfo request, CancellationToken cancellationToken = default)
         {
-            var auth = await RequireUploadAsync(cancellationToken);
-            if (auth.IsFailure)
-            {
-                return Result<DocumentDto>.Fail(auth.Errors);
-            }
-
+            // Existence first: somebody who cannot manage the document gets "not found" (the document stays hidden),
+            // and only then the upload permission is checked.
             var loaded = await LoadAsync(documentId, DocumentAccessLevel.Manage, cancellationToken);
             if (!loaded.TryGetValue(out var found))
             {
                 return Result<DocumentDto>.Fail(loaded.Errors);
+            }
+
+            var auth = await RequireUploadAsync(cancellationToken);
+            if (auth.IsFailure)
+            {
+                return Result<DocumentDto>.Fail(auth.Errors);
             }
 
             var added = await _documents.AddVersionAsync(found.Document.Id, upload, _user.UserId, cancellationToken);
@@ -101,7 +101,6 @@ namespace UniCore.Application.Modules.Documents
 
             return document;
         }
-
         public async Task<Result<DocumentDto>> GetAsync(Guid documentId, RequestInfo request, CancellationToken cancellationToken = default)
         {
             var loaded = await LoadAsync(documentId, DocumentAccessLevel.Read, cancellationToken);

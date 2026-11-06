@@ -30,8 +30,9 @@ namespace UniCore.Api
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(outputTemplate:
-                    "[{Timestamp:HH:mm:ss} {Level:u3}] [{CorrelationId}] {Message:lj}{NewLine}{Exception}"));
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{CorrelationId}] {Message:lj}{NewLine}{Exception}"));
+
+            builder.WebHost.ConfigureApiKestrel();
 
             builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -43,12 +44,15 @@ namespace UniCore.Api
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddEmailSending(builder.Configuration);
             builder.Services.AddPasswordReset(builder.Configuration);
+            builder.Services.AddApiSecurity();
             builder.Services.AddApiRateLimiting();
             builder.Services.AddPermissionAuthorization();
 
             var app = builder.Build();
 
+            app.UseTrustedProxies();
             app.UseMiddleware<CorrelationIdMiddleware>();
+            app.UseMiddleware<SecurityHeadersMiddleware>();
             app.UseSerilogRequestLogging();
             app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -57,10 +61,15 @@ namespace UniCore.Api
                 app.MapOpenApi();
                 app.MapScalarApiReference();
             }
+            else
+            {
+                app.UseHsts();
+            }
 
             app.UseHttpsRedirection();
-            app.UseRateLimiter();
+            app.UseCors(ApiCorsOptions.PolicyName);
             app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseMiddleware<UserAccessMiddleware>();
             app.UseAuthorization();
 
