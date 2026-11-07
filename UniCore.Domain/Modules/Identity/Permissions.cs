@@ -65,6 +65,12 @@
             public const string Manage = "Registration.Manage";
         }
 
+        public static class Scheduling
+        {
+            public const string Read = "Scheduling.Read";
+            public const string Manage = "Scheduling.Manage";
+        }
+
         public static class Attendance
         {
             public const string Read = "Attendance.Read";
@@ -180,6 +186,8 @@
         new PermissionDefinition(Registration.Read, "Registration", "View registrations and enrollments"),
         new PermissionDefinition(Registration.Register, "Registration", "Register in courses"),
         new PermissionDefinition(Registration.Manage, "Registration", "Manage registrations on behalf of students"),
+        new PermissionDefinition(Scheduling.Read, "Scheduling", "View schedules, timetables and availability"),
+        new PermissionDefinition(Scheduling.Manage, "Scheduling", "Manage schedules, room assignments and availability"),
         new PermissionDefinition(Attendance.Read, "Attendance", "View attendance"),
         new PermissionDefinition(Attendance.Record, "Attendance", "Record attendance"),
         new PermissionDefinition(Attendance.ReviewExcuse, "Attendance", "Review attendance excuses"),

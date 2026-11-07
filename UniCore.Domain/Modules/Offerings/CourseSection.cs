@@ -22,6 +22,12 @@ namespace UniCore.Domain.Modules.Offerings
         public string SectionCode { get; private set; } = string.Empty;
 
         public int Capacity { get; private set; }
+
+        // Seats taken by Registered enrollments. Registration changes it (TakeSeat / ReleaseSeat) in the same save as the
+        // enrollment; the RowVersion makes two parallel saves for the last seat safe: exactly one wins, the other gets
+        // a concurrency conflict (registration-rules.md section 6).
+        public int EnrolledCount { get; private set; }
+
         public CourseSectionStatus Status { get; private set; }
         public DateTimeOffset CreatedAt { get; private set; }
         public DateTimeOffset? UpdatedAt { get; private set; }
@@ -117,6 +123,37 @@ namespace UniCore.Domain.Modules.Offerings
             }
 
             Status = CourseSectionStatus.Cancelled;
+            UpdatedAt = now;
+            return Result.Ok();
+        }
+
+        // Registration takes a seat. COURSE_FULL when the capacity is used, SECTION_NOT_OPEN when the section is not open.
+        public Result TakeSeat(DateTimeOffset now)
+        {
+            if (Status != CourseSectionStatus.Open)
+            {
+                return Result.Fail(OfferingsErrors.SectionNotOpen);
+            }
+
+            if (EnrolledCount >= Capacity)
+            {
+                return Result.Fail(OfferingsErrors.CourseFull);
+            }
+
+            EnrolledCount++;
+            UpdatedAt = now;
+            return Result.Ok();
+        }
+
+        // A drop, a withdrawal or a cancelled registration frees a seat. Never below 0.
+        public Result ReleaseSeat(DateTimeOffset now)
+        {
+            if (EnrolledCount <= 0)
+            {
+                return Result.Fail(OfferingsErrors.SectionInvalidState);
+            }
+
+            EnrolledCount--;
             UpdatedAt = now;
             return Result.Ok();
         }

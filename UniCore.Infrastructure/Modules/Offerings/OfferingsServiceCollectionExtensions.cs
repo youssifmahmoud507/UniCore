@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using UniCore.Application.Modules.Offerings;
+using UniCore.Application.Modules.People;
 
 namespace UniCore.Infrastructure.Modules.Offerings
 {
@@ -8,8 +9,11 @@ namespace UniCore.Infrastructure.Modules.Offerings
     {
         public static IServiceCollection AddOfferingsModule(this IServiceCollection services)
         {
-            services.AddScoped<ISectionEnrollmentCounter, NoEnrollmentsYetCounter>();
+            services.AddScoped<ISectionEnrollmentCounter, SectionSeatCounter>();
             services.AddScoped<IOfferingReadService, OfferingReadService>();
+
+            // The real reader of People's scope data (it replaced the empty placeholder registered by AddPeopleModule).
+            services.AddScoped<ISectionAssignmentReader, SectionAssignmentReader>();
 
             services.AddScoped<OfferingAccess>();
             services.AddScoped<CourseOfferingHandler>();

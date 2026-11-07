@@ -11,6 +11,7 @@ namespace UniCore.Infrastructure.Modules.Offerings.Configurations
             builder.ToTable("CourseSections", "offerings", table =>
             {
                 table.HasCheckConstraint("CK_CourseSections_Capacity", "[Capacity] >= 1 AND [Capacity] <= 1000");
+                table.HasCheckConstraint("CK_CourseSections_EnrolledCount", "[EnrolledCount] >= 0 AND [EnrolledCount] <= [Capacity]");
             });
 
             builder.HasKey(s => s.Id);
@@ -21,6 +22,7 @@ namespace UniCore.Infrastructure.Modules.Offerings.Configurations
 
             builder.Property(s => s.SectionCode).IsRequired().HasMaxLength(CourseSection.CodeMaxLength);
             builder.Property(s => s.Capacity).IsRequired();
+            builder.Property(s => s.EnrolledCount).IsRequired().HasDefaultValue(0);
 
             // Status is stored as text (max 50) by the convention in AppDbContext.
             builder.Property(s => s.Status).IsRequired();

@@ -7,7 +7,6 @@ namespace UniCore.Infrastructure.Modules.People
     {
         public static IServiceCollection AddPeopleModule(this IServiceCollection services)
         {
-            services.AddScoped<ISectionAssignmentReader, NoSectionAssignments>();
             services.AddScoped<IScopeDataProvider, ScopeDataProvider>();
             services.AddScoped<PersonProfileHandler>();
             services.AddScoped<EmployeeHandler>();

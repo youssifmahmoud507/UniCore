@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UniCore.Infrastructure.Modules.Outbox;
+using UniCore.Infrastructure.Modules.Registrations;
 
 namespace UniCore.Infrastructure.Modules.Jobs
 {
@@ -47,6 +48,8 @@ namespace UniCore.Infrastructure.Modules.Jobs
             recurring.AddOrUpdate<FinancialHoldEvaluationJob>(FinancialHoldEvaluationJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Daily(2));
 
             recurring.AddOrUpdate<AdmissionExpiryJob>(AdmissionExpiryJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Daily(3));
+
+            recurring.AddOrUpdate<RegistrationCompletionJob>(RegistrationCompletionJob.RecurringJobId, job => job.RunAsync(CancellationToken.None), Cron.Daily(4));
 
             return services;
         }

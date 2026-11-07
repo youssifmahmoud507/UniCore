@@ -25,6 +25,8 @@ namespace UniCore.Domain.Modules.Offerings
         public static readonly Error SectionCodeExists = Error.Conflict("SECTION_CODE_EXISTS", "A section with this code already exists in the offering.");
         public static readonly Error SectionInvalidState = Error.BusinessRule("SECTION_INVALID_STATE", "The section is not in a state that allows this action.");
         public static readonly Error SectionHasEnrollments = Error.BusinessRule("SECTION_HAS_ENROLLMENTS", "Students are enrolled in the section, so it cannot be cancelled.");
+        public static readonly Error SectionNotOpen = Error.BusinessRule("SECTION_NOT_OPEN", "The section is not open for enrollment.");
+        public static readonly Error CourseFull = Error.BusinessRule("COURSE_FULL", "The section is full.");
         public static readonly Error CapacityBelowEnrolled = Error.BusinessRule("SECTION_CAPACITY_BELOW_ENROLLED", "The capacity cannot be lower than the number of enrolled students.");
 
         // Instructor assignments.

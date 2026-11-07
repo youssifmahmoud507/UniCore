@@ -2145,6 +2145,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("EnrolledCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -2171,6 +2176,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("CourseSections", "offerings", t =>
                         {
                             t.HasCheckConstraint("CK_CourseSections_Capacity", "[Capacity] >= 1 AND [Capacity] <= 1000");
+
+                            t.HasCheckConstraint("CK_CourseSections_EnrolledCount", "[EnrolledCount] >= 0 AND [EnrolledCount] <= [Capacity]");
                         });
                 });
 
@@ -2443,6 +2450,295 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("TeachingAssistants", "people", t =>
                         {
                             t.HasCheckConstraint("CK_TeachingAssistants_EmployeeOrStudent", "[EmployeeId] IS NOT NULL OR [StudentId] IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Registrations.Enrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Credits")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("DroppedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("RegisteredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RegistrationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("WithdrawnAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CourseVersionId");
+
+                    b.HasIndex("CourseSectionId", "Status");
+
+                    b.HasIndex("RegistrationId", "CourseSectionId")
+                        .IsUnique();
+
+                    b.HasIndex("RegistrationId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasFilter("[IdempotencyKey] IS NOT NULL");
+
+                    b.ToTable("Enrollments", "registration", t =>
+                        {
+                            t.HasCheckConstraint("CK_Enrollments_Credits", "[Credits] >= 1 AND [Credits] <= 30");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Registrations.Registration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicSemesterId", "Status");
+
+                    b.HasIndex("StudentId", "AcademicSemesterId")
+                        .IsUnique();
+
+                    b.ToTable("Registrations", "registration");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.CourseSectionSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ScheduleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ScheduleSlotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.HasIndex("ScheduleSlotId");
+
+                    b.HasIndex("AcademicSemesterId", "DayOfWeek");
+
+                    b.HasIndex("CourseSectionId", "ScheduleSlotId")
+                        .IsUnique();
+
+                    b.HasIndex("RoomId", "AcademicSemesterId", "DayOfWeek", "StartTime")
+                        .IsUnique();
+
+                    b.ToTable("CourseSectionSchedules", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseSectionSchedules_Time", "[StartTime] < [EndTime]");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.InstructorAvailability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("InstructorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstructorId", "DayOfWeek", "StartTime")
+                        .IsUnique();
+
+                    b.ToTable("InstructorAvailabilities", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_InstructorAvailabilities_Time", "[StartTime] < [EndTime]");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.RoomAvailability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId", "DayOfWeek", "StartTime")
+                        .IsUnique();
+
+                    b.ToTable("RoomAvailabilities", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_RoomAvailabilities_Time", "[StartTime] < [EndTime]");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.Schedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicSemesterId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Schedules", "scheduling");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.ScheduleSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("ScheduleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScheduleId", "DayOfWeek", "StartTime", "EndTime")
+                        .IsUnique();
+
+                    b.ToTable("ScheduleSlots", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_ScheduleSlots_Time", "[StartTime] < [EndTime]");
                         });
                 });
 
@@ -3785,6 +4081,111 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Registrations.Enrollment", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Courses.CourseVersion", null)
+                        .WithMany()
+                        .HasForeignKey("CourseVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Registrations.Registration", null)
+                        .WithMany("Enrollments")
+                        .HasForeignKey("RegistrationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Registrations.Registration", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicSemester", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.CourseSectionSchedule", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicSemester", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.University.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Scheduling.Schedule", null)
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Scheduling.ScheduleSlot", null)
+                        .WithMany()
+                        .HasForeignKey("ScheduleSlotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.InstructorAvailability", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.People.Instructor", null)
+                        .WithMany()
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.RoomAvailability", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.Schedule", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicSemester", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.ScheduleSlot", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Scheduling.Schedule", null)
+                        .WithMany("Slots")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
                 {
                     b.HasOne("UniCore.Infrastructure.Modules.Identity.ApplicationUser", null)
@@ -4001,6 +4402,16 @@ namespace UniCore.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("UniCore.Domain.Modules.Notifications.Notification", b =>
                 {
                     b.Navigation("Deliveries");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Registrations.Registration", b =>
+                {
+                    b.Navigation("Enrollments");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Scheduling.Schedule", b =>
+                {
+                    b.Navigation("Slots");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>

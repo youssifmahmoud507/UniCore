@@ -99,4 +99,13 @@ namespace UniCore.Application.Modules.Offerings.Specifications
             UseTracking();
         }
     }
+
+    // Every active assignment of one instructor, across semesters.
+    public sealed class ActiveAssignmentsOfInstructorSpecification : Specification<InstructorAssignment>
+    {
+        public ActiveAssignmentsOfInstructorSpecification(Guid instructorId)
+        {
+            SetCriteria(a => a.InstructorId == instructorId && a.EndedAt == null);
+        }
+    }
 }
