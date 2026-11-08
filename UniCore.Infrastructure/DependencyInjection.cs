@@ -8,17 +8,17 @@ using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Results;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Admissions;
+using UniCore.Infrastructure.Modules.Registrations;
+using UniCore.Infrastructure.Modules.Attendance;
+using UniCore.Infrastructure.Modules.Scheduling;
 using UniCore.Infrastructure.Modules.Audit;
-using UniCore.Infrastructure.Modules.Caching;
-using UniCore.Infrastructure.Modules.Calendar;
 using UniCore.Infrastructure.Modules.Courses;
 using UniCore.Infrastructure.Modules.Curriculum;
-using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.Offerings;
+using UniCore.Infrastructure.Modules.Calendar;
+using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.People;
 using UniCore.Infrastructure.Modules.Platform;
-using UniCore.Infrastructure.Modules.Registrations;
-using UniCore.Infrastructure.Modules.Scheduling;
 using UniCore.Infrastructure.Modules.Students;
 using UniCore.Infrastructure.Modules.University;
 using UniCore.Infrastructure.Persistence;
@@ -71,6 +71,7 @@ namespace UniCore.Infrastructure
             services.AddCoursesModule();
             services.AddOfferingsModule();
             services.AddSchedulingModule();
+            services.AddAttendanceModule();
             services.AddRegistrationsModule();
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
@@ -83,9 +84,6 @@ namespace UniCore.Infrastructure
             services.AddScoped<LogoutHandler>();
 
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
-
-
-            services.AddDbContext<AppDbContext>((provider, options) => options.UseSqlServer(connectionString).AddInterceptors(provider.GetRequiredService<CacheInvalidationInterceptor>()));
 
             services.AddPlatformModules(connectionString);
 

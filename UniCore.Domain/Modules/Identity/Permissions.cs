@@ -76,6 +76,8 @@
             public const string Read = "Attendance.Read";
             public const string Record = "Attendance.Record";
             public const string ReviewExcuse = "Attendance.ReviewExcuse";
+            public const string SubmitExcuse = "Attendance.SubmitExcuse";
+            public const string Manage = "Attendance.Manage";
         }
 
         public static class Exams
@@ -191,6 +193,8 @@
         new PermissionDefinition(Attendance.Read, "Attendance", "View attendance"),
         new PermissionDefinition(Attendance.Record, "Attendance", "Record attendance"),
         new PermissionDefinition(Attendance.ReviewExcuse, "Attendance", "Review attendance excuses"),
+        new PermissionDefinition(Attendance.SubmitExcuse, "Attendance", "Submit an excuse for an absence"),
+        new PermissionDefinition(Attendance.Manage, "Attendance", "Manage attendance policies"),
         new PermissionDefinition(Exams.Read, "Examination", "View exams and schedules"),
         new PermissionDefinition(Exams.Manage, "Examination", "Manage exams and schedules"),
         new PermissionDefinition(Grades.Read, "Grading", "View grades"),

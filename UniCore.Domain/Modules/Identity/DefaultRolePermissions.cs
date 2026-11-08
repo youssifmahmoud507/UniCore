@@ -7,6 +7,7 @@
         private static readonly string[] StudentSet =
         [
         Permissions.Registration.Read, Permissions.Registration.Register, Permissions.Scheduling.Read, Permissions.Grades.Read,
+        Permissions.Attendance.Read, Permissions.Attendance.SubmitExcuse,
         Permissions.Finance.Read, Permissions.Requests.Submit, Permissions.Requests.Read,
         Permissions.Documents.Read, Permissions.Documents.Upload
     ];
@@ -22,7 +23,7 @@
         [
         Permissions.University.Read, Permissions.People.Read, Permissions.Students.Read,
         Permissions.Courses.Read, Permissions.Courses.Manage, Permissions.Registration.Read,
-        Permissions.Scheduling.Read, Permissions.Attendance.Read, Permissions.Attendance.ReviewExcuse,
+        Permissions.Scheduling.Read, Permissions.Attendance.Read, Permissions.Attendance.ReviewExcuse, Permissions.Attendance.Manage,
         Permissions.Exams.Read, Permissions.Exams.Manage,
         Permissions.Grades.Read, Permissions.Grades.Review, Permissions.GradeChanges.Request,
         Permissions.Requests.Read, Permissions.Requests.Process,
@@ -47,7 +48,7 @@
         Permissions.Students.ChangeStatus, Permissions.Students.ChangeProgram,
         Permissions.Admissions.Read, Permissions.Courses.Read, Permissions.Courses.Manage,
         Permissions.Curriculum.Manage, Permissions.Registration.Read, Permissions.Registration.Manage,
-        Permissions.Scheduling.Read, Permissions.Scheduling.Manage,
+        Permissions.Scheduling.Read, Permissions.Scheduling.Manage, Permissions.Attendance.Read,
         Permissions.Grades.Read, Permissions.Grades.Publish,
         Permissions.Requests.Read, Permissions.Requests.Process,
         Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read
