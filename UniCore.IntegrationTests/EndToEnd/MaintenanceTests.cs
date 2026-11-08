@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UniCore.Application.Modules.Workflow;
+using UniCore.Domain.Modules.Idempotency;
 using UniCore.Domain.Modules.Outbox;
 using UniCore.Infrastructure.Modules.Maintenance;
 using UniCore.Infrastructure.Persistence;
@@ -115,5 +116,57 @@ namespace UniCore.IntegrationTests.EndToEnd
             Assert.False(MaintenanceOptions.IsValid(new MaintenanceOptions { ProcessedOutboxRetentionDays = 5000 }));
             Assert.Equal(60, new MaintenanceOptions().ExpiredRequestDays);
         }
+
+
+        [Fact]
+        public async Task Cleanup_deletes_expired_idempotency_records_and_keeps_current_ones()
+        {
+            var now = DateTimeOffset.UtcNow;
+            var hash = new string('a', IdempotencyRecord.HashLength);
+
+            static IdempotencyRecord Record(string prefix, DateTimeOffset created, string hash)
+            {
+                var begun = IdempotencyRecord.Begin($"{prefix}-{Guid.NewGuid():N}", Guid.NewGuid(), hash, created, TimeSpan.FromHours(24));
+                Assert.True(begun.TryGetValue(out var record));
+                Assert.NotNull(record);
+                return record;
+            }
+
+            var expired = Record("expired", now.AddDays(-3), hash);
+            var current = Record("current", now, hash);
+
+            await using (var scope = fixture.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Set<IdempotencyRecord>().AddRange(expired, current);
+                await db.SaveChangesAsync();
+            }
+
+            CleanupResult? result;
+
+            await using (var scope = fixture.Services.CreateAsyncScope())
+            {
+                var outcome = await scope.ServiceProvider.GetRequiredService<DataCleanupService>().CleanAsync();
+
+                Assert.True(outcome.TryGetValue(out result));
+            }
+
+            Assert.NotNull(result);
+            Assert.Equal(0, result.Failed);
+            Assert.True(result.IdempotencyRecords >= 1);
+
+            await using (var scope = fixture.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var ids = new[] { expired.Id, current.Id };
+                var left = await db.Set<IdempotencyRecord>().AsNoTracking().Where(r => ids.Contains(r.Id)).Select(r => r.Id).ToListAsync();
+
+                Assert.DoesNotContain(expired.Id, left);
+                Assert.Contains(current.Id, left);
+            }
+        }
     }
+
+
+
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Data.Common;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Domain.Common.Results;
+using UniCore.Domain.Modules.Idempotency;
 using UniCore.Domain.Modules.Identity;
 using UniCore.Domain.Modules.Notifications;
 using UniCore.Domain.Modules.Outbox;
@@ -42,14 +43,17 @@ namespace UniCore.Infrastructure.Modules.Maintenance
             // Pending and in-progress messages are NEVER deleted here.
             var outbox = await DeleteAsync("outbox", () => _db.Set<OutboxMessage>().Where(m => (m.Status == OutboxMessageStatus.Processed && m.ProcessedAt != null && m.ProcessedAt < processedCutoff) || (m.Status == OutboxMessageStatus.Failed && m.CreatedAt < failedCutoff)).ExecuteDeleteAsync(cancellationToken), () => failed++);
 
+            // Every key past its 24 hours (and a crashed request's key) is forgotten.
+            var idempotency = await DeleteAsync("idempotency", () => _db.Set<IdempotencyRecord>().Where(r => r.ExpiresAt < now).ExecuteDeleteAsync(cancellationToken), () => failed++);
+
             if (cancellationToken.IsCancellationRequested)
             {
                 return Result<CleanupResult>.Fail(CommonErrors.OperationCancelled);
             }
 
-            _logger.LogInformation("Cleanup: {Otps} otps, {Tokens} refresh tokens, {Notifications} notifications, {Outbox} outbox messages deleted; {Failed} steps failed.", otps, tokens, notifications, outbox, failed);
+            _logger.LogInformation("Cleanup: {Otps} otps, {Tokens} refresh tokens, {Notifications} notifications, {Outbox} outbox messages, {Idempotency} idempotency records deleted; {Failed} steps failed.", otps, tokens, notifications, outbox, idempotency, failed);
 
-            return new CleanupResult(otps, tokens, notifications, outbox, failed);
+            return new CleanupResult(otps, tokens, notifications, outbox, idempotency, failed);
         }
 
         private async Task<int> DeleteAsync(string what, Func<Task<int>> delete, Action onFailure)

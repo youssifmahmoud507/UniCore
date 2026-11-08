@@ -9,8 +9,9 @@ using UniCore.Domain.Modules.Identity;
 
 namespace UniCore.Application.Modules.Documents
 {
-    public sealed class DocumentTypeHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IAggregateRepository<DocumentType> types, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+    public sealed class DocumentTypeHandler(IPermissionAuthorizer authorizer, ICurrentUser user, IAggregateRepository<DocumentType> types, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit, ICacheService cache)
     {
+        private static readonly TimeSpan TypesCacheLifetime = TimeSpan.FromMinutes(10);
         private static readonly ResourceContext GlobalResource = ResourceContext.InScope(ScopeType.Global, Guid.Empty);
 
         private readonly IPermissionAuthorizer _authorizer = authorizer;
@@ -19,8 +20,9 @@ namespace UniCore.Application.Modules.Documents
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IClock _clock = clock;
         private readonly IAuditWriter _audit = audit;
+        private readonly ICacheService _cache = cache;
 
-        // Anybody signed in can see which kinds of document exist: they need it to upload.
+
         public async Task<Result<IReadOnlyList<DocumentTypeDto>>> ListAsync(CancellationToken cancellationToken = default)
         {
             if (!_user.IsAuthenticated)
@@ -28,10 +30,18 @@ namespace UniCore.Application.Modules.Documents
                 return Error.Unauthorized();
             }
 
+            // Read on every upload form and rarely changed: cached, and cleared whenever a document type is saved.
+            return await _cache.GetOrCreateAsync(CacheGroups.DocumentTypes, "all", LoadTypesAsync, TypesCacheLifetime, cancellationToken);
+        }
+
+        private async Task<Result<IReadOnlyList<DocumentTypeDto>>> LoadTypesAsync(CancellationToken cancellationToken)
+        {
             var items = await _types.ListAsync(new DocumentTypesSpecification(), cancellationToken);
 
             return Result<IReadOnlyList<DocumentTypeDto>>.Ok([.. items.Select(t => DocumentMapper.ToDto(t))]);
         }
+
+        // Anybody signed in can see which kinds of document exist: they need it to upload.
 
         public async Task<Result<DocumentTypeDto>> CreateAsync(CreateDocumentTypeCommand command, RequestInfo request, CancellationToken cancellationToken = default)
         {

@@ -34,7 +34,7 @@ namespace UniCore.Api.Security
                         .WithOrigins(origins)
                         .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
                         .WithHeaders("Authorization", "Content-Type", "Accept", "Idempotency-Key", "X-Correlation-Id", "X-Requested-With", "X-SignalR-User-Agent")
-                        .WithExposedHeaders("Retry-After", "X-Correlation-Id", "Content-Disposition")
+                        .WithExposedHeaders("Retry-After", "X-Correlation-Id", "Content-Disposition", "Idempotency-Replayed")
                         .SetPreflightMaxAge(TimeSpan.FromMinutes(apiCors.Value.PreflightMaxAgeMinutes)));
                 });
             services.AddCors();

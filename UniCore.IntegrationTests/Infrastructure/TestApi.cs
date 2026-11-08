@@ -24,6 +24,8 @@ namespace UniCore.IntegrationTests.Infrastructure
         public CapturingEmailSender Emails { get; }
 
         public static string NewName(string prefix) => $"{prefix}{Guid.NewGuid():N}";
+        // Starting a workflow needs an Idempotency-Key header (a new one per call, like a real client's retry-safe request).
+        public static IReadOnlyDictionary<string, string> NewIdempotencyKey() => new Dictionary<string, string> { ["Idempotency-Key"] = $"test-{Guid.NewGuid():N}" };
 
         public Task<string> AdminTokenAsync() => _adminToken.Value;
 

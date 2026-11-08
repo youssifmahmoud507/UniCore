@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.CodeAnalysis;
 using System.Reflection;
 using UniCore.Api.Extensions;
+using UniCore.Api.Filters;
 
 namespace UniCore.ArchitectureTests
 {
@@ -24,6 +25,10 @@ namespace UniCore.ArchitectureTests
             "AuthController.VerifyOtp",
             "AuthController.ResetPassword"
         ];
+
+        // Actions that must not run twice for one client intention need [Idempotent] (conventions.md, "Idempotency").
+        // Add "Controller.Action" here when a new such endpoint (register for a course, publish a grade) is built.
+        private static readonly string[] MustBeIdempotent = ["WorkflowsController.Start"];
 
         private static IEnumerable<Type> Controllers() =>
             ApiAssembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && typeof(ControllerBase).IsAssignableFrom(t));
@@ -113,5 +118,30 @@ namespace UniCore.ArchitectureTests
 
             Assert.True(open.Count == 0, "Add [Authorize] to: " + string.Join(", ", open));
         }
+
+        [Fact]
+        public void Actions_that_must_not_run_twice_are_idempotent()
+        {
+            var found = Actions().Where(m => MustBeIdempotent.Contains(Name(m))).ToList();
+            var notFound = MustBeIdempotent.Except(found.Select(Name)).ToList();
+            var missing = found.Where(m => !m.IsDefined(typeof(IdempotentAttribute), true)).Select(Name).ToList();
+
+            Assert.True(notFound.Count == 0, "These actions no longer exist (update MustBeIdempotent): " + string.Join(", ", notFound));
+            Assert.True(missing.Count == 0, "Add [Idempotent] to: " + string.Join(", ", missing));
+        }
+
+        [Fact]
+        public void Idempotent_is_only_used_on_actions_that_change_something()
+        {
+            var wrong = Actions()
+                .Where(m => m.IsDefined(typeof(IdempotentAttribute), true))
+                .Where(m => m.GetCustomAttributes<HttpMethodAttribute>(true).Any(a => a.HttpMethods.Contains("GET") || a.HttpMethods.Contains("HEAD") || a.HttpMethods.Contains("OPTIONS")))
+                .Select(Name)
+                .ToList();
+
+            Assert.True(wrong.Count == 0, "[Idempotent] makes no sense on a read: " + string.Join(", ", wrong));
+        }
+
+
     }
 }

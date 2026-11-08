@@ -66,8 +66,8 @@ namespace UniCore.IntegrationTests.EndToEnd
             => (await MineAsync(token)).Any(n => About(n, type, reference));
 
         private Task<ApiResponse> StartAsync(string token, string code, Guid department)
-            => Client.PostAsync("/api/v1/workflows", new { definitionCode = code, referenceType = "TestRequest", referenceId = Guid.NewGuid(), scopeType = "Department", scopeId = department }, token);
-
+            => Client.PostAsync("/api/v1/workflows", new { definitionCode = code, referenceType = "TestRequest", referenceId = Guid.NewGuid(), scopeType = "Department", scopeId = department }, token, TestApi.NewIdempotencyKey());
+        
         private Task<ApiResponse> ActAsync(string token, Guid id, string action, string? comment = null)
             => Client.PostAsync($"/api/v1/workflows/{id}/{action}", new { comment }, token);
 

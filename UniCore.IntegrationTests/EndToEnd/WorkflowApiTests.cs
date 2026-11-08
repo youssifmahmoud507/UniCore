@@ -18,8 +18,8 @@ namespace UniCore.IntegrationTests.EndToEnd
         }
 
         private Task<ApiResponse> StartAsync(string token, string code, Guid? department = null, Guid? reference = null)
-            => Client.PostAsync("/api/v1/workflows", new { definitionCode = code, referenceType = "TestRequest", referenceId = reference ?? Guid.NewGuid(), scopeType = department is null ? null : "Department", scopeId = department }, token);
-
+            => Client.PostAsync("/api/v1/workflows", new { definitionCode = code, referenceType = "TestRequest", referenceId = reference ?? Guid.NewGuid(), scopeType = department is null ? null : "Department", scopeId = department }, token, TestApi.NewIdempotencyKey());
+        
         private Task<ApiResponse> ActAsync(string token, Guid id, string action, string? comment = null)
             => Client.PostAsync($"/api/v1/workflows/{id}/{action}", new { comment }, token);
 
@@ -261,8 +261,7 @@ namespace UniCore.IntegrationTests.EndToEnd
             Assert.Equal(422, inactive.Code);
             Assert.Equal("WORKFLOW_DEFINITION_INACTIVE", inactive.ErrorCode);
 
-            var invalid = await Client.PostAsync("/api/v1/workflows", new { definitionCode = "COMPLAINT", referenceType = " ", referenceId = Guid.NewGuid() }, student);
-            Assert.Equal(400, invalid.Code);
+            var invalid = await Client.PostAsync("/api/v1/workflows", new { definitionCode = "COMPLAINT", referenceType = " ", referenceId = Guid.NewGuid() }, student, TestApi.NewIdempotencyKey()); Assert.Equal(400, invalid.Code);
         }
 
         [Fact]

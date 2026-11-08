@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using UniCore.Api.Contracts.Workflow;
 using UniCore.Api.Extensions;
+using UniCore.Api.Filters;
 using UniCore.Application.Common.Pagination;
 using UniCore.Application.Modules.Workflow;
 using UniCore.Domain.Modules.Workflow;
@@ -15,6 +16,7 @@ namespace UniCore.Api.Controllers
     public sealed class WorkflowsController : ControllerBase
     {
         [HttpPost]
+        [Idempotent]
         public async Task<IActionResult> Start([FromBody] StartWorkflowRequest request, [FromServices] IWorkflowService service, CancellationToken cancellationToken)
         {
             var result = await service.StartAsync(new StartWorkflowCommand(request.DefinitionCode, request.ReferenceType, request.ReferenceId, request.SubjectStudentId, request.ScopeType, request.ScopeId), this.GetRequestInfo(), cancellationToken);

@@ -5,8 +5,10 @@ using System.Text;
 using UniCore.Application.Modules.Audit;
 using UniCore.Application.Modules.Finance;
 using UniCore.Infrastructure.Modules.Audit;
+using UniCore.Infrastructure.Modules.Caching;
 using UniCore.Infrastructure.Modules.Documents;
 using UniCore.Infrastructure.Modules.Finance;
+using UniCore.Infrastructure.Modules.Idempotency;
 using UniCore.Infrastructure.Modules.Jobs;
 using UniCore.Infrastructure.Modules.Maintenance;
 using UniCore.Infrastructure.Modules.Notifications;
@@ -37,6 +39,9 @@ namespace UniCore.Infrastructure.Modules.Platform
             services.AddRealtime();
             services.AddDocumentsModule();
             services.AddMaintenanceModule();
+            services.AddIdempotencyModule();
+            // Last: it puts the cached provider in front of the user access provider registered earlier.
+            services.AddCachingModule();
             return services;
         }
     }
