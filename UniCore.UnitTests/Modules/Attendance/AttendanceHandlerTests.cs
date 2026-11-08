@@ -1,4 +1,5 @@
 using System.Text;
+using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Modules.Attendance;
 using UniCore.Application.Modules.Documents;
 using UniCore.Application.Modules.Offerings;
@@ -249,7 +250,7 @@ namespace UniCore.UnitTests.Modules.Attendance
             await env.RunSessionAsync(section, 25);
 
             // Issued once, after the first absence (0%); later sessions at the same level do not warn again.
-            var warning = Assert.Single(env.Warnings.Items.Where(w => w.StudentId == ali.Id && w.Level == WarningLevel.Critical));
+            var warning = Assert.Single(env.Warnings.Items, w => w.StudentId == ali.Id && w.Level == WarningLevel.Critical);
             Assert.True(warning.IsExamBlocking);
             Assert.Equal(0m, warning.Percentage);
             Assert.Contains(warning.DomainEvents, e => e is AttendanceWarningIssued);

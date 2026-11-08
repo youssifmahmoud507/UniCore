@@ -353,6 +353,236 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Applicants", "admissions");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceExcuse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AttendanceRecordId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AttendanceSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttendanceRecordId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AttendanceExcuses_ActivePerRecord")
+                        .HasFilter("[Status] <> 'Rejected'");
+
+                    b.HasIndex("AttendanceSessionId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("CourseSectionId", "Status");
+
+                    b.ToTable("AttendanceExcuses", "attendance");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendancePolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AcademicProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExamBlocking")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LateThresholdMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MinimumPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("WarningPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicProgramId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AttendancePolicies_ActivePerProgram")
+                        .HasFilter("[IsActive] = 1 AND [AcademicProgramId] IS NOT NULL");
+
+                    b.HasIndex("CourseId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AttendancePolicies_ActivePerCourse")
+                        .HasFilter("[IsActive] = 1 AND [CourseId] IS NOT NULL");
+
+                    b.ToTable("AttendancePolicies", "attendance", t =>
+                        {
+                            t.HasCheckConstraint("CK_AttendancePolicies_OneTarget", "([AcademicProgramId] IS NULL AND [CourseId] IS NOT NULL) OR ([AcademicProgramId] IS NOT NULL AND [CourseId] IS NULL)");
+
+                            t.HasCheckConstraint("CK_AttendancePolicies_Percentages", "[MinimumPercentage] >= 0 AND [MinimumPercentage] <= [WarningPercentage] AND [WarningPercentage] <= 100");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AttendanceSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EnrollmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("MarkedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("MarkedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("MinutesLate")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("AttendanceSessionId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("AttendanceRecords", "attendance", t =>
+                        {
+                            t.HasCheckConstraint("CK_AttendanceRecords_MinutesLate", "[MinutesLate] IS NULL OR [MinutesLate] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("OpenedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateOnly>("SessionDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseSectionId", "SessionDate", "StartTime")
+                        .IsUnique();
+
+                    b.ToTable("AttendanceSessions", "attendance");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceWarning", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsExamBlocking")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Percentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseSectionId");
+
+                    b.HasIndex("StudentId", "CourseSectionId", "IssuedAt");
+
+                    b.ToTable("AttendanceWarnings", "attendance");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Audit.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3725,6 +3955,79 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceExcuse", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Attendance.AttendanceRecord", null)
+                        .WithMany()
+                        .HasForeignKey("AttendanceRecordId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Attendance.AttendanceSession", null)
+                        .WithMany()
+                        .HasForeignKey("AttendanceSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendancePolicy", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.University.AcademicProgram", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicProgramId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UniCore.Domain.Modules.Courses.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceRecord", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Attendance.AttendanceSession", null)
+                        .WithMany("Records")
+                        .HasForeignKey("AttendanceSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceSession", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceWarning", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Calendar.AcademicLevel", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.University.AcademicProgram", null)
@@ -4428,6 +4731,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("Decisions");
 
                     b.Navigation("Requirements");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceSession", b =>
+                {
+                    b.Navigation("Records");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Curriculum.StudyPlanVersion", b =>

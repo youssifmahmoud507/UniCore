@@ -19,6 +19,7 @@ using UniCore.UnitTests.Modules.Admissions;
 using UniCore.UnitTests.Modules.Identity;
 using UniCore.UnitTests.Modules.Offerings;
 using UniCore.UnitTests.Modules.Scheduling;
+using UniCore.UnitTests.Modules.University;
 
 namespace UniCore.UnitTests.Modules.Attendance
 {
