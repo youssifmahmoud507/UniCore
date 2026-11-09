@@ -15,7 +15,7 @@
         private static readonly string[] InstructorSet =
         [
         Permissions.Courses.Read, Permissions.Scheduling.Read, Permissions.Attendance.Read, Permissions.Attendance.Record,
-        Permissions.Exams.Read, Permissions.Grades.Read, Permissions.Grades.Enter,
+        Permissions.Exams.Read, Permissions.Assessments.Read, Permissions.Assessments.Manage, Permissions.Grades.Read, Permissions.Grades.Enter,
         Permissions.Documents.Read, Permissions.Documents.Upload
     ];
 
@@ -24,7 +24,7 @@
         Permissions.University.Read, Permissions.People.Read, Permissions.Students.Read,
         Permissions.Courses.Read, Permissions.Courses.Manage, Permissions.Registration.Read,
         Permissions.Scheduling.Read, Permissions.Attendance.Read, Permissions.Attendance.ReviewExcuse, Permissions.Attendance.Manage,
-        Permissions.Exams.Read, Permissions.Exams.Manage,
+        Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read, Permissions.Assessments.Manage,
         Permissions.Grades.Read, Permissions.Grades.Review, Permissions.GradeChanges.Request,
         Permissions.Requests.Read, Permissions.Requests.Process,
         Permissions.Documents.Read, Permissions.Reports.Read
@@ -49,6 +49,7 @@
         Permissions.Admissions.Read, Permissions.Courses.Read, Permissions.Courses.Manage,
         Permissions.Curriculum.Manage, Permissions.Registration.Read, Permissions.Registration.Manage,
         Permissions.Scheduling.Read, Permissions.Scheduling.Manage, Permissions.Attendance.Read,
+        Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read,
         Permissions.Grades.Read, Permissions.Grades.Publish,
         Permissions.Requests.Read, Permissions.Requests.Process,
         Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read

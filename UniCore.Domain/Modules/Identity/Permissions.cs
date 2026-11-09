@@ -86,6 +86,12 @@
             public const string Manage = "Exams.Manage";
         }
 
+        public static class Assessments
+        {
+            public const string Read = "Assessments.Read";
+            public const string Manage = "Assessments.Manage";
+        }
+
         public static class Grades
         {
             public const string Read = "Grades.Read";
@@ -197,6 +203,8 @@
         new PermissionDefinition(Attendance.Manage, "Attendance", "Manage attendance policies"),
         new PermissionDefinition(Exams.Read, "Examination", "View exams and schedules"),
         new PermissionDefinition(Exams.Manage, "Examination", "Manage exams and schedules"),
+        new PermissionDefinition(Assessments.Read, "Assessment", "View the grading scheme (components and weights) of a section"),
+        new PermissionDefinition(Assessments.Manage, "Assessment", "Define the grading scheme of a section"),
         new PermissionDefinition(Grades.Read, "Grading", "View grades"),
         new PermissionDefinition(Grades.Enter, "Grading", "Enter grades"),
         new PermissionDefinition(Grades.Review, "Grading", "Review submitted grades"),

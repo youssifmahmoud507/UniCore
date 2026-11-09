@@ -11,6 +11,7 @@ using UniCore.Application.Common.Abstractions;
 using UniCore.Infrastructure;
 using UniCore.Infrastructure.Common;
 using UniCore.Infrastructure.Modules.Email;
+using UniCore.Infrastructure.Modules.Grading;
 using UniCore.Infrastructure.Modules.Identity;
 using UniCore.Infrastructure.Modules.Jobs;
 using UniCore.Infrastructure.Modules.Notifications;
@@ -86,6 +87,7 @@ namespace UniCore.Api
             });
             await app.Services.SeedIdentityAsync();
             await app.Services.SeedWorkflowAsync();
+            await app.Services.SeedGradingAsync();
             app.MapBackgroundJobsDashboard();
             app.Services.UseBackgroundJobs();
 

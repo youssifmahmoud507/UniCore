@@ -353,6 +353,90 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Applicants", "admissions");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Assessments.Assessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseSectionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Assessments_LivePerSection")
+                        .HasFilter("[Status] <> 'Cancelled'");
+
+                    b.ToTable("Assessments", "assessment");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Assessments.AssessmentComponent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssessmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("MaxScore")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId", "Name")
+                        .IsUnique();
+
+                    b.HasIndex("AssessmentId", "Type")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AssessmentComponents_OneExamPerType")
+                        .HasFilter("[Type] IN ('Midterm', 'Final')");
+
+                    b.ToTable("AssessmentComponents", "assessment", t =>
+                        {
+                            t.HasCheckConstraint("CK_AssessmentComponents_MaxScore", "[MaxScore] > 0 AND [MaxScore] <= 1000");
+
+                            t.HasCheckConstraint("CK_AssessmentComponents_Weight", "[Weight] > 0 AND [Weight] <= 100");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceExcuse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1313,6 +1397,212 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("DocumentVersions", "documents");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.Exam", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ExamSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExamType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("MaxScore")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseSectionId");
+
+                    b.HasIndex("ExamSessionId", "CourseSectionId", "ExamType")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Exams_ActivePerSectionAndType")
+                        .HasFilter("[Status] <> 'Cancelled'");
+
+                    b.ToTable("Exams", "examination", t =>
+                        {
+                            t.HasCheckConstraint("CK_Exams_Duration", "[DurationMinutes] >= 15 AND [DurationMinutes] <= 480");
+
+                            t.HasCheckConstraint("CK_Exams_MaxScore", "[MaxScore] > 0 AND [MaxScore] <= 1000");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamInvigilator", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ExamRoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InstructorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstructorId");
+
+                    b.HasIndex("ExamId", "InstructorId")
+                        .IsUnique();
+
+                    b.HasIndex("ExamRoomId", "Role")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ExamInvigilators_ChiefPerRoom")
+                        .HasFilter("[Role] = 'Chief'");
+
+                    b.ToTable("ExamInvigilators", "examination");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamRoom", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("ExamId", "RoomId")
+                        .IsUnique();
+
+                    b.ToTable("ExamRooms", "examination", t =>
+                        {
+                            t.HasCheckConstraint("CK_ExamRooms_Capacity", "[Capacity] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateOnly>("ExamDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ExamSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamDate");
+
+                    b.HasIndex("ExamId")
+                        .IsUnique();
+
+                    b.HasIndex("ExamSessionId");
+
+                    b.ToTable("ExamSchedules", "examination", t =>
+                        {
+                            t.HasCheckConstraint("CK_ExamSchedules_Times", "[EndTime] > [StartTime]");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ExamType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicSemesterId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ExamSessions", "examination", t =>
+                        {
+                            t.HasCheckConstraint("CK_ExamSessions_Dates", "[EndDate] >= [StartDate]");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.Discount", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2012,6 +2302,213 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("StudentId", "Status");
 
                     b.ToTable("StudentScholarships", "finance");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.Grade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicSemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssessmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Credits")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("EnrollmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EnteredByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("GradePoints")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("decimal(3,2)");
+
+                    b.Property<Guid?>("GradeScaleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool?>("IsPassing")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Letter")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<DateTimeOffset?>("LockedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("Percentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ReturnReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset?>("ReviewedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId");
+
+                    b.HasIndex("EnrollmentId")
+                        .IsUnique();
+
+                    b.HasIndex("GradeScaleId");
+
+                    b.HasIndex("CourseSectionId", "Status");
+
+                    b.HasIndex("StudentId", "AcademicSemesterId");
+
+                    b.ToTable("Grades", "grading", t =>
+                        {
+                            t.HasCheckConstraint("CK_Grades_Percentage", "[Percentage] IS NULL OR ([Percentage] >= 0 AND [Percentage] <= 100)");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeComponentScore", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssessmentComponentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradeId", "AssessmentComponentId")
+                        .IsUnique();
+
+                    b.ToTable("GradeComponentScores", "grading", t =>
+                        {
+                            t.HasCheckConstraint("CK_GradeComponentScores_Score", "[Score] >= 0 AND [Score] <= 1000");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeScale", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDefault")
+                        .IsUnique()
+                        .HasDatabaseName("UX_GradeScales_OneDefault")
+                        .HasFilter("[IsDefault] = 1");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("GradeScales", "grading");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeScaleBand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("GradePoints")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("decimal(3,2)");
+
+                    b.Property<Guid>("GradeScaleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsPassing")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Letter")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<decimal>("MinPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradeScaleId", "Letter")
+                        .IsUnique();
+
+                    b.HasIndex("GradeScaleId", "MinPercentage")
+                        .IsUnique();
+
+                    b.ToTable("GradeScaleBands", "grading", t =>
+                        {
+                            t.HasCheckConstraint("CK_GradeScaleBands_Min", "[MinPercentage] >= 0 AND [MinPercentage] <= 100");
+
+                            t.HasCheckConstraint("CK_GradeScaleBands_Points", "[GradePoints] >= 0 AND [GradePoints] <= 5");
+                        });
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Idempotency.IdempotencyRecord", b =>
@@ -3955,6 +4452,24 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Assessments.Assessment", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Assessments.AssessmentComponent", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Assessments.Assessment", null)
+                        .WithMany("Components")
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceExcuse", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.Attendance.AttendanceRecord", null)
@@ -4166,6 +4681,81 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.Exam", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Examination.ExamSession", null)
+                        .WithMany()
+                        .HasForeignKey("ExamSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamInvigilator", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Examination.Exam", null)
+                        .WithMany("Invigilators")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Examination.ExamRoom", null)
+                        .WithMany()
+                        .HasForeignKey("ExamRoomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.People.Instructor", null)
+                        .WithMany()
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamRoom", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Examination.Exam", null)
+                        .WithMany("Rooms")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.University.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamSchedule", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Examination.Exam", null)
+                        .WithOne("Schedule")
+                        .HasForeignKey("UniCore.Domain.Modules.Examination.ExamSchedule", "ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Examination.ExamSession", null)
+                        .WithMany()
+                        .HasForeignKey("ExamSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.ExamSession", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Calendar.AcademicSemester", null)
+                        .WithMany()
+                        .HasForeignKey("AcademicSemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructureItem", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.Finance.FeeDefinition", null)
@@ -4289,6 +4879,44 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.Grade", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Assessments.Assessment", null)
+                        .WithMany()
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Offerings.CourseSection", null)
+                        .WithMany()
+                        .HasForeignKey("CourseSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Grading.GradeScale", null)
+                        .WithMany()
+                        .HasForeignKey("GradeScaleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeComponentScore", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Grading.Grade", null)
+                        .WithMany("Scores")
+                        .HasForeignKey("GradeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeScaleBand", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Grading.GradeScale", null)
+                        .WithMany("Bands")
+                        .HasForeignKey("GradeScaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -4733,6 +5361,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("Requirements");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Assessments.Assessment", b =>
+                {
+                    b.Navigation("Components");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Attendance.AttendanceSession", b =>
                 {
                     b.Navigation("Records");
@@ -4750,6 +5383,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("Versions");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Examination.Exam", b =>
+                {
+                    b.Navigation("Invigilators");
+
+                    b.Navigation("Rooms");
+
+                    b.Navigation("Schedule");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Finance.FeeStructure", b =>
                 {
                     b.Navigation("Items");
@@ -4762,6 +5404,16 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("Payments");
 
                     b.Navigation("Reductions");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.Grade", b =>
+                {
+                    b.Navigation("Scores");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeScale", b =>
+                {
+                    b.Navigation("Bands");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Notifications.Notification", b =>
