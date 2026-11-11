@@ -169,6 +169,7 @@
         public static class Reports
         {
             public const string Read = "Reports.Read";
+            public const string Export = "Reports.Export";
         }
 
         public static readonly IReadOnlyList<PermissionDefinition> All =
@@ -226,6 +227,7 @@
         new PermissionDefinition(Audit.Read, "Audit", "View the audit log"),
         new PermissionDefinition(Settings.Manage, "Platform", "Manage system settings"),
         new PermissionDefinition(Reports.Read, "Platform", "View reports"),
+        new PermissionDefinition(Reports.Export, "Platform", "Export reports to CSV, Excel and PDF files"),        
         new PermissionDefinition(Fees.Manage, "Finance", "Manage fee definitions and fee structures"),
         new PermissionDefinition(Scholarships.Manage, "Finance", "Manage scholarships and award them to students"),
     ];

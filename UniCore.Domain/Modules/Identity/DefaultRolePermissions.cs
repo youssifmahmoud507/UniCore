@@ -52,15 +52,15 @@
         Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read,
         Permissions.Grades.Read, Permissions.Grades.Publish,
         Permissions.Requests.Read, Permissions.Requests.Process,
-        Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read
-    ];
+        Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read, Permissions.Reports.Export
+            ];
 
         private static readonly string[] FinanceOfficerSet =
         [
         Permissions.Students.Read, Permissions.Finance.Read, Permissions.Invoices.Manage,
         Permissions.Payments.Record, Permissions.Refunds.Approve, Permissions.Holds.Manage,
-        Permissions.Documents.Read, Permissions.Reports.Read
-    ];
+        Permissions.Documents.Read, Permissions.Reports.Read, Permissions.Reports.Export
+            ];
 
         private static readonly string[] AdmissionsOfficerSet =
         [
@@ -69,15 +69,15 @@
     ];
 
         public static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> ByRole = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)
-            {
-                [RoleNames.Student] = StudentSet,
-                [RoleNames.Instructor] = InstructorSet,
-                [RoleNames.DepartmentHead] = DepartmentHeadSet,
-                [RoleNames.Dean] = DeanSet,
-                [RoleNames.Registrar] = RegistrarSet,
-                [RoleNames.FinanceOfficer] = FinanceOfficerSet,
-                [RoleNames.AdmissionsOfficer] = AdmissionsOfficerSet
-            };
+        {
+            [RoleNames.Student] = StudentSet,
+            [RoleNames.Instructor] = InstructorSet,
+            [RoleNames.DepartmentHead] = DepartmentHeadSet,
+            [RoleNames.Dean] = DeanSet,
+            [RoleNames.Registrar] = RegistrarSet,
+            [RoleNames.FinanceOfficer] = FinanceOfficerSet,
+            [RoleNames.AdmissionsOfficer] = AdmissionsOfficerSet
+        };
     }
 
 

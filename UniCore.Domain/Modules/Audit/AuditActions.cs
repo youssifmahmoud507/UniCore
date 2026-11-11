@@ -82,6 +82,9 @@ namespace UniCore.Domain.Modules.Audit
         public const string DocumentDeleted = "DOCUMENT_DELETED";
         public const string DocumentAccessGranted = "DOCUMENT_ACCESS_GRANTED";
         public const string DocumentAccessRevoked = "DOCUMENT_ACCESS_REVOKED";
+
+        public const string ReportViewed = "REPORT_VIEWED";
+        public const string ReportExported = "REPORT_EXPORTED";
     }
 
 
