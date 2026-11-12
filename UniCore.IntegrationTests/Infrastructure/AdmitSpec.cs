@@ -1,7 +1,12 @@
 ﻿namespace UniCore.IntegrationTests.Infrastructure
 {
     // One admission request with all its ids, so a test can refer to them later.
-    public sealed class AdmitSpec(string? code = null, string? email = null, bool createAccount = false)
+    //public sealed class AdmitSpec(string? code = null, string? email = null, bool createAccount = false)
+    public sealed class AdmitSpec(
+    string? code = null,
+    string? email = null,
+    bool createAccount = false,
+    Guid? programId = null)
     {
         public static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -13,11 +18,11 @@
         public string? Email { get; } = email;
 
         public bool CreateAccount { get; } = createAccount;
+        
 
         public Guid Person { get; } = Guid.NewGuid();
 
-        public Guid Program { get; } = Guid.NewGuid();
-
+        public Guid Program { get; } = programId ?? Guid.NewGuid(); //
         public Guid Plan { get; } = Guid.NewGuid();
 
         public Guid AcademicYear { get; } = Guid.NewGuid();
@@ -40,7 +45,9 @@
         };
 
         // Same program and date, a different person.
-        public AdmitSpec WithNewPerson() => new(Code, Email, CreateAccount);
+        //public AdmitSpec WithNewPerson() => new(Code, Email, CreateAccount);
+        public AdmitSpec WithNewPerson() =>
+          new(Code, Email, CreateAccount, Program);
     }
 
 }
