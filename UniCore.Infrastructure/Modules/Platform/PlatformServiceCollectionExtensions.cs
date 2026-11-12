@@ -13,6 +13,7 @@ using UniCore.Infrastructure.Modules.Jobs;
 using UniCore.Infrastructure.Modules.Maintenance;
 using UniCore.Infrastructure.Modules.Notifications;
 using UniCore.Infrastructure.Modules.Outbox;
+using UniCore.Infrastructure.Modules.Reporting;
 using UniCore.Infrastructure.Modules.Workflow;
 
 namespace UniCore.Infrastructure.Modules.Platform
@@ -40,6 +41,7 @@ namespace UniCore.Infrastructure.Modules.Platform
             services.AddDocumentsModule();
             services.AddMaintenanceModule();
             services.AddIdempotencyModule();
+            services.AddReportingModule();
             // Last: it puts the cached provider in front of the user access provider registered earlier.
             services.AddCachingModule();
             return services;

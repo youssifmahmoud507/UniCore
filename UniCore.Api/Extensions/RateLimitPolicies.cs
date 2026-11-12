@@ -8,6 +8,7 @@
         public const string VerifyOtp = "verify-otp";
         public const string ResetPassword = "reset-password";
         public const string Upload = "upload";
+        public const string Export = "export";
 
     }
 }

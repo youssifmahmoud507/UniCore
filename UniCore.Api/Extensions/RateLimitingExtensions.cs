@@ -31,7 +31,8 @@ namespace UniCore.Api.Extensions
                 options.AddPolicy(RateLimitPolicies.VerifyOtp, context => Limited(context, Ip(context), 5, TimeSpan.FromMinutes(10)));
                 options.AddPolicy(RateLimitPolicies.ResetPassword, context => Limited(context, Ip(context), 5, TimeSpan.FromMinutes(10)));
                 options.AddPolicy(RateLimitPolicies.Upload, context => Limited(context, Caller(context), Settings(context).UploadPerMinute, TimeSpan.FromMinutes(1)));
-
+                // A report export reads a lot of data: 10 a minute per user.
+                options.AddPolicy(RateLimitPolicies.Export, context => Limited(context, Caller(context), 10, TimeSpan.FromMinutes(1)));
                 options.OnRejected = async (context, cancellationToken) =>
                 {
                     if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
