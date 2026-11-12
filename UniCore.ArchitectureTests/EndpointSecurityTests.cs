@@ -143,5 +143,14 @@ namespace UniCore.ArchitectureTests
         }
 
 
+        [Fact]
+        public void Report_export_has_its_own_rate_limit()
+        {
+            var export = Actions().Where(m => Name(m) == "ReportsController.Export").ToList();
+
+            Assert.Single(export);
+            Assert.Contains(export[0].GetCustomAttributes<EnableRateLimitingAttribute>(true), a => a.PolicyName == RateLimitPolicies.Export);
+        }
+
     }
 }
