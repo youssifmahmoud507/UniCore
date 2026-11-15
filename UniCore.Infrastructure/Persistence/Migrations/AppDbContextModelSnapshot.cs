@@ -3697,6 +3697,150 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("StudentStatusHistories", "students");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Transcripts.TranscriptEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CourseCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CourseTitle")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("Credits")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CumulativeGpa")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<Guid>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("GradePoints")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("decimal(3,2)");
+
+                    b.Property<bool>("IsCounted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPassing")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Letter")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<decimal>("Percentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("SemesterGpa")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<Guid>("SemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SemesterLabel")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateOnly>("SemesterStart")
+                        .HasColumnType("date");
+
+                    b.Property<int>("SequenceNo")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TranscriptSnapshotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TranscriptSnapshotId", "SequenceNo")
+                        .IsUnique();
+
+                    b.ToTable("TranscriptEntries", "transcript", t =>
+                        {
+                            t.HasCheckConstraint("CK_TranscriptEntries_Credits", "[Credits] >= 0");
+
+                            t.HasCheckConstraint("CK_TranscriptEntries_Percentage", "[Percentage] >= 0 AND [Percentage] <= 100");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Transcripts.TranscriptSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptedCredits")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CumulativeGpa")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<int>("EarnedCredits")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("IssuedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RepeatPolicy")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Standing")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("VerificationCode")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VerificationCode")
+                        .IsUnique();
+
+                    b.HasIndex("StudentId", "IssuedAt");
+
+                    b.ToTable("TranscriptSnapshots", "transcript", t =>
+                        {
+                            t.HasCheckConstraint("CK_TranscriptSnapshots_Credits", "[AttemptedCredits] >= 0 AND [EarnedCredits] >= 0 AND [EarnedCredits] <= [AttemptedCredits]");
+
+                            t.HasCheckConstraint("CK_TranscriptSnapshots_Gpa", "[CumulativeGpa] >= 0 AND [CumulativeGpa] <= 5");
+                        });
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.University.AcademicProgram", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5209,6 +5353,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Transcripts.TranscriptEntry", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Transcripts.TranscriptSnapshot", null)
+                        .WithMany("Entries")
+                        .HasForeignKey("TranscriptSnapshotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.University.AcademicProgram", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.University.Department", null)
@@ -5438,6 +5591,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Navigation("ProgramHistory");
 
                     b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Transcripts.TranscriptSnapshot", b =>
+                {
+                    b.Navigation("Entries");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Workflow.WorkflowDefinition", b =>

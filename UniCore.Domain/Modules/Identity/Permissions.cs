@@ -92,6 +92,12 @@
             public const string Manage = "Assessments.Manage";
         }
 
+        public static class Transcripts
+        {
+            public const string Read = "Transcripts.Read";
+            public const string Issue = "Transcripts.Issue";
+        }
+
         public static class Grades
         {
             public const string Read = "Grades.Read";
@@ -206,6 +212,8 @@
         new PermissionDefinition(Exams.Manage, "Examination", "Manage exams and schedules"),
         new PermissionDefinition(Assessments.Read, "Assessment", "View the grading scheme (components and weights) of a section"),
         new PermissionDefinition(Assessments.Manage, "Assessment", "Define the grading scheme of a section"),
+        new PermissionDefinition(Transcripts.Read, "Transcript", "View GPA, academic history and transcripts"),
+        new PermissionDefinition(Transcripts.Issue, "Transcript", "Issue official transcripts"),
         new PermissionDefinition(Grades.Read, "Grading", "View grades"),
         new PermissionDefinition(Grades.Enter, "Grading", "Enter grades"),
         new PermissionDefinition(Grades.Review, "Grading", "Review submitted grades"),
@@ -227,7 +235,7 @@
         new PermissionDefinition(Audit.Read, "Audit", "View the audit log"),
         new PermissionDefinition(Settings.Manage, "Platform", "Manage system settings"),
         new PermissionDefinition(Reports.Read, "Platform", "View reports"),
-        new PermissionDefinition(Reports.Export, "Platform", "Export reports to CSV, Excel and PDF files"),        
+        new PermissionDefinition(Reports.Export, "Platform", "Export reports to CSV, Excel and PDF files"),
         new PermissionDefinition(Fees.Manage, "Finance", "Manage fee definitions and fee structures"),
         new PermissionDefinition(Scholarships.Manage, "Finance", "Manage scholarships and award them to students"),
     ];

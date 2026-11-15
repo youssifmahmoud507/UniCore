@@ -6,7 +6,7 @@
     {
         private static readonly string[] StudentSet =
         [
-        Permissions.Registration.Read, Permissions.Registration.Register, Permissions.Scheduling.Read, Permissions.Grades.Read,
+        Permissions.Registration.Read, Permissions.Registration.Register, Permissions.Scheduling.Read, Permissions.Grades.Read, Permissions.Transcripts.Read,
         Permissions.Attendance.Read, Permissions.Attendance.SubmitExcuse,
         Permissions.Finance.Read, Permissions.Requests.Submit, Permissions.Requests.Read,
         Permissions.Documents.Read, Permissions.Documents.Upload
@@ -25,7 +25,7 @@
         Permissions.Courses.Read, Permissions.Courses.Manage, Permissions.Registration.Read,
         Permissions.Scheduling.Read, Permissions.Attendance.Read, Permissions.Attendance.ReviewExcuse, Permissions.Attendance.Manage,
         Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read, Permissions.Assessments.Manage,
-        Permissions.Grades.Read, Permissions.Grades.Review, Permissions.GradeChanges.Request,
+        Permissions.Grades.Read, Permissions.Grades.Review, Permissions.GradeChanges.Request, Permissions.Transcripts.Read,
         Permissions.Requests.Read, Permissions.Requests.Process,
         Permissions.Documents.Read, Permissions.Reports.Read
     ];
@@ -50,17 +50,17 @@
         Permissions.Curriculum.Manage, Permissions.Registration.Read, Permissions.Registration.Manage,
         Permissions.Scheduling.Read, Permissions.Scheduling.Manage, Permissions.Attendance.Read,
         Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read,
-        Permissions.Grades.Read, Permissions.Grades.Publish,
+        Permissions.Grades.Read, Permissions.Grades.Publish, Permissions.Transcripts.Read, Permissions.Transcripts.Issue,
         Permissions.Requests.Read, Permissions.Requests.Process,
-        Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read, Permissions.Reports.Export
-            ];
+        Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read
+    ];
 
         private static readonly string[] FinanceOfficerSet =
         [
         Permissions.Students.Read, Permissions.Finance.Read, Permissions.Invoices.Manage,
         Permissions.Payments.Record, Permissions.Refunds.Approve, Permissions.Holds.Manage,
-        Permissions.Documents.Read, Permissions.Reports.Read, Permissions.Reports.Export
-            ];
+        Permissions.Documents.Read, Permissions.Reports.Read
+    ];
 
         private static readonly string[] AdmissionsOfficerSet =
         [
@@ -69,15 +69,15 @@
     ];
 
         public static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> ByRole = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)
-        {
-            [RoleNames.Student] = StudentSet,
-            [RoleNames.Instructor] = InstructorSet,
-            [RoleNames.DepartmentHead] = DepartmentHeadSet,
-            [RoleNames.Dean] = DeanSet,
-            [RoleNames.Registrar] = RegistrarSet,
-            [RoleNames.FinanceOfficer] = FinanceOfficerSet,
-            [RoleNames.AdmissionsOfficer] = AdmissionsOfficerSet
-        };
+            {
+                [RoleNames.Student] = StudentSet,
+                [RoleNames.Instructor] = InstructorSet,
+                [RoleNames.DepartmentHead] = DepartmentHeadSet,
+                [RoleNames.Dean] = DeanSet,
+                [RoleNames.Registrar] = RegistrarSet,
+                [RoleNames.FinanceOfficer] = FinanceOfficerSet,
+                [RoleNames.AdmissionsOfficer] = AdmissionsOfficerSet
+            };
     }
 
 
