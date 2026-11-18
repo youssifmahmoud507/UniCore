@@ -1,97 +1,154 @@
 # UniCore — University Management System
 
-## About the Project
+Enterprise university management backend: .NET 10, EF Core, SQL Server, Clean Architecture.
 
-**UniCore** is an enterprise-oriented University Management System designed to centralize and streamline academic and administrative operations within a university environment.
+## Quick Start
 
-The platform aims to provide a unified system for managing university structures, students, instructors, academic programs, course registration, scheduling, attendance, examinations, grading, graduation, student services, and administrative workflows.
+### Prerequisites
 
-Built with a **backend-first approach**, UniCore focuses on maintainable architecture, clear module boundaries, secure access control, reliable business logic, and scalable system design. The project follows a modular monolith approach, combining the simplicity of a unified deployment with the separation of responsibilities required by a large enterprise application.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- Git
 
-## Project Goals
+### 1. Clone and configure
 
-- Build a comprehensive university management backend based on realistic academic business requirements.
-- Apply Clean Architecture principles and maintain clear separation of concerns.
-- Organize the system into well-defined modules with explicit responsibilities.
-- Implement secure authentication, authorization, roles, permissions, and data-scope restrictions.
-- Model complex academic workflows and approval processes.
-- Maintain data consistency and reliability across business operations.
-- Apply software engineering practices that improve testability, maintainability, and long-term extensibility.
+```bash
+git clone https://github.com/youssifmahmoud507/UniCore.git
+cd UniCore
+cp .env.example .env
+```
 
-## Core Modules
+Edit `.env` and set **real values** for all variables (especially passwords and keys).
 
-- **University Structure:** Manage universities, colleges, departments, and organizational relationships.
-- **Identity & Access Management:** Handle users, roles, permissions, authentication, and authorization.
-- **Admissions & Student Management:** Manage admissions processes and student records.
-- **Academic Programs & Curriculum:** Organize programs, academic plans, courses, and prerequisites.
-- **Course Registration:** Manage course enrollment and registration rules.
-- **Scheduling:** Coordinate academic schedules and related resources.
-- **Attendance:** Track and manage student attendance.
-- **Examinations & Assessment:** Support examinations, assessment activities, and grading processes.
-- **GPA & Transcripts:** Calculate academic performance and maintain student academic records.
-- **Graduation Management:** Support graduation eligibility and related academic procedures.
-- **Finance:** Support university-related financial records and eligibility rules.
-- **Student Services:** Handle service requests, complaints, appeals, and administrative requests.
-- **Workflow & Approvals:** Manage sequential approval processes with role-based responsibilities.
-- **Notifications & Communication:** Support system notifications and communication between users.
-- **Documents:** Manage academic and administrative documents.
-- **Reporting & Analytics:** Provide structured information for academic and administrative reporting.
-- **Audit & Administration:** Track important system activities and manage platform-level settings.
+### 2. Start infrastructure
 
-## Architecture & Design
+```bash
+docker compose up -d sqlserver redis mailpit
+```
 
-UniCore follows **Clean Architecture principles** within a modular monolith structure. The solution separates responsibilities into the following main projects:
+Wait until SQL Server is healthy:
 
-- `UniCore.Domain` — Core domain models, business concepts, and domain rules.
-- `UniCore.Application` — Application use cases, business workflows, and contracts.
-- `UniCore.Infrastructure` — Database access, persistence, and external infrastructure integrations.
-- `UniCore.Api` — HTTP endpoints and API configuration.
+```bash
+docker compose ps   # sqlserver should show "healthy"
+```
 
-The solution also includes dedicated projects for unit tests, integration tests, and architecture tests.
+### 3. Apply database migrations
 
-The design emphasizes separation of concerns, dependency management, modularity, testability, and explicit ownership of business responsibilities.
+```bash
+dotnet ef database update -p UniCore.Infrastructure -s UniCore.Api
+```
 
-## Technology Stack
+### 4. Configure user secrets (local development)
 
-- **Language:** C#
-- **Framework:** .NET 10
-- **API:** ASP.NET Core Web API
-- **ORM:** Entity Framework Core
-- **Database:** SQL Server
-- **Architecture:** Clean Architecture, Modular Monolith
-- **Testing:** Unit Tests, Integration Tests, Architecture Tests
-- **Version Control:** Git & GitHub
+```bash
+cd UniCore.Api
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,1433;Database=UniCore;User Id=sa;Password=<your .env password>;TrustServerCertificate=True"
+dotnet user-secrets set "Jwt:SigningKey" "<at least 32 characters>"
+dotnet user-secrets set "PasswordReset:Pepper" "<at least 32 characters>"
+dotnet user-secrets set "SeedAdmin:Email" "admin@unicore.local"
+dotnet user-secrets set "SeedAdmin:UserName" "superadmin"
+dotnet user-secrets set "SeedAdmin:Password" "<strong password>"
+cd ..
+```
 
-Additional infrastructure and supporting technologies are introduced as required by the project's implementation.
+### 5. Run the API
 
-## Security & Authorization
+```bash
+dotnet run --project UniCore.Api
+```
 
-Security is a core consideration in UniCore. The system is designed to support role-based access control, permission management, and data-scope authorization.
+The API starts at `https://localhost:7094` and `http://localhost:5087`. Scalar UI at `/scalar` (Development only).
 
-The authorization model aims to ensure that each user can access only the operations and information permitted by their role and organizational responsibilities.
+### Alternative: Run everything in Docker
 
-## Workflow Management
+```bash
+docker compose up -d
+```
 
-UniCore includes a dedicated workflow concept for handling requests that require one or more approval steps. Workflows can define sequential approvals, track decisions, maintain action history, and enforce authorization rules for each step.
+This builds and starts the API container along with SQL Server, Redis, and Mailpit. The API is available at `http://localhost:8080`.
 
-The workflow design also considers concurrent approval attempts, versioned workflow definitions, and the separation between workflow processing and the academic modules that respond to workflow outcomes.
+> **Note:** You must run `dotnet ef database update` before the first `docker compose up` with the api service, or the API will fail to start because the database does not exist yet.
 
-## Testing & Quality
+## Environment Variables
 
-The solution includes separate testing projects to support verification at different levels:
+| Variable | Required | Description |
+|---|---|---|
+| `MSSQL_SA_PASSWORD` | ✅ | SQL Server SA password |
+| `REDIS_PASSWORD` | ✅ | Redis password |
+| `JWT_SIGNING_KEY` | ✅ | JWT signing key (≥32 characters) |
+| `PASSWORD_RESET_PEPPER` | ✅ | OTP HMAC pepper (≥32 characters) |
+| `SEED_ADMIN_EMAIL` | Optional | Initial SuperAdmin email |
+| `SEED_ADMIN_USERNAME` | Optional | Initial SuperAdmin username |
+| `SEED_ADMIN_PASSWORD` | Optional | Initial SuperAdmin password |
+| `ConnectionStrings__DefaultConnection` | Docker | Full SQL Server connection string |
+| `Redis__ConnectionString` | Docker | Redis connection string |
+| `Cors__AllowedOrigins__0` | Optional | Allowed CORS origin |
+| `Smtp__Host` | Optional | SMTP host (default: localhost) |
+| `Smtp__Port` | Optional | SMTP port (default: 1025) |
+| `Hangfire__DashboardEnabled` | Optional | Enable Hangfire dashboard (default: false) |
+| `RateLimiting__Disabled` | Dev only | Disable rate limiting (Development env only) |
 
-- **Unit Tests:** Validate individual business components and application behavior.
-- **Integration Tests:** Verify interactions between application components and infrastructure.
-- **Architecture Tests:** Help enforce architectural boundaries and dependency rules.
+## Running Tests
 
-## Project Vision
+```bash
+# All tests (Docker must be running for integration tests)
+dotnet test
 
-UniCore is intended to be more than a basic CRUD application. It is a practical backend engineering project focused on enterprise-level requirements, complex business rules, modular design, secure authorization, workflow orchestration, and software quality.
+# Unit tests only
+dotnet test UniCore.UnitTests
 
-The long-term goal is to develop a maintainable foundation that can evolve alongside the needs of a university-wide information system.
+# Architecture tests (includes no-throw scan)
+dotnet test UniCore.ArchitectureTests
 
----
+# Integration tests (needs Docker for SQL Server container via Testcontainers)
+dotnet test UniCore.IntegrationTests
+```
 
-**Project Status:** Under Development
+## Health Endpoints
 
-**Repository:** [UniCore on GitHub](https://github.com/youssifmahmoud507/UniCore)
+| Endpoint | Purpose | Checks |
+|---|---|---|
+| `/health/live` | Liveness probe | Process is up (no dependency checks) |
+| `/health/ready` | Readiness probe | Database + Redis cache (Redis down = Degraded, not Unhealthy) |
+
+## Adding a New Module
+
+1. Add domain entities in `UniCore.Domain/Modules/<YourModule>/`
+2. Add application handlers/DTOs in `UniCore.Application/Modules/<YourModule>/`
+3. Add EF configuration in `UniCore.Infrastructure/Persistence/Configurations/`
+4. Create a registration extension: `UniCore.Infrastructure/Modules/<YourModule>/<YourModule>ServiceCollectionExtensions.cs`
+5. Call it from your team's composition point:
+   - **Platform team:** Add to `PlatformServiceCollectionExtensions.AddPlatformModules()`
+   - **Academic team:** Add to `DependencyInjection.AddInfrastructure()` (single line)
+6. Add controllers in `UniCore.Api/Controllers/`
+7. Add a migration: `dotnet ef migrations add <Name> -p UniCore.Infrastructure -s UniCore.Api`
+8. Add tests in `UniCore.UnitTests/Modules/<YourModule>/` and `UniCore.IntegrationTests/`
+
+> **Important:** Do not modify `Program.cs` or `DependencyInjection.cs` unless absolutely necessary (single line max). These files are protected by CODEOWNERS and require platform team review.
+
+## Adding a New Report
+
+1. Implement `IReportProvider` in `UniCore.Application/Modules/Reporting/`
+2. Register it in `AddReportingModule()` in `UniCore.Infrastructure/Modules/Reporting/ReportingServiceCollectionExtensions.cs`
+3. The `ReportingRegistrationTests` architecture test will fail if a report class exists but is not registered
+
+## Services (Docker Compose)
+
+| Service | Port | Purpose |
+|---|---|---|
+| `sqlserver` | 1433 | SQL Server 2022 Developer |
+| `redis` | 6379 (localhost only) | Cache (not source of truth) |
+| `mailpit` | 1025 (SMTP), 8025 (UI) | Local email testing |
+| `api` | 8080 | UniCore API |
+
+## Project Structure
+
+```
+UniCore.Domain/            → Entities, value objects, enums, Result/Error (no dependencies)
+UniCore.Application/       → Use cases, handlers, DTOs, interfaces (depends on Domain)
+UniCore.Infrastructure/    → EF Core, repositories, Identity, Redis, Hangfire, SMTP
+UniCore.Api/               → Controllers, middleware, Program.cs
+UniCore.UnitTests/         → Unit tests
+UniCore.IntegrationTests/  → Integration tests (Testcontainers + WebApplicationFactory)
+UniCore.ArchitectureTests/ → Layer rules, no-throw scan, security checks
+```

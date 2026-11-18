@@ -104,6 +104,7 @@ public static class IdentityErrors
 
 - Header `Idempotency-Key` (GUID recommended). Required for: register course, record payment, submit request, publish grade.
 - Same key and same payload replays the stored response. Same key with a different payload returns `409` (`IDEMPOTENCY_KEY_REUSED`). Missing key returns `400` (`IDEMPOTENCY_KEY_REQUIRED`).
+- **Only 2xx responses are stored.** If the original request fails, the response is not cached and the client can retry with the same key.
 
 ### Docs
 
@@ -155,8 +156,9 @@ A contract change is a breaking change: open the PR, tag the partner, list consu
 
 ## 8. Git
 
-- Branches: `main` (releases), `develop` (integration), `feature/<module>-<topic>` (short-lived). Branch from `develop`, merge back to `develop`.
-- Flow: feature branch, local tests green, PR, review by the partner, CI green, squash merge into `develop`, release merge into `main`.
+- Branches: `master` (integration and releases), `feature/<module>-<topic>` (short-lived). Branch from `master`, merge back to `master`.
+- Flow: feature branch, local tests green, PR, review by the partner, CI green, squash merge into `master`.
+- Branch protection on `master`: required status checks (build, unit-tests, architecture-tests, integration-tests, vuln-scan), 1 PR review, no force-push, branch must be up-to-date.
 - Commits follow Conventional Commits: `feat(identity): add refresh token rotation`, `fix(finance): ...`, `chore:`, `docs:`, `test:`, `refactor:`.
 - PR description lists: entities touched, contracts changed, error codes, permissions, migrations, tests. Keep PRs small and focused.
 - Never commit secrets, `.env` files, `bin/`, `obj/`, `.vs/`.

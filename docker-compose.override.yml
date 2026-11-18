@@ -1,0 +1,11 @@
+# Development overrides — docker compose automatically merges this file.
+# Hot reload: mount source and use `dotnet watch` instead of the published DLL.
+# To use: docker compose up sqlserver redis mailpit (infra only)
+# Then run the API locally with `dotnet run --project UniCore.Api`
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Hangfire__DashboardEnabled: "true"
+      RateLimiting__Disabled: "true"
+

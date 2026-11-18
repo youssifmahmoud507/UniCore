@@ -45,12 +45,18 @@ Starter catalog (proposed):
 | Registration | `Registration.Read`, `Registration.Register`, `Registration.Manage` |
 | Attendance | `Attendance.Read`, `Attendance.Record`, `Attendance.ReviewExcuse` |
 | Exams | `Exams.Read`, `Exams.Manage` |
+| Assessments | `Assessments.Read`, `Assessments.Manage` |
 | Grading | `Grades.Read`, `Grades.Enter`, `Grades.Review`, `Grades.Approve`, `Grades.Publish`, `GradeChanges.Request`, `GradeChanges.Approve` |
 | Finance | `Finance.Read`, `Invoices.Manage`, `Payments.Record`, `Refunds.Approve`, `Holds.Manage` |
 | Services | `Requests.Submit`, `Requests.Read`, `Requests.Process` |
 | Documents | `Documents.Read`, `Documents.Upload`, `Documents.Manage` |
 | Audit | `Audit.Read` |
+| Reports | `Reports.Read`, `Reports.Export` |
 | Platform | `Settings.Manage`, `Reports.Read` |
+
+### Instructor assessment scope
+
+`Assessments.Manage` is section-scoped for instructors. An instructor can create, update, and manage assessments only for sections where they have an active `InstructorAssignment`. This is enforced by checking the instructor's assigned sections, not by a manual scope assignment.
 
 ## 4. Scope
 
@@ -90,7 +96,16 @@ Implementation: policy-based authorization with `PermissionRequirement` and a re
 
 ## 8. Caching
 
-Permission sets are cached per user in Redis (Week 22) with a short expiry and explicit invalidation on any role, permission or scope change. If Redis fails, fall back to the database. Cache is never the source of truth.
+### Implementation
+
+- `CachedUserAccessProvider` decorates `UserAccessProvider`. Per-request permission/scope loading checks Redis first via `ICacheService`.
+- `CacheInvalidationInterceptor` (an EF `SaveChangesInterceptor` on `AppDbContext`) watches for changes to `RolePermission`, `ScopeAssignment`, and role entities. On save, it invalidates the affected user's cache group (`user-access:{userId}`).
+- If Redis is unreachable, every request falls back to loading permissions from the database. The `/health/ready` endpoint reports `Degraded`, not `Unhealthy`.
+- Cache is **never** the source of truth. A fresh database load always overrides stale cache.
+
+### Effect of changes
+
+A role, permission, or scope change takes effect **immediately** for subsequent requests (the interceptor invalidates the cache in the same `SaveChanges` transaction). The affected user does not need to re-login.
 
 ## 9. Error codes
 

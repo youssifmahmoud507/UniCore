@@ -1,0 +1,20 @@
+# UniCore Code Ownership
+# Changes to these paths require review from the platform owner (Yousif).
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Shared composition root — Nour's DI revert incident (4 times)
+/UniCore.Api/Program.cs                                 @youssifmahmoud507
+/UniCore.Infrastructure/DependencyInjection.cs          @youssifmahmoud507
+
+# Platform modules
+/UniCore.Infrastructure/Modules/Platform/               @youssifmahmoud507
+
+# CI/CD and Docker
+/.github/                                               @youssifmahmoud507
+/Dockerfile                                             @youssifmahmoud507
+/docker-compose*.yml                                    @youssifmahmoud507
+/.dockerignore                                          @youssifmahmoud507
+
+# This file itself
+/CODEOWNERS                                             @youssifmahmoud507
+

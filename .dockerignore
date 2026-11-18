@@ -1,0 +1,33 @@
+**/.git
+**/.vs
+**/bin
+**/obj
+**/TestResults
+**/node_modules
+
+# Test projects (not needed in the API image)
+UniCore.UnitTests/
+UniCore.IntegrationTests/
+UniCore.ArchitectureTests/
+
+# Documentation (not needed in the image)
+**/*.md
+!README.md
+
+# Test result files
+**/*-test-results.txt
+**/*-failures.txt
+**/*.trx
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+
+# IDE and OS files
+**/.idea
+**/*.swp
+**/*.swo
+**/Thumbs.db
+**/.DS_Store
+

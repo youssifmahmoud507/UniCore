@@ -362,3 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 .env
+
+
+# Test result files (generated, never committed)
+*-test-results.txt
+*-failures.txt
+*.trx
+TestResults/
