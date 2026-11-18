@@ -1,0 +1,80 @@
+# Code review automation: formatting / style check, Roslyn analyzers and a PR size report.
+
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  format:
+    name: Format & analyzers
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore
+        run: dotnet restore
+
+      # Advisory for now: the repo has no .editorconfig yet, so existing code may not match defaults.
+      # Remove `continue-on-error` once the codebase is formatted to make this a required check.
+      - name: Verify formatting (whitespace)
+        continue-on-error: true
+        run: dotnet format whitespace UniCore.slnx --verify-no-changes --verbosity diagnostic
+
+      - name: Build with analyzers (warnings reported)
+        run: dotnet build --no-restore --configuration Release -p:EnableNETAnalyzers=true -p:AnalysisLevel=latest
+
+  pr-size:
+    name: PR size
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute and label PR size
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Not a pull request; skipping."
+            exit 0
+          fi
+          CHANGED=$(git diff --shortstat "$BASE_SHA" "$HEAD_SHA" \
+            | awk '{ins=$4; del=$6; print ins+del}')
+          CHANGED=${CHANGED:-0}
+          if   [ "$CHANGED" -lt 50 ];   then SIZE="size/XS"
+          elif [ "$CHANGED" -lt 200 ];  then SIZE="size/S"
+          elif [ "$CHANGED" -lt 500 ];  then SIZE="size/M"
+          elif [ "$CHANGED" -lt 1000 ]; then SIZE="size/L"
+          else SIZE="size/XL"; fi
+          echo "Changed lines: $CHANGED -> $SIZE"
+          echo "### PR size: \`$SIZE\` ($CHANGED changed lines)" >> "$GITHUB_STEP_SUMMARY"
+          gh label create "$SIZE" --color "ededed" --force || true
+          # Remove any previous size label, then apply the current one.
+          for L in size/XS size/S size/M size/L size/XL; do
+            gh pr edit "$PR_NUMBER" --remove-label "$L" 2>/dev/null || true
+          done
+          gh pr edit "$PR_NUMBER" --add-label "$SIZE" || true

@@ -1,0 +1,11 @@
+# Code owners are automatically requested for review on pull requests.
+# Enable "Require review from Code Owners" in branch protection to enforce it.
+
+*                                   @youssifmahmoud507
+
+# Security-sensitive areas
+/UniCore.Api/Security/              @youssifmahmoud507
+/UniCore.Infrastructure/            @youssifmahmoud507
+/.github/                           @youssifmahmoud507
+/security.md                        @youssifmahmoud507
+/authorization.md                   @youssifmahmoud507

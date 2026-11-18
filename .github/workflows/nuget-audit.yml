@@ -1,0 +1,51 @@
+# Audits NuGet packages (direct + transitive) for known vulnerabilities and
+# lists outdated packages. Runs on every PR, on push to master and weekly.
+
+name: NuGet Vulnerability Audit
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Vulnerable & outdated packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Check for vulnerable packages
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
+          # `dotnet list package` always exits 0, so fail explicitly when something is reported.
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then
+            echo "::error::Vulnerable NuGet packages found. See the log above."
+            exit 1
+          fi
+
+      - name: Report outdated packages (informational)
+        if: always()
+        run: |
+          {
+            echo "## Outdated NuGet packages"
+            echo '```'
+            dotnet list package --outdated 2>&1 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
