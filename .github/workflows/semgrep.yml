@@ -1,0 +1,52 @@
+# Static application security testing (SAST) with Semgrep:
+# C# rules + OWASP Top 10 + secrets. Findings are uploaded to the GitHub Security tab.
+
+name: Semgrep SAST
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 3 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    container:
+      image: semgrep/semgrep:latest
+    # Skip bot PRs that can't access repo secrets / write security events.
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: >
+          semgrep scan
+          --config p/csharp
+          --config p/owasp-top-ten
+          --config p/secrets
+          --config p/security-audit
+          --exclude "UniCore.UnitTests"
+          --exclude "UniCore.IntegrationTests"
+          --exclude "UniCore.ArchitectureTests"
+          --sarif --output semgrep.sarif
+          --metrics off
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
