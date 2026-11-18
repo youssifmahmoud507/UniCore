@@ -1,28 +1,152 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# CI: build + tests (unit / architecture / integration) with code coverage.
+# Integration tests use Testcontainers (SQL Server), which needs Docker; ubuntu-latest provides it.
 
-name: .NET
+name: .NET CI
 
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same PR / branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 jobs:
   build:
-
+    name: Build
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build --no-restore --configuration Release
+
+  unit-and-architecture-tests:
+    name: Unit + Architecture tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Test (unit)
+        run: >
+          dotnet test UniCore.UnitTests/UniCore.UnitTests.csproj
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults/unit
+          --logger "trx;LogFileName=unit.trx"
+
+      - name: Test (architecture)
+        run: >
+          dotnet test UniCore.ArchitectureTests/UniCore.ArchitectureTests.csproj
+          --configuration Release
+          --results-directory ./TestResults/architecture
+          --logger "trx;LogFileName=architecture.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-unit-architecture
+          path: TestResults/
+          retention-days: 14
+
+  integration-tests:
+    name: Integration tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Test (integration)
+        run: >
+          dotnet test UniCore.IntegrationTests/UniCore.IntegrationTests.csproj
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults/integration
+          --logger "trx;LogFileName=integration.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-integration
+          path: TestResults/
+          retention-days: 14
+
+  coverage-report:
+    name: Coverage report
+    needs: [ unit-and-architecture-tests, integration-tests ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: TestResults
+          merge-multiple: true
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Merge coverage and build summary
+        run: >
+          reportgenerator
+          -reports:"TestResults/**/coverage.cobertura.xml"
+          -targetdir:coverage-report
+          -reporttypes:"Html;MarkdownSummaryGithub;Cobertura"
+
+      - name: Publish coverage summary
+        run: |
+          if [ -f coverage-report/SummaryGithub.md ]; then
+            cat coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No coverage data was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report/
+          retention-days: 14
