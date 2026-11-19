@@ -218,6 +218,8 @@ namespace UniCore.Application.Modules.Examination
             var clear = await _conflicts.CheckAsync(exam, cancellationToken);
             if (clear.IsFailure)
             {
+                // Same as for invigilators: a refused room must not stay on the loaded exam.
+                exam.RemoveRoom(room.Id, _clock.UtcNow);
                 return Result<ExamSummary>.Fail(clear.Errors);
             }
 
@@ -277,6 +279,9 @@ namespace UniCore.Application.Modules.Examination
             var clear = await _conflicts.CheckAsync(exam, cancellationToken);
             if (clear.IsFailure)
             {
+                // Take the invigilator off again: a refused one must not stay on the loaded exam, or the next
+                // conflict check would still see it.
+                exam.RemoveInvigilator(instructor.Id, _clock.UtcNow);
                 return Result<ExamSummary>.Fail(clear.Errors);
             }
 

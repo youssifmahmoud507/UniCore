@@ -218,7 +218,7 @@ namespace UniCore.UnitTests.Modules.Examination
             await env.AddRoomOkAsync(examB, room);
 
             AssertFailed(await env.AddInvigilatorAsync(examB, room, chief), ExaminationErrors.InvigilatorConflict);
-            // The failed call above already put the chief on the in-memory exam, so the next one is an assistant.
+            // The refused chief was taken off the exam again, so another instructor can be added.
             Assert.True((await env.AddInvigilatorAsync(examB, room, env.SeedInstructor(), InvigilatorRole.Assistant)).IsSuccess);
         }
 

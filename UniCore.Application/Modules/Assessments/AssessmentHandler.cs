@@ -94,17 +94,18 @@ namespace UniCore.Application.Modules.Assessments
                 return Result<AssessmentSummary>.Fail(loaded.Errors);
             }
 
+            // The date is checked BEFORE the scheme is changed: a refused component must not stay on the loaded scheme.
+            var dated = AssessmentAccess.CheckDueDate(context.Section.Semester, command.Type, command.DueDate);
+            if (dated.IsFailure)
+            {
+                return Result<AssessmentSummary>.Fail(dated.Errors);
+            }
+
             var before = Describe(context.Assessment);
             var added = context.Assessment.AddComponent(command.Name, command.Type, command.Weight, command.MaxScore, command.DueDate, _clock.UtcNow);
             if (added.IsFailure)
             {
                 return Result<AssessmentSummary>.Fail(added.Errors);
-            }
-
-            var dated = AssessmentAccess.CheckDueDate(context.Section.Semester, command.Type, command.DueDate);
-            if (dated.IsFailure)
-            {
-                return Result<AssessmentSummary>.Fail(dated.Errors);
             }
 
             _assessments.Update(context.Assessment);
@@ -120,17 +121,17 @@ namespace UniCore.Application.Modules.Assessments
                 return Result<AssessmentSummary>.Fail(loaded.Errors);
             }
 
+            var dated = AssessmentAccess.CheckDueDate(context.Section.Semester, command.Type, command.DueDate);
+            if (dated.IsFailure)
+            {
+                return Result<AssessmentSummary>.Fail(dated.Errors);
+            }
+
             var before = Describe(context.Assessment);
             var updated = context.Assessment.UpdateComponent(componentId, command.Name, command.Type, command.Weight, command.MaxScore, command.DueDate, _clock.UtcNow);
             if (updated.IsFailure)
             {
                 return Result<AssessmentSummary>.Fail(updated.Errors);
-            }
-
-            var dated = AssessmentAccess.CheckDueDate(context.Section.Semester, command.Type, command.DueDate);
-            if (dated.IsFailure)
-            {
-                return Result<AssessmentSummary>.Fail(dated.Errors);
             }
 
             _assessments.Update(context.Assessment);
@@ -227,7 +228,8 @@ namespace UniCore.Application.Modules.Assessments
             }
             else
             {
-                var manager = await _access.RequireAsync(Permissions.Assessments.Manage, cancellationToken);
+                // University-wide: an instructor's Manage is only on their own sections, so it does not open the whole list.
+                var manager = await _access.RequireUniversityWideAsync(Permissions.Assessments.Manage, cancellationToken);
                 if (manager.IsFailure)
                 {
                     return Result<PagedResult<AssessmentSummary>>.Fail(manager.Errors);

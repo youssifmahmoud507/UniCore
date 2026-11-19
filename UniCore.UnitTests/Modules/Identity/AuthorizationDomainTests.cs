@@ -82,7 +82,11 @@ namespace UniCore.UnitTests.Modules.Identity
             {
                 var codes = DefaultRolePermissions.ByRole[role];
 
-                Assert.DoesNotContain(codes, c => c.EndsWith(".Manage", StringComparison.Ordinal));
+                // The one documented exception (authorization.md, "Instructor assessment scope"): an instructor manages
+                // the grading scheme of the sections they are assigned to; the scope is derived from their assignments.
+                var allowed = role == RoleNames.Instructor ? new[] { Permissions.Assessments.Manage } : Array.Empty<string>();
+
+                Assert.DoesNotContain(codes, c => c.EndsWith(".Manage", StringComparison.Ordinal) && !allowed.Contains(c));
                 Assert.DoesNotContain(Permissions.Grades.Approve, codes);
                 Assert.DoesNotContain(Permissions.Grades.Publish, codes);
             }

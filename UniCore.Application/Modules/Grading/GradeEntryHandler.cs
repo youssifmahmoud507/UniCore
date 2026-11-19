@@ -170,6 +170,10 @@ namespace UniCore.Application.Modules.Grading
 
             var componentIds = info.Components.Select(c => c.ComponentId).ToList();
 
+            // All or nothing: every draft is checked and calculated first, and only then are they submitted, so a
+            // sheet that fails on one student leaves no grade of the section half-submitted.
+            var calculations = new List<(Grade Grade, GradeResult Calculated)>(drafts.Count);
+
             foreach (var grade in drafts)
             {
                 var result = await _engine.CalculateAsync(info, grade, cancellationToken);
@@ -178,6 +182,16 @@ namespace UniCore.Application.Modules.Grading
                     return Result<SectionStepSummary>.Fail(result.Errors);
                 }
 
+                if (componentIds.Count == 0 || componentIds.Any(id => grade.Scores.All(s => s.AssessmentComponentId != id)))
+                {
+                    return GradingErrors.ScoresIncomplete;
+                }
+
+                calculations.Add((grade, calculated));
+            }
+
+            foreach (var (grade, calculated) in calculations)
+            {
                 var submitted = grade.Submit(componentIds, calculated, _user.UserId, _clock.UtcNow);
                 if (submitted.IsFailure)
                 {

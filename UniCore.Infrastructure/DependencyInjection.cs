@@ -34,7 +34,12 @@ namespace UniCore.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
         {
-            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+            // The cache interceptor clears the cached user access and document types after every save that made them
+            // stale (registered by AddCachingModule). Without it, role, permission and user changes stay invisible
+            // until the cache entry expires.
+            services.AddDbContext<AppDbContext>((provider, options) => options
+                .UseSqlServer(connectionString)
+                .AddInterceptors(provider.GetRequiredService<UniCore.Infrastructure.Modules.Caching.CacheInvalidationInterceptor>()));
 
             services.AddSingleton<IClock, SystemClock>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
