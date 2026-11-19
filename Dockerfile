@@ -3,7 +3,7 @@
 # ============================================================
 
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy solution and all csproj files first for layer caching
@@ -24,7 +24,7 @@ RUN dotnet publish UniCore.Api/UniCore.Api.csproj \
     --no-restore
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Non-root user

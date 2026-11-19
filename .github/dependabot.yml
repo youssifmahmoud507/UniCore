@@ -8,6 +8,16 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 10
+    # Project targets net10.0: don't let Dependabot jump the Microsoft/System packages to 11.x.
+    ignore:
+      - dependency-name: "Microsoft.AspNetCore.*"
+        versions: ["11.x"]
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        versions: ["11.x"]
+      - dependency-name: "Microsoft.Extensions.*"
+        versions: ["11.x"]
+      - dependency-name: "System.*"
+        versions: ["11.x"]
     groups:
       microsoft:
         patterns:
@@ -35,6 +45,10 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    # Keep the .NET base images on the 10.0 line (project targets net10.0).
+    ignore:
+      - dependency-name: "dotnet/*"
+        versions: ["11.0", "11.x"]
     commit-message:
       prefix: "chore(deps)"
 
