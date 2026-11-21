@@ -626,6 +626,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Status", "SessionDate");
+
                     b.HasIndex("CourseSectionId", "SessionDate", "StartTime")
                         .IsUnique();
 
@@ -2403,6 +2405,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseSectionId", "Status");
 
+                    b.HasIndex("Status", "PublishedAt");
+
                     b.HasIndex("StudentId", "AcademicSemesterId");
 
                     b.ToTable("Grades", "grading", t =>
@@ -3349,6 +3353,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("CourseId");
 
                     b.HasIndex("CourseVersionId");
+
+                    b.HasIndex("RegisteredAt");
 
                     b.HasIndex("CourseSectionId", "Status");
 

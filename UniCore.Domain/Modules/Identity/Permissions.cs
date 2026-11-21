@@ -185,6 +185,15 @@
             public const string Export = "Reports.Export";
         }
 
+        // One permission per academic report; each is checked together with Reports.Read.
+        public static class AcademicReports
+        {
+            public const string Enrollment = "AcademicReports.Enrollment";
+            public const string Grades = "AcademicReports.Grades";
+            public const string Gpa = "AcademicReports.Gpa";
+            public const string Attendance = "AcademicReports.Attendance";
+        }
+
         public static readonly IReadOnlyList<PermissionDefinition> All =
         [
         new PermissionDefinition(Users.Read, "Identity", "View user accounts"),
@@ -246,6 +255,10 @@
         new PermissionDefinition(Settings.Manage, "Platform", "Manage system settings"),
         new PermissionDefinition(Reports.Read, "Platform", "View reports"),
         new PermissionDefinition(Reports.Export, "Platform", "Export reports to CSV, Excel and PDF files"),
+        new PermissionDefinition(AcademicReports.Enrollment, "Reports", "Run the enrollment statistics report"),
+        new PermissionDefinition(AcademicReports.Grades, "Reports", "Run the grade distribution report"),
+        new PermissionDefinition(AcademicReports.Gpa, "Reports", "Run the GPA statistics report"),
+        new PermissionDefinition(AcademicReports.Attendance, "Reports", "Run the attendance statistics report"),
         new PermissionDefinition(Fees.Manage, "Finance", "Manage fee definitions and fee structures"),
         new PermissionDefinition(Scholarships.Manage, "Finance", "Manage scholarships and award them to students"),
     ];
