@@ -11,6 +11,7 @@ namespace UniCore.Infrastructure.Modules.Assessments
             services.AddScoped<AssessmentAccess>();
             services.AddScoped<AssessmentHandler>();
             services.AddScoped<IAssessmentReadService, AssessmentReadService>();
+            services.AddScoped<IAssessmentLifecycle, AssessmentLifecycleService>();
 
             return services;
         }

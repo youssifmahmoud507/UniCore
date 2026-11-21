@@ -26,6 +26,10 @@ namespace UniCore.Application.Modules.Examination
         public Task<Result> RequireAsync(string permission, CancellationToken cancellationToken)
             => _authorizer.AuthorizeAsync(permission, null, cancellationToken);
 
+        // The permission held with a whole-university (Global) scope; a section or department grant does not count.
+        public Task<Result> RequireUniversityWideAsync(string permission, CancellationToken cancellationToken)
+            => _authorizer.AuthorizeAsync(permission, new ResourceContext(ScopeType.Global), cancellationToken);
+
         public async Task<Result<AcademicSemester>> LoadSemesterAsync(Guid semesterId, bool open, CancellationToken cancellationToken)
         {
             var semester = semesterId == Guid.Empty ? null : await _semesters.GetByIdAsync(semesterId, cancellationToken);

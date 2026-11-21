@@ -45,6 +45,8 @@ namespace UniCore.UnitTests.Modules.Grading
         public FakeCourseCatalog Catalog { get; } = new();
         public FakeRoster Roster { get; } = new();
 
+        public AssessmentLifecycleService Lifecycle { get; }
+        public GradesSemesterCloseGuard CloseGuard { get; }
         public GradingAccess Access { get; }
         public GradingEngine Engine { get; }
         public GradeEntryHandler Entry { get; }
@@ -57,10 +59,12 @@ namespace UniCore.UnitTests.Modules.Grading
 
         public GradingTestEnv()
         {
+            Lifecycle = new AssessmentLifecycleService(Assessments, Clock);
+            CloseGuard = new GradesSemesterCloseGuard(Grades, Roster);
             Access = new GradingAccess(Rbac.Authorizer, Offerings, Catalog, Semesters, Students, Programs);
             Engine = new GradingEngine(new AssessmentReadService(Assessments), Scales);
-            Entry = new GradeEntryHandler(Access, Engine, Rbac.User, Roster, Grades, Rbac.Uow, Clock, Rbac.Audit);
-            Workflow = new GradeWorkflowHandler(Access, Rbac.User, Grades, Rbac.Uow, Clock, Rbac.Audit);
+            Entry = new GradeEntryHandler(Access, Engine, Rbac.User, Roster, Grades, Lifecycle, Rbac.Uow, Clock, Rbac.Audit);
+            Workflow = new GradeWorkflowHandler(Access, Rbac.User, Roster, Grades, Rbac.Uow, Clock, Rbac.Audit);
             Query = new GradeQueryHandler(Access, Engine, Rbac.User, Grades);
             Reader = new GradeReadService(Grades);
             Correction = new GradeCorrectionService(Engine, Grades, Rbac.Uow, Clock, Rbac.Audit);

@@ -18,6 +18,13 @@ namespace UniCore.UnitTests.Modules.Assessments
 {
     // The real assessment handler, read service and PermissionAuthorizer, wired to in-memory fakes.
     // Fall 2026: 1 Sep 2026 - 31 Jan 2027, midterms 1-10 Nov 2026, finals 5-20 Jan 2027.
+    internal sealed class FakeGradeUsage : IAssessmentGradeUsage
+    {
+        public bool HasGrades { get; set; }
+
+        public Task<bool> HasGradesAsync(Guid assessmentId, CancellationToken cancellationToken = default) => Task.FromResult(HasGrades);
+    }
+
     internal sealed class AssessmentsTestEnv
     {
         public static readonly DateTimeOffset Start = new(2026, 9, 2, 9, 0, 0, TimeSpan.Zero);
@@ -32,17 +39,22 @@ namespace UniCore.UnitTests.Modules.Assessments
         public FakeSchedulingOfferings Offerings { get; } = new();
         public FakeCourseCatalog Catalog { get; } = new();
 
+        // Set to true to say that grades exist for every scheme (what Grading answers in production).
+        public FakeGradeUsage GradeUsage { get; } = new();
+
         public AssessmentAccess Access { get; }
         public AssessmentHandler Handler { get; }
         public AssessmentReadService Reader { get; }
+        public AssessmentLifecycleService Lifecycle { get; }
 
         public AcademicSemester Semester { get; }
 
         public AssessmentsTestEnv()
         {
             Access = new AssessmentAccess(Rbac.Authorizer, Offerings, Catalog, Semesters);
-            Handler = new AssessmentHandler(Access, Rbac.User, Assessments, Rbac.Uow, Clock, Rbac.Audit);
+            Handler = new AssessmentHandler(Access, Rbac.User, Assessments, GradeUsage, Rbac.Uow, Clock, Rbac.Audit);
             Reader = new AssessmentReadService(Assessments);
+            Lifecycle = new AssessmentLifecycleService(Assessments, Clock);
 
             Semester = SeedSemester();
         }

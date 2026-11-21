@@ -15,7 +15,7 @@ namespace UniCore.Application.Modules.Calendar
     public sealed class AcademicSemesterHandler(
         IPermissionAuthorizer authorizer, ICurrentUser user,
         IRepository<AcademicSemester> semesters, IRepository<AcademicYear> years, IRepository<AcademicTerm> terms,
-        IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+        IEnumerable<ISemesterCloseGuard> closeGuards, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private static readonly ResourceContext GlobalResource = ResourceContext.InScope(ScopeType.Global, Guid.Empty);
 
@@ -24,6 +24,7 @@ namespace UniCore.Application.Modules.Calendar
         private readonly IRepository<AcademicSemester> _semesters = semesters;
         private readonly IRepository<AcademicYear> _years = years;
         private readonly IRepository<AcademicTerm> _terms = terms;
+        private readonly IEnumerable<ISemesterCloseGuard> _closeGuards = closeGuards;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IClock _clock = clock;
         private readonly IAuditWriter _audit = audit;
@@ -190,6 +191,18 @@ namespace UniCore.Application.Modules.Calendar
             if (target is not { } newStatus)
             {
                 return CalendarErrors.InvalidSemesterStatus;
+            }
+
+            if (newStatus == SemesterStatus.Closed && !semester.IsClosed)
+            {
+                foreach (var guard in _closeGuards)
+                {
+                    var allowed = await guard.CanCloseAsync(semester.Id, cancellationToken);
+                    if (allowed.IsFailure)
+                    {
+                        return Result<SemesterSummary>.Fail(allowed.Errors);
+                    }
+                }
             }
 
             var before = Describe(semester);

@@ -19,6 +19,7 @@ namespace UniCore.Domain.Modules.Grading
         public static readonly Error ScoreInvalid = Error.Validation("GRADE_SCORE_INVALID", "A score must be between 0 and the maximum score of its component (two decimals at most).");
         public static readonly Error ScoresIncomplete = Error.BusinessRule("GRADE_SCORES_INCOMPLETE", "Every component of the scheme needs a score before the grade can be submitted.");
         public static readonly Error SectionIncomplete = Error.BusinessRule("GRADE_SECTION_INCOMPLETE", "Every registered student of the section needs a grade before the section can be submitted.");
+        public static readonly Error UnpublishedGrades = Error.BusinessRule("SEMESTER_HAS_UNPUBLISHED_GRADES", "The semester still has grades that are not published, so it cannot be closed.");
         public static readonly Error NothingToProcess = Error.BusinessRule("GRADE_NOTHING_TO_PROCESS", "The section has no grades in the state this step works on.");
         public static readonly Error SeparationOfDuties = Error.BusinessRule("GRADE_SEPARATION_OF_DUTIES", "The person who entered or reviewed a grade cannot review or approve it.");
         public static readonly Error ReasonRequired = Error.Validation("GRADE_REASON_REQUIRED", "A reason (up to 500 characters) is required.");

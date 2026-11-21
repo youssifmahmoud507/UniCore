@@ -39,7 +39,7 @@ namespace UniCore.Domain.Modules.Transcripts
 
         // The cumulative figures of a set of attempts, repeat policy applied.
         public static GpaSummary Summarize(IEnumerable<GradeAttempt> attempts, GpaPolicy policy)
-            => SummarizeOutcomes(Resolve(attempts, policy));
+            => SummarizeOutcomes(Resolve(attempts, policy), policy);
 
         // The semesters in date order, each with its own GPA and the cumulative GPA at its end. The outcomes carry the FINAL
         // counted flag (a course repeated later shows its earlier attempt as not counted).

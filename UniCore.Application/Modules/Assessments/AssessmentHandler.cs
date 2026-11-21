@@ -12,11 +12,12 @@ namespace UniCore.Application.Modules.Assessments
     // The grading scheme of a section. Assessments.Read to read, Assessments.Manage (on the section or its department) to change.
     // Order of every change: permission alone -> load -> scope (and open semester) -> state -> change -> save + audit.
     public sealed class AssessmentHandler(
-        AssessmentAccess access, ICurrentUser user, IAggregateRepository<Assessment> assessments, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+        AssessmentAccess access, ICurrentUser user, IAggregateRepository<Assessment> assessments, IAssessmentGradeUsage gradeUsage, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private readonly AssessmentAccess _access = access;
         private readonly ICurrentUser _user = user;
         private readonly IAggregateRepository<Assessment> _assessments = assessments;
+        private readonly IAssessmentGradeUsage _gradeUsage = gradeUsage;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IClock _clock = clock;
         private readonly IAuditWriter _audit = audit;
@@ -165,15 +166,28 @@ namespace UniCore.Application.Modules.Assessments
         public Task<Result<AssessmentSummary>> CloseAsync(Guid assessmentId, RequestInfo request, CancellationToken cancellationToken = default)
             => TransitionAsync(assessmentId, (a, now) => a.Close(now), AssessmentAuditActions.Closed, request, cancellationToken);
 
+        // Rejected once grades were entered against the scheme (they would lose it). Checked after the permission and scope of the transition.
         public Task<Result<AssessmentSummary>> CancelAsync(Guid assessmentId, RequestInfo request, CancellationToken cancellationToken = default)
-            => TransitionAsync(assessmentId, (a, now) => a.Cancel(now), AssessmentAuditActions.Cancelled, request, cancellationToken);
+            => TransitionAsync(assessmentId, (a, now) => a.Cancel(now), AssessmentAuditActions.Cancelled, request, cancellationToken,
+                async ct => await _gradeUsage.HasGradesAsync(assessmentId, ct) ? Result.Fail(AssessmentErrors.HasGrades) : Result.Ok());
 
-        private async Task<Result<AssessmentSummary>> TransitionAsync(Guid assessmentId, Func<Assessment, DateTimeOffset, Result> transition, string action, RequestInfo request, CancellationToken cancellationToken)
+        private async Task<Result<AssessmentSummary>> TransitionAsync(
+            Guid assessmentId, Func<Assessment, DateTimeOffset, Result> transition, string action, RequestInfo request, CancellationToken cancellationToken,
+            Func<CancellationToken, Task<Result>>? guard = null)
         {
             var loaded = await LoadForChangeAsync(assessmentId, cancellationToken);
             if (!loaded.TryGetValue(out var context))
             {
                 return Result<AssessmentSummary>.Fail(loaded.Errors);
+            }
+
+            if (guard is not null)
+            {
+                var allowed = await guard(cancellationToken);
+                if (allowed.IsFailure)
+                {
+                    return Result<AssessmentSummary>.Fail(allowed.Errors);
+                }
             }
 
             var before = Describe(context.Assessment);

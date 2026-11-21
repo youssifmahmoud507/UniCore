@@ -26,6 +26,14 @@ namespace UniCore.Application.Modules.Grading
             return mustBePublished && info.Status != AssessmentStatus.Published ? GradingErrors.AssessmentNotReady : info;
         }
 
+        // The scheme a grade was entered against (Published or Closed), whatever the section's live scheme is now.
+        public async Task<Result<SectionAssessmentInfo>> LoadSchemeOfAssessmentAsync(Guid assessmentId, CancellationToken cancellationToken)
+        {
+            var scheme = await _assessments.GetAssessmentAsync(assessmentId, cancellationToken);
+
+            return scheme.TryGetValue(out var info) ? info : GradingErrors.AssessmentNotReady;
+        }
+
         public Task<Result<GradeResult>> CalculateAsync(SectionAssessmentInfo scheme, Grade grade, CancellationToken cancellationToken)
             => CalculateAsync(scheme, grade.Scores.ToDictionary(s => s.AssessmentComponentId, s => s.Score), cancellationToken);
 

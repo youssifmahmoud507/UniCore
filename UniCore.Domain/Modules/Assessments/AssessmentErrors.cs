@@ -21,6 +21,7 @@ namespace UniCore.Domain.Modules.Assessments
         public static readonly Error TooManyComponents = Error.BusinessRule("ASSESSMENT_TOO_MANY_COMPONENTS", "An assessment has at most 20 components.");
         public static readonly Error WeightExceeded = Error.BusinessRule("ASSESSMENT_WEIGHT_EXCEEDED", "The weights of the components cannot total more than 100.");
         public static readonly Error WeightNotHundred = Error.BusinessRule("ASSESSMENT_WEIGHT_NOT_100", "The weights of the components must total exactly 100 to publish.");
+        public static readonly Error HasGrades = Error.BusinessRule("ASSESSMENT_HAS_GRADES", "Grades were already entered against this assessment, so it cannot be cancelled.");
         public static readonly Error NoComponents = Error.BusinessRule("ASSESSMENT_NO_COMPONENTS", "The assessment needs at least one component.");
         public static readonly Error DueDateMissing = Error.BusinessRule("ASSESSMENT_DUE_DATE_MISSING", "Every component needs a due date to publish.");
         public static readonly Error DueDateOutsideSemester = Error.BusinessRule("ASSESSMENT_DUE_DATE_OUTSIDE_SEMESTER", "The due date must be inside the dates of the semester.");

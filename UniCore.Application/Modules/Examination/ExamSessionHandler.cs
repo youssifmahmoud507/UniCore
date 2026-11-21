@@ -33,7 +33,7 @@ namespace UniCore.Application.Modules.Examination
 
         public async Task<Result<ExamSessionSummary>> CreateAsync(CreateExamSessionCommand command, RequestInfo request, CancellationToken cancellationToken = default)
         {
-            var permission = await _access.RequireAsync(Permissions.Exams.Manage, cancellationToken);
+            var permission = await _access.RequireUniversityWideAsync(Permissions.Exams.Manage, cancellationToken);
             if (permission.IsFailure)
             {
                 return Result<ExamSessionSummary>.Fail(permission.Errors);
@@ -68,7 +68,7 @@ namespace UniCore.Application.Modules.Examination
 
         public async Task<Result<ExamSessionSummary>> CloseAsync(Guid sessionId, RequestInfo request, CancellationToken cancellationToken = default)
         {
-            var permission = await _access.RequireAsync(Permissions.Exams.Manage, cancellationToken);
+            var permission = await _access.RequireUniversityWideAsync(Permissions.Exams.Manage, cancellationToken);
             if (permission.IsFailure)
             {
                 return Result<ExamSessionSummary>.Fail(permission.Errors);

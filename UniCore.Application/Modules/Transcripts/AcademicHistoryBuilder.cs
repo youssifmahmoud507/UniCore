@@ -1,5 +1,6 @@
 using UniCore.Application.Modules.Courses;
 using UniCore.Application.Modules.Grading;
+using UniCore.Application.Modules.Transcripts.Specifications;
 using UniCore.Application.Common.Repositories;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Calendar;
@@ -33,18 +34,21 @@ namespace UniCore.Application.Modules.Transcripts
                 return Result<AcademicHistory>.Fail(published.Errors);
             }
 
+            // Three queries for all the semesters, years and terms (not one set per semester).
+            var semesterIds = records.Select(r => r.AcademicSemesterId).Distinct().ToList();
+            var foundSemesters = (await _semesters.ListAsync(new SemestersByIdsSpecification(semesterIds), cancellationToken)).ToDictionary(s => s.Id);
+            var foundYears = (await _years.ListAsync(new YearsByIdsSpecification([.. foundSemesters.Values.Select(s => s.AcademicYearId).Distinct()]), cancellationToken)).ToDictionary(y => y.Id);
+            var foundTerms = (await _terms.ListAsync(new TermsByIdsSpecification([.. foundSemesters.Values.Select(s => s.AcademicTermId).Distinct()]), cancellationToken)).ToDictionary(t => t.Id);
+
             var info = new Dictionary<Guid, (DateOnly Start, string Label)>();
-            foreach (var semesterId in records.Select(r => r.AcademicSemesterId).Distinct())
+            foreach (var semesterId in semesterIds)
             {
-                var semester = await _semesters.GetByIdAsync(semesterId, cancellationToken);
-                if (semester is null)
+                if (!foundSemesters.TryGetValue(semesterId, out var semester))
                 {
                     return TranscriptErrors.SemesterNotFound;
                 }
 
-                var year = await _years.GetByIdAsync(semester.AcademicYearId, cancellationToken);
-                var term = await _terms.GetByIdAsync(semester.AcademicTermId, cancellationToken);
-                var label = year is not null && term is not null
+                var label = foundYears.TryGetValue(semester.AcademicYearId, out var year) && foundTerms.TryGetValue(semester.AcademicTermId, out var term)
                     ? $"{year.Name} - {term.Name}"
                     : $"Semester starting {semester.StartDate:yyyy-MM-dd}";
 

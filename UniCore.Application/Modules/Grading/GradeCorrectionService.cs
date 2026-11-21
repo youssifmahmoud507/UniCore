@@ -32,7 +32,8 @@ namespace UniCore.Application.Modules.Grading
                 return GradingErrors.InvalidState;
             }
 
-            var scheme = await _engine.LoadSchemeAsync(grade.CourseSectionId, mustBePublished: false, cancellationToken);
+            // The scheme the grade was calculated with (its stored AssessmentId), not whatever the section's live scheme is now.
+            var scheme = await _engine.LoadSchemeOfAssessmentAsync(grade.AssessmentId, cancellationToken);
             if (!scheme.TryGetValue(out var info))
             {
                 return Result<GradeSummary>.Fail(scheme.Errors);

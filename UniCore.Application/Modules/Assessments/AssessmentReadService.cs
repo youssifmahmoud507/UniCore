@@ -22,6 +22,19 @@ namespace UniCore.Application.Modules.Assessments
                 [.. assessment.Components.Select(c => new AssessmentComponentInfo(c.Id, c.Name, c.Type, c.Weight, c.MaxScore, c.DueDate))]);
         }
 
+        public async Task<Result<SectionAssessmentInfo>> GetAssessmentAsync(Guid assessmentId, CancellationToken cancellationToken = default)
+        {
+            var assessment = await _assessments.FirstOrDefaultAsync(new AssessmentByIdSpecification(assessmentId), cancellationToken);
+            if (assessment is null || assessment.Status is not (AssessmentStatus.Published or AssessmentStatus.Closed))
+            {
+                return AssessmentErrors.NotFound;
+            }
+
+            return new SectionAssessmentInfo(
+                assessment.Id, assessment.CourseSectionId, assessment.Status,
+                [.. assessment.Components.Select(c => new AssessmentComponentInfo(c.Id, c.Name, c.Type, c.Weight, c.MaxScore, c.DueDate))]);
+        }
+
         public Result<decimal> CalculatePercentage(SectionAssessmentInfo scheme, IReadOnlyDictionary<Guid, decimal> scores)
         {
             var total = 0m;

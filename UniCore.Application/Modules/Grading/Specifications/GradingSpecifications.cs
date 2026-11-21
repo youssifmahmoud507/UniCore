@@ -76,6 +76,20 @@ namespace UniCore.Application.Modules.Grading.Specifications
         }
     }
 
+    // Any grade entered against an assessment (a scheme with grades cannot be cancelled).
+    public sealed class GradesOfAssessmentSpecification : Specification<Grade>
+    {
+        public GradesOfAssessmentSpecification(Guid assessmentId)
+            => SetCriteria(g => g.AssessmentId == assessmentId);
+    }
+
+    // The grades of a semester that are not Published or Locked yet (they block closing the semester).
+    public sealed class NonFinalGradesOfSemesterSpecification : Specification<Grade>
+    {
+        public NonFinalGradesOfSemesterSpecification(Guid semesterId)
+            => SetCriteria(g => g.AcademicSemesterId == semesterId && g.Status != GradeStatus.Published && g.Status != GradeStatus.Locked);
+    }
+
     public sealed class DefaultGradeScaleSpecification : Specification<GradeScale>
     {
         public DefaultGradeScaleSpecification()

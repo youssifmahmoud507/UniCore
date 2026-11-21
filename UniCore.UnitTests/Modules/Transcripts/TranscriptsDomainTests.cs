@@ -132,6 +132,19 @@ namespace UniCore.UnitTests.Modules.Transcripts
         public void Standing_follows_the_policy_thresholds(double gpa, int credits, AcademicStanding expected)
             => Assert.Equal(expected, GpaPolicy.Default.StandingOf((decimal)gpa, credits));
 
+        [Fact]
+        public void The_cumulative_standing_uses_the_policy_it_was_given_not_the_default()
+        {
+            var attempts = new[] { Attempt(Guid.NewGuid(), Fall, FallStart, 3, 2.5m) };
+            var strict = new GpaPolicy(GoodStandingMinGpa: 3.0m, WarningMinGpa: 2.0m);
+
+            // 2.50 is GoodStanding by default, but Warning under the stricter policy; the semester figures must agree.
+            Assert.Equal(AcademicStanding.GoodStanding, GpaCalculator.Summarize(attempts, GpaPolicy.Default).Standing);
+            Assert.Equal(AcademicStanding.Warning, GpaCalculator.Summarize(attempts, strict).Standing);
+            Assert.Equal(AcademicStanding.Warning, GpaCalculator.BySemester(attempts, strict)[0].Cumulative.Standing);
+            Assert.Equal(AcademicStanding.Warning, GpaCalculator.BySemester(attempts, strict)[0].Semester.Standing);
+        }
+
         // ---------- the official snapshot ----------
 
         private static TranscriptEntryData Entry(string code = "CS101")

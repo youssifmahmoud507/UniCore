@@ -1,4 +1,5 @@
 using UniCore.Application.Common.Abstractions;
+using UniCore.Application.Modules.Assessments;
 using UniCore.Application.Common.Handlers;
 using UniCore.Application.Common.Repositories;
 using UniCore.Application.Modules.Grading.Specifications;
@@ -14,13 +15,14 @@ namespace UniCore.Application.Modules.Grading
     // window -> scheme -> state -> change -> save + audit.
     public sealed class GradeEntryHandler(
         GradingAccess access, GradingEngine engine, ICurrentUser user, IEnrollmentReadService roster, IAggregateRepository<Grade> grades,
-        IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+        IAssessmentLifecycle assessmentLifecycle, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private readonly GradingAccess _access = access;
         private readonly GradingEngine _engine = engine;
         private readonly ICurrentUser _user = user;
         private readonly IEnrollmentReadService _roster = roster;
         private readonly IAggregateRepository<Grade> _grades = grades;
+        private readonly IAssessmentLifecycle _assessmentLifecycle = assessmentLifecycle;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IClock _clock = clock;
         private readonly IAuditWriter _audit = audit;
@@ -71,7 +73,11 @@ namespace UniCore.Application.Modules.Grading
                 return GradingErrors.WindowClosed;
             }
 
-            var scheme = await _engine.LoadSchemeAsync(command.CourseSectionId, mustBePublished: true, cancellationToken);
+            // A new grade needs the live scheme to be Published; an existing one (for example returned to the instructor after the
+            // scheme was closed by the submission) keeps the scheme it was entered against.
+            var scheme = grade is null
+                ? await _engine.LoadSchemeAsync(command.CourseSectionId, mustBePublished: true, cancellationToken)
+                : await _engine.LoadSchemeOfAssessmentAsync(grade.AssessmentId, cancellationToken);
             if (!scheme.TryGetValue(out var info))
             {
                 return Result<GradeSummary>.Fail(scheme.Errors);
@@ -144,7 +150,8 @@ namespace UniCore.Application.Modules.Grading
                 return GradingErrors.WindowClosed;
             }
 
-            var scheme = await _engine.LoadSchemeAsync(sectionId, mustBePublished: true, cancellationToken);
+            // Published, or Closed by an earlier submission of this sheet (grades returned to the instructor are submitted again).
+            var scheme = await _engine.LoadSchemeAsync(sectionId, mustBePublished: false, cancellationToken);
             if (!scheme.TryGetValue(out var info))
             {
                 return Result<SectionStepSummary>.Fail(scheme.Errors);
@@ -156,7 +163,11 @@ namespace UniCore.Application.Modules.Grading
                 return Result<SectionStepSummary>.Fail(entries.Errors);
             }
 
-            var grades = await _grades.ListAsync(new GradesOfSectionSpecification(sectionId, tracking: true), cancellationToken);
+            // Only the grades of enrollments that are still on the roster (Registered or Completed): a student who withdrew after
+            // their grade was entered is left out of the sheet and never reaches review, publication, GPA or the transcript.
+            var activeEnrollments = list.Select(e => e.EnrollmentId).ToHashSet();
+            var grades = (await _grades.ListAsync(new GradesOfSectionSpecification(sectionId, tracking: true), cancellationToken))
+                .Where(g => activeEnrollments.Contains(g.EnrollmentId)).ToList();
             if (list.Any(e => grades.All(g => g.EnrollmentId != e.EnrollmentId)))
             {
                 return GradingErrors.SectionIncomplete;
@@ -199,6 +210,13 @@ namespace UniCore.Application.Modules.Grading
                 }
 
                 _grades.Update(grade);
+            }
+
+            // The scheme is closed with the submission: nobody changes the weights the grades were calculated with. Saved in the same commit.
+            var closed = await _assessmentLifecycle.CloseForGradingAsync(info.AssessmentId, cancellationToken);
+            if (closed.IsFailure)
+            {
+                return Result<SectionStepSummary>.Fail(closed.Errors);
             }
 
             var sheetAudit = new AuditEntry(GradingAuditActions.Submitted, _user.UserId, "GradeSheet", sectionId.ToString(), request.IpAddress, request.UserAgent, $"Status=Draft;Count={drafts.Count}", $"Status=Submitted;Count={drafts.Count}");

@@ -58,6 +58,9 @@ namespace UniCore.UnitTests.Modules.People
 
         public AcademicYearHandler YearHandler { get; }
         public AcademicTermHandler TermHandler { get; }
+        // Guards other modules would register to veto closing a semester; empty unless a test adds one.
+        public List<ISemesterCloseGuard> CloseGuards { get; } = [];
+
         public AcademicSemesterHandler SemesterHandler { get; }
         public AcademicLevelHandler LevelHandler { get; }
         public IAcademicCalendarService Calendar { get; }
@@ -74,7 +77,7 @@ namespace UniCore.UnitTests.Modules.People
 
             YearHandler = new AcademicYearHandler(authorizer, user, Years, Semesters, Rbac.Uow, Clock, Rbac.Audit);
             TermHandler = new AcademicTermHandler(authorizer, user, Terms, Rbac.Uow, Rbac.Audit);
-            SemesterHandler = new AcademicSemesterHandler(authorizer, user, Semesters, Years, Terms, Rbac.Uow, Clock, Rbac.Audit);
+            SemesterHandler = new AcademicSemesterHandler(authorizer, user, Semesters, Years, Terms, CloseGuards, Rbac.Uow, Clock, Rbac.Audit);
             LevelHandler = new AcademicLevelHandler(authorizer, user, Levels, Programs, Rbac.Uow, Clock, Rbac.Audit);
             Calendar = new AcademicCalendarService(Years, Semesters, AcademicClock);
 

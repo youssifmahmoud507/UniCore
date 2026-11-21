@@ -402,7 +402,7 @@ namespace UniCore.Application.Modules.Examination
             // A section filter is checked against the section; without it only the whole-university readers see the list.
             var scope = sectionId is { } section
                 ? (await _access.AuthorizeSectionAsync(Permissions.Exams.Read, section, openSemester: false, cancellationToken)).IsFailure
-                : (await _access.RequireAsync(Permissions.Exams.Manage, cancellationToken)).IsFailure;
+                : (await _access.RequireUniversityWideAsync(Permissions.Exams.Manage, cancellationToken)).IsFailure;
             if (scope)
             {
                 return Result<PagedResult<ExamSummary>>.Fail(ExaminationErrors.ExamNotFound);

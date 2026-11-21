@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using UniCore.Application.Modules.Grading;
+using UniCore.Application.Modules.Assessments;
+using UniCore.Application.Modules.Calendar;
 
 namespace UniCore.Infrastructure.Modules.Grading
 {
@@ -14,6 +16,8 @@ namespace UniCore.Infrastructure.Modules.Grading
             services.AddScoped<GradeWorkflowHandler>();
             services.AddScoped<GradeQueryHandler>();
             services.AddScoped<IGradeReadService, GradeReadService>();
+            services.AddScoped<IAssessmentGradeUsage, GradeAssessmentUsage>();
+            services.AddScoped<ISemesterCloseGuard, GradesSemesterCloseGuard>();
             services.AddScoped<IGradeCorrectionService, GradeCorrectionService>();
             services.AddScoped<GradeScaleSeeder>();
 

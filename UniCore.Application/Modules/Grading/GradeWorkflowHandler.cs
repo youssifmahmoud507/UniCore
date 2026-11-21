@@ -2,6 +2,7 @@ using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Handlers;
 using UniCore.Application.Common.Repositories;
 using UniCore.Application.Modules.Grading.Specifications;
+using UniCore.Application.Modules.Registrations;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Grading;
 using UniCore.Domain.Modules.Identity;
@@ -13,10 +14,11 @@ namespace UniCore.Application.Modules.Grading
     // of the section's course. A step moves only the grades that are in the state it works on; the others stay as they are.
     // Order: permission alone -> load -> scope -> state -> change -> save + audit (one audit entry for the section).
     public sealed class GradeWorkflowHandler(
-        GradingAccess access, ICurrentUser user, IAggregateRepository<Grade> grades, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
+        GradingAccess access, ICurrentUser user, IEnrollmentReadService roster, IAggregateRepository<Grade> grades, IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
         private readonly GradingAccess _access = access;
         private readonly ICurrentUser _user = user;
+        private readonly IEnrollmentReadService _roster = roster;
         private readonly IAggregateRepository<Grade> _grades = grades;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IClock _clock = clock;
@@ -72,8 +74,17 @@ namespace UniCore.Application.Modules.Grading
                 }
             }
 
+            // Only enrollments still on the roster (Registered or Completed) move: a student who withdrew after their grade was entered
+            // stays out of review, approval, publication and locking.
+            var entries = await _roster.GetRosterAsync(sectionId, cancellationToken);
+            if (!entries.TryGetValue(out var onRoster))
+            {
+                return Result<SectionStepSummary>.Fail(entries.Errors);
+            }
+
+            var active = onRoster.Select(e => e.EnrollmentId).ToHashSet();
             var grades = await _grades.ListAsync(new GradesOfSectionSpecification(sectionId, tracking: true), cancellationToken);
-            var targets = grades.Where(g => fromStates.Contains(g.Status)).ToList();
+            var targets = grades.Where(g => fromStates.Contains(g.Status) && active.Contains(g.EnrollmentId)).ToList();
             if (targets.Count == 0)
             {
                 return GradingErrors.NothingToProcess;
