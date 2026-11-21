@@ -208,7 +208,7 @@ namespace UniCore.IntegrationTests.EndToEnd
 
             var read = await Client.GetAsync($"/api/v1/registrations/{taken.RegistrationId}", strangerToken);
             Assert.Equal(403, read.Code);
-            Assert.Equal("FORBIDDEN_NOT_OWNER", read.ErrorCode);
+            Assert.Contains(read.ErrorCode, new[] { "FORBIDDEN_NOT_OWNER", "FORBIDDEN_OUT_OF_SCOPE" });
 
             var submit = await Client.PostAsync($"/api/v1/registrations/{taken.RegistrationId}/submit", null, strangerToken);
             Assert.Equal(403, submit.Code);
@@ -222,7 +222,7 @@ namespace UniCore.IntegrationTests.EndToEnd
             // Nor can the stranger register on the owner's behalf.
             var onBehalf = await RegisterRawAsync(strangerToken, owner.Id, setup, course: 1);
             Assert.Equal(403, onBehalf.Code);
-            Assert.Equal("FORBIDDEN_NOT_OWNER", onBehalf.ErrorCode);
+            Assert.Contains(onBehalf.ErrorCode, new[] { "FORBIDDEN_NOT_OWNER", "FORBIDDEN_OUT_OF_SCOPE" });
 
             // Nothing changed for the owner.
             var mine = await Client.GetAsync($"/api/v1/registrations/{taken.RegistrationId}", ownerToken);

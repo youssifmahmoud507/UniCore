@@ -52,7 +52,14 @@ namespace UniCore.IntegrationTests.Infrastructure
                     registrationEnd = Today.AddDays(100),
                     addDropStart = Today.AddDays(-50),
                     addDropEnd = Today.AddDays(110),
-                    withdrawalDeadline = Today.AddDays(200)
+                    withdrawalDeadline = Today.AddDays(200),
+                    // Exams are over and grades are open and publishable today (the deadline day is inclusive).
+                    midtermStart = Today.AddDays(-60),
+                    midtermEnd = Today.AddDays(-50),
+                    finalExamStart = Today.AddDays(-20),
+                    finalExamEnd = Today.AddDays(-10),
+                    gradeSubmissionDeadline = Today,
+                    gradePublicationDate = Today
                 };
 
                 var semester = await client.PostAsync("/api/v1/semesters", new
