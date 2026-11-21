@@ -133,6 +133,10 @@ namespace UniCore.IntegrationTests.EndToEnd
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 1);
             var student = scenario.Students[0].Id;
 
+            // Without a policy the late threshold is zero, so a policy of 10 minutes decides what counts.
+            var policy = await Client.PostAsync("/api/v1/attendance/policies", new { courseId = scenario.Setup.Courses[0].CourseId, minimumPercentage = 75m, warningPercentage = 85m, lateThresholdMinutes = 10, isExamBlocking = false }, admin);
+            Assert.Equal(201, policy.Code);
+
             var session = await OpenAsync(admin, scenario.SectionId, daysAgo: 12);
             var marked = await Client.PostAsync($"/api/v1/attendance/sessions/{session}/marks", new { marks = new[] { new { studentId = student, status = "Late", minutesLate = 3 } } }, admin);
             Assert.Equal(200, marked.Code);

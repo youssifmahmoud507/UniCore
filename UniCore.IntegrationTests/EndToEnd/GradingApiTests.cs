@@ -21,8 +21,8 @@ namespace UniCore.IntegrationTests.EndToEnd
         {
             var admin = await _api.AdminTokenAsync();
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 3);
-            var reviewer = await GradingScenario.ReviewerAsync(_api);
-            var approver = await GradingScenario.ApproverAsync(_api);
+            var reviewer = await GradingScenario.ReviewerAsync(_api, scenario.Setup.DepartmentId);
+            var approver = await GradingScenario.ApproverAsync(_api, scenario.Setup.DepartmentId);
 
             await scenario.EnterAllAsync(_api, admin);
 
@@ -63,8 +63,14 @@ namespace UniCore.IntegrationTests.EndToEnd
 
             Assert.Equal(200, entered.Code);
             Assert.Equal("Draft", entered.Prop("status").GetString());
-            Assert.Equal(70m, entered.Prop("percentage").GetDecimal());
             Assert.Equal(2, entered.Prop("scores").GetArrayLength());
+
+            // The result is calculated when the section is submitted, not while the scores are still a draft.
+            Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);
+
+            var sheet = await scenario.SheetAsync(_api, admin);
+            Assert.Equal(200, sheet.Code);
+            Assert.Equal(70m, sheet.Prop("items")[0].GetProperty("percentage").GetDecimal());
         }
 
         [Fact]
@@ -90,7 +96,7 @@ namespace UniCore.IntegrationTests.EndToEnd
         {
             var admin = await _api.AdminTokenAsync();
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 1);
-            var reviewerWhoApproves = await GradingScenario.ReviewerAsync(_api, alsoApprover: true);
+            var reviewerWhoApproves = await GradingScenario.ReviewerAsync(_api, scenario.Setup.DepartmentId, alsoApprover: true);
 
             await scenario.EnterAllAsync(_api, admin);
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);
@@ -113,7 +119,7 @@ namespace UniCore.IntegrationTests.EndToEnd
         {
             var admin = await _api.AdminTokenAsync();
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 1);
-            var approver = await GradingScenario.ApproverAsync(_api);
+            var approver = await GradingScenario.ApproverAsync(_api, scenario.Setup.DepartmentId);
 
             await scenario.EnterAllAsync(_api, admin);
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);
@@ -134,7 +140,7 @@ namespace UniCore.IntegrationTests.EndToEnd
         {
             var admin = await _api.AdminTokenAsync();
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 2);
-            var reviewer = await GradingScenario.ReviewerAsync(_api);
+            var reviewer = await GradingScenario.ReviewerAsync(_api, scenario.Setup.DepartmentId);
 
             await scenario.EnterAllAsync(_api, admin);
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);
@@ -160,8 +166,8 @@ namespace UniCore.IntegrationTests.EndToEnd
         {
             var admin = await _api.AdminTokenAsync();
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 1);
-            var reviewer = await GradingScenario.ReviewerAsync(_api);
-            var approver = await GradingScenario.ApproverAsync(_api);
+            var reviewer = await GradingScenario.ReviewerAsync(_api, scenario.Setup.DepartmentId);
+            var approver = await GradingScenario.ApproverAsync(_api, scenario.Setup.DepartmentId);
 
             await scenario.EnterAllAsync(_api, admin);
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);
@@ -227,8 +233,8 @@ namespace UniCore.IntegrationTests.EndToEnd
         {
             var admin = await _api.AdminTokenAsync();
             var scenario = await GradingScenario.BuildAsync(_api, admin, students: 2, createAccounts: true);
-            var reviewer = await GradingScenario.ReviewerAsync(_api);
-            var approver = await GradingScenario.ApproverAsync(_api);
+            var reviewer = await GradingScenario.ReviewerAsync(_api, scenario.Setup.DepartmentId);
+            var approver = await GradingScenario.ApproverAsync(_api, scenario.Setup.DepartmentId);
 
             await scenario.EnterAllAsync(_api, admin);
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);

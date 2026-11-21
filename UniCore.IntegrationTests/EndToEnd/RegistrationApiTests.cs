@@ -130,8 +130,8 @@ namespace UniCore.IntegrationTests.EndToEnd
         public async Task The_credit_limit_is_enforced()
         {
             var admin = await _api.AdminTokenAsync();
-            // 30 credits per course: the second one passes any normal limit.
-            var setup = await AcademicScenario.BuildAsync(_api, admin, courseCount: 2, credits: 30);
+            // The regular limit is 18 credits: one course of 10 fits, a second one of 10 does not.
+            var setup = await AcademicScenario.BuildAsync(_api, admin, courseCount: 2, credits: 10);
             var student = await AcademicScenario.AdmitAsync(_api, admin, setup);
 
             Assert.Equal(201, (await RegisterAsync(admin, student.Id, setup.Calendar.SemesterId, setup.Courses[0].SectionId)).Code);

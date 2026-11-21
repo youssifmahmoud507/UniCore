@@ -73,12 +73,14 @@ namespace UniCore.IntegrationTests.Infrastructure
         public Task<ApiResponse> SheetAsync(TestApi api, string token)
             => api.Client.GetAsync($"/api/v1/grades/sections/{SectionId}?pageSize=100", token);
 
-        public static Task<string> ReviewerAsync(TestApi api, bool alsoApprover = false)
+        // Review, approve, publish and lock are checked on the department of the section's course, so these users get a
+        // Department scope on it (a role without a scope would be refused).
+        public static Task<string> ReviewerAsync(TestApi api, Guid departmentId, bool alsoApprover = false)
             => RoleUsers.TokenAsync(api, "Reviewer", alsoApprover
                 ? [Permissions.Grades.Read, Permissions.Grades.Review, Permissions.Grades.Approve]
-                : [Permissions.Grades.Read, Permissions.Grades.Review]);
+                : [Permissions.Grades.Read, Permissions.Grades.Review], ScopeType.Department, departmentId);
 
-        public static Task<string> ApproverAsync(TestApi api)
-            => RoleUsers.TokenAsync(api, "Approver", [Permissions.Grades.Read, Permissions.Grades.Approve]);
+        public static Task<string> ApproverAsync(TestApi api, Guid departmentId)
+            => RoleUsers.TokenAsync(api, "Approver", [Permissions.Grades.Read, Permissions.Grades.Approve], ScopeType.Department, departmentId);
     }
 }
