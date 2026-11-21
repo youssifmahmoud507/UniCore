@@ -98,6 +98,13 @@
             public const string Issue = "Transcripts.Issue";
         }
 
+        public static class Graduation
+        {
+            public const string Read = "Graduation.Read";
+            public const string Apply = "Graduation.Apply";
+            public const string Decide = "Graduation.Decide";
+        }
+
         public static class Grades
         {
             public const string Read = "Grades.Read";
@@ -214,6 +221,9 @@
         new PermissionDefinition(Assessments.Manage, "Assessment", "Define the grading scheme of a section"),
         new PermissionDefinition(Transcripts.Read, "Transcript", "View GPA, academic history and transcripts"),
         new PermissionDefinition(Transcripts.Issue, "Transcript", "Issue official transcripts"),
+        new PermissionDefinition(Graduation.Read, "Graduation", "View graduation eligibility and applications"),
+        new PermissionDefinition(Graduation.Apply, "Graduation", "Apply for graduation"),
+        new PermissionDefinition(Graduation.Decide, "Graduation", "Approve or reject graduation applications"),
         new PermissionDefinition(Grades.Read, "Grading", "View grades"),
         new PermissionDefinition(Grades.Enter, "Grading", "Enter grades"),
         new PermissionDefinition(Grades.Review, "Grading", "Review submitted grades"),

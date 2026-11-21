@@ -20,6 +20,10 @@ namespace UniCore.Application.Modules.Transcripts
 
         // One semester's GPA and the cumulative GPA at the end of it. TRANSCRIPT_NO_GRADES when the student has no published grade in it.
         Task<Result<SemesterGpaInfo>> GetSemesterAsync(Guid studentId, Guid semesterId, CancellationToken cancellationToken = default);
+
+        // The courses the student has passed: the COUNTED attempt of the course (repeat policy applied once) is a passing one.
+        // Graduation reads this for the required courses of the study plan.
+        Task<Result<IReadOnlyList<Guid>>> GetPassedCourseIdsAsync(Guid studentId, CancellationToken cancellationToken = default);
     }
 
     // What the official transcript workflow (Developer 2) calls AFTER its approval. It freezes the student's transcript as it is now.

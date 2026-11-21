@@ -19,6 +19,22 @@ namespace UniCore.Application.Modules.Transcripts
             return new StudentGpaInfo(studentId, TranscriptMapper.ToFigures(h.Cumulative), h.Cumulative.ReplacedAttempts);
         }
 
+        public async Task<Result<IReadOnlyList<Guid>>> GetPassedCourseIdsAsync(Guid studentId, CancellationToken cancellationToken = default)
+        {
+            var built = await _history.BuildAsync(studentId, GpaPolicy.Default, cancellationToken);
+            if (!built.TryGetValue(out var h))
+            {
+                return Result<IReadOnlyList<Guid>>.Fail(built.Errors);
+            }
+
+            IReadOnlyList<Guid> passed =
+            [
+                .. h.Semesters.SelectMany(s => s.Courses).Where(c => c.IsCounted && c.Attempt.IsPassing).Select(c => c.Attempt.CourseId).Distinct()
+            ];
+
+            return Result<IReadOnlyList<Guid>>.Ok(passed);
+        }
+
         public async Task<Result<SemesterGpaInfo>> GetSemesterAsync(Guid studentId, Guid semesterId, CancellationToken cancellationToken = default)
         {
             var built = await _history.BuildAsync(studentId, GpaPolicy.Default, cancellationToken);
