@@ -5,8 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using UniCore.Api;
 using UniCore.Application.Common.Abstractions;
+using UniCore.Application.Modules.Admissions;
 using UniCore.Application.Modules.Finance;
 using UniCore.Application.Modules.Students;
+using UniCore.Infrastructure.Modules.Admissions;
 using UniCore.Infrastructure.Modules.Finance;
 using UniCore.Infrastructure.Modules.Students;
 
@@ -31,6 +33,13 @@ namespace UniCore.IntegrationTests.Infrastructure
                 // FinanceReferenceVerifierTests covers the real verifier.
                 services.RemoveAll<IFinanceReferenceVerifier>();
                 services.AddScoped<IFinanceReferenceVerifier, UnverifiedFinanceReferenceVerifier>();
+                // Admissions: the deadline normally comes from configuration per academic year id, and the ids are created
+                // by each test, so every year gets a deadline far in the future. Documents are accepted by id: the document
+                // service has its own tests.
+                services.RemoveAll<IAdmissionDeadlineProvider>();
+                services.AddScoped<IAdmissionDeadlineProvider, FixedAdmissionDeadlineProvider>();
+                services.RemoveAll<IAdmissionDocumentVerifier>();
+                services.AddScoped<IAdmissionDocumentVerifier, UnverifiedAdmissionDocumentVerifier>();
             });
         }
     }
