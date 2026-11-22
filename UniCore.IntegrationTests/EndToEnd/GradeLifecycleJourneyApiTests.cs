@@ -71,7 +71,7 @@ namespace UniCore.IntegrationTests.EndToEnd
             Assert.Equal(200, issued.Code);
             var snapshotId = issued.GuidOf("snapshotId");
 
-            Assert.Equal(200, (await scenario.StepAsync(_api, approver, "lock")).Code);
+            Assert.Equal(200, (await scenario.StepAsync(_api, admin, "lock")).Code);
 
             var locked = await scenario.EnterAsync(_api, admin, student.Id, quiz: 0m, final: 0m);
             Assert.Equal(422, locked.Code);
