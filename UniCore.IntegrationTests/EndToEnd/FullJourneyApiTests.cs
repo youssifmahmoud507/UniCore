@@ -307,8 +307,9 @@ namespace UniCore.IntegrationTests.EndToEnd
             var myStudent = mine.Students[0].Id;
             var theirStudent = theirs.Students[0].Id;
 
-            // Students.
-            Assert.Equal(200, (await Client.GetAsync($"/api/v1/students/{myStudent}", dean)).Code);
+            // Students: by design the Students module needs a Global scope (StudentManagementHandler denies scoped roles
+            // rather than allow too much), so even a dean of the department cannot open a student record here.
+            Assert.Equal(403, (await Client.GetAsync($"/api/v1/students/{myStudent}", dean)).Code);
             Assert.Equal(403, (await Client.GetAsync($"/api/v1/students/{theirStudent}", dean)).Code);
 
             // Grades of a student, and the grade sheet of a section.
