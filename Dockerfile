@@ -43,8 +43,8 @@ RUN RID="linux-x64"; if [ "$(uname -m)" = "aarch64" ]; then RID="linux-arm64"; f
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS migrations
 WORKDIR /app
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
-    DOTNET_BUNDLE_EXTRACT_BASE_DIR=/tmp
+# No invariant globalization here: Microsoft.Data.SqlClient does not support it (the Debian image has ICU).
+ENV DOTNET_BUNDLE_EXTRACT_BASE_DIR=/tmp
 COPY --from=migrations-build /app/efbundle ./efbundle
 RUN chmod +x ./efbundle
 # The connection string is passed by the caller: `--connection "<connection string>"`.
