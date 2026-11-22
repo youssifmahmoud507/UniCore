@@ -69,6 +69,8 @@ This builds and starts the API container along with SQL Server, Redis, and Mailp
 
 > **Note:** `docker compose up` runs the `migrate` service first (an EF Core migrations bundle built by the `migrations` stage of the Dockerfile). It creates or updates the database and exits; the API starts only after it succeeded. You do not need to run `dotnet ef database update` for the compose stack. Look at its result with `docker compose logs migrate`.
 
+After the stack is up, `./scripts/smoke.sh` (Git Bash, WSL or Linux) checks the real container: health, the seeded admin login and a read of each main module. It reads `.env` and `API_PORT`; use `BASE_URL=http://host:port` for another address.
+
 ## Environment Variables
 
 | Variable | Required | Description |
