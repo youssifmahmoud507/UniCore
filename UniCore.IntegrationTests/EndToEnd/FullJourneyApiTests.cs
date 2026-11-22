@@ -95,7 +95,7 @@ namespace UniCore.IntegrationTests.EndToEnd
             var excuse = await _raw.PostFileAsync("/api/v1/attendance/excuses", excusedToken, "doctor.pdf", Pdf(), "application/pdf", new Dictionary<string, string> { ["attendanceRecordId"] = record.ToString(), ["reason"] = "Hospital" });
             Assert.Equal(201, excuse.Code);
 
-            var accepted = await Client.PostAsync($"/api/v1/attendance/excuses/{excuse.GuidOf("id")}/review", new { accept = true, note = "Certificate seen" }, admin);
+            var accepted = await Client.PostAsync($"/api/v1/attendance/excuses/{excuse.Json.GetProperty("id").GetGuid()}/review", new { accept = true, note = "Certificate seen" }, admin);
             Assert.Equal(200, accepted.Code);
 
             Assert.Equal(100m, (await ReportAsync(excused.Id)).Prop("percentage").GetDecimal());
