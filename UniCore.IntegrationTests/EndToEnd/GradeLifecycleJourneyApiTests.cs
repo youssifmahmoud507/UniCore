@@ -24,9 +24,15 @@ namespace UniCore.IntegrationTests.EndToEnd
             // 1. First draft: 70 percent (quiz 20/20, final 50/100). Nothing exists for the transcript yet.
             Assert.Equal(200, (await scenario.EnterAsync(_api, admin, student.Id, quiz: 20m, final: 50m)).Code);
 
+            // The cumulative GPA of a student with nothing published is an empty figure, not an error; the semester GPA
+            // has no semester to report and says so.
             var noGrades = await Client.GetAsync($"/api/v1/transcripts/students/{student.Id}/gpa", admin);
-            Assert.Equal(422, noGrades.Code);
-            Assert.Equal("TRANSCRIPT_NO_GRADES", noGrades.ErrorCode);
+            Assert.Equal(200, noGrades.Code);
+            Assert.Equal(0, noGrades.Prop("cumulative").GetProperty("attemptedCredits").GetInt32());
+
+            var noSemester = await Client.GetAsync($"/api/v1/transcripts/students/{student.Id}/semesters/{scenario.Setup.Calendar.SemesterId}/gpa", admin);
+            Assert.Equal(422, noSemester.Code);
+            Assert.Equal("TRANSCRIPT_NO_GRADES", noSemester.ErrorCode);
 
             // 2. Submitted, then returned by the reviewer: still nothing published, for the student or the transcript.
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "submit")).Code);
@@ -44,7 +50,9 @@ namespace UniCore.IntegrationTests.EndToEnd
             Assert.Equal(200, (await scenario.StepAsync(_api, approver, "approve")).Code);
 
             // Approved is still not visible to the transcript.
-            Assert.Equal(422, (await Client.GetAsync($"/api/v1/transcripts/students/{student.Id}/gpa", admin)).Code);
+            var beforePublish = await Client.GetAsync($"/api/v1/transcripts/students/{student.Id}/gpa", admin);
+            Assert.Equal(200, beforePublish.Code);
+            Assert.Equal(0, beforePublish.Prop("cumulative").GetProperty("attemptedCredits").GetInt32());
 
             Assert.Equal(200, (await scenario.StepAsync(_api, admin, "publish")).Code);
 
