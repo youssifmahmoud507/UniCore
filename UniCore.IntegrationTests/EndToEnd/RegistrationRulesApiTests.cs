@@ -1,3 +1,4 @@
+using UniCore.Domain.Modules.Identity;
 using UniCore.IntegrationTests.Infrastructure;
 
 namespace UniCore.IntegrationTests.EndToEnd
@@ -28,6 +29,10 @@ namespace UniCore.IntegrationTests.EndToEnd
             var student = await AcademicScenario.AdmitAsync(_api, admin, setup, createAccount: true);
             var token = await _api.LoginTokenAsync(student.Number, TestApi.DefaultPassword);
 
+            // Staff means a user whose grant is Registration.Manage. The admin also holds Registration.Register, which is
+            // tried first, so the admin is treated as the student's own side; a registrar has Manage only.
+            var registrar = await RoleUsers.TokenAsync(_api, "Registrar", [Permissions.Registration.Read, Permissions.Registration.Manage], ScopeType.Department, setup.DepartmentId);
+
             // The registration window opens in ten days.
             var windows = AcademicScenario.Windows(registrationStart: Today.AddDays(10), registrationEnd: Today.AddDays(100));
 
@@ -42,11 +47,11 @@ namespace UniCore.IntegrationTests.EndToEnd
                 Assert.Equal(403, byStudent.Code);
                 Assert.Equal("REGISTRATION_OVERRIDE_FORBIDDEN", byStudent.ErrorCode);
 
-                var shortReason = await RegisterAsync(admin, student.Id, setup, overrideReason: "no");
+                var shortReason = await RegisterAsync(registrar, student.Id, setup, overrideReason: "no");
                 Assert.Equal(400, shortReason.Code);
                 Assert.Equal("REGISTRATION_OVERRIDE_REASON_INVALID", shortReason.ErrorCode);
 
-                var overridden = await RegisterAsync(admin, student.Id, setup, overrideReason: "Late approval by the dean");
+                var overridden = await RegisterAsync(registrar, student.Id, setup, overrideReason: "Late approval by the dean");
                 Assert.Equal(201, overridden.Code);
             });
         }
