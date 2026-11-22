@@ -32,9 +32,18 @@ namespace UniCore.IntegrationTests.EndToEnd
             var collections = await Client.GetAsync($"/api/v1/reports/{FinanceCollectionsReport.Code}/run?{Range}", admin);
             Assert.Equal(200, collections.Code);
             var collectionRows = collections.Prop("rows");
-            var collected = collectionRows[collectionRows.GetArrayLength() - 1];
 
-            return new Totals(invoices[1].GetInt32(), invoices[2].GetDecimal(), invoices[3].GetDecimal(), collected[2].GetInt32(), collected[3].GetDecimal());
+            // With no payment in the range the report has no rows at all (not even a Total row).
+            var payments = 0;
+            var collected = 0m;
+            if (collectionRows.GetArrayLength() > 0)
+            {
+                var total = collectionRows[collectionRows.GetArrayLength() - 1];
+                payments = total[2].GetInt32();
+                collected = total[3].GetDecimal();
+            }
+
+            return new Totals(invoices[1].GetInt32(), invoices[2].GetDecimal(), invoices[3].GetDecimal(), payments, collected);
         }
 
         private async Task<List<decimal>> OutstandingBalancesAsync(string admin)
