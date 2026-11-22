@@ -250,6 +250,10 @@ jobs:
       - name: Build Docker image
         run: docker build -t unicore-api:ci-${{ github.sha }} .
 
+      # Builds the migrations bundle the compose stack runs before the API (the `migrations` target).
+      - name: Build migrations bundle image
+        run: docker build --target migrations -t unicore-migrations:ci-${{ github.sha }} .
+
       - name: Verify no secrets in image layers
         run: |
           docker history unicore-api:ci-${{ github.sha }} --no-trunc --format '{{.CreatedBy}}' | \

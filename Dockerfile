@@ -23,7 +23,34 @@ RUN dotnet publish UniCore.Api/UniCore.Api.csproj \
     -o /app/publish \
     --no-restore
 
-# Stage 2: Runtime
+# Stage 2: Migrations bundle (a self-contained executable that applies every EF Core migration).
+# Built with `docker build --target migrations`; docker-compose runs it as the `migrate` service before the API.
+# The environment values below exist only so the host can be built while the bundle is generated (nothing is
+# connected to, and nothing from this stage reaches the runtime image).
+FROM build AS migrations-build
+RUN dotnet tool install --global dotnet-ef --version 10.0.15
+ENV PATH="$PATH:/root/.dotnet/tools"
+RUN RID="linux-x64"; if [ "$(uname -m)" = "aarch64" ]; then RID="linux-arm64"; fi; \
+    ConnectionStrings__DefaultConnection="Server=build-only;Database=UniCore;User Id=sa;Password=build-only;TrustServerCertificate=True" \
+    Jwt__SigningKey="build-only-build-only-build-only-build-only" \
+    PasswordReset__Pepper="build-only-build-only-build-only-build-only" \
+    dotnet ef migrations bundle \
+        --project UniCore.Infrastructure/UniCore.Infrastructure.csproj \
+        --startup-project UniCore.Api/UniCore.Api.csproj \
+        --configuration Release \
+        --self-contained -r "$RID" \
+        --output /app/efbundle --force
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS migrations
+WORKDIR /app
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
+    DOTNET_BUNDLE_EXTRACT_BASE_DIR=/tmp
+COPY --from=migrations-build /app/efbundle ./efbundle
+RUN chmod +x ./efbundle
+# The connection string is passed by the caller: `--connection "<connection string>"`.
+ENTRYPOINT ["./efbundle"]
+
+# Stage 3: Runtime (must stay the last stage: `docker build .` builds it)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 

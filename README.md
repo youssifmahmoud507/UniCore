@@ -67,7 +67,7 @@ docker compose up -d
 
 This builds and starts the API container along with SQL Server, Redis, and Mailpit. The API is available at `http://localhost:8080`.
 
-> **Note:** You must run `dotnet ef database update` before the first `docker compose up` with the api service, or the API will fail to start because the database does not exist yet.
+> **Note:** `docker compose up` runs the `migrate` service first (an EF Core migrations bundle built by the `migrations` stage of the Dockerfile). It creates or updates the database and exits; the API starts only after it succeeded. You do not need to run `dotnet ef database update` for the compose stack. Look at its result with `docker compose logs migrate`.
 
 ## Environment Variables
 

@@ -8,7 +8,7 @@ services:
       MSSQL_PID: Developer
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
     ports:
-      - "1433:1433"
+      - "127.0.0.1:1433:1433"
     volumes:
       - unicore-sqlserver-data:/var/opt/mssql
     healthcheck:
@@ -47,6 +47,21 @@ services:
     networks:
       - unicore-net
 
+  # Applies the EF Core migrations, then exits. The API starts only after it finished successfully.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrations
+    container_name: unicore-migrate
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    command: ["--connection", "Server=sqlserver,1433;Database=UniCore;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"]
+    restart: "no"
+    networks:
+      - unicore-net
+
   api:
     build:
       context: .
@@ -54,6 +69,8 @@ services:
     container_name: unicore-api
     restart: unless-stopped
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       sqlserver:
         condition: service_healthy
       redis:
