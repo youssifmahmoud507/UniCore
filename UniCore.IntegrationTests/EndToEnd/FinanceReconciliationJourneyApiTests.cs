@@ -18,7 +18,7 @@ namespace UniCore.IntegrationTests.EndToEnd
         private static string Range => $"from={Today(-1)}&to={Today(1)}";
 
         private Task<ApiResponse> PayAsync(string token, Guid invoice, decimal amount, string method, string? key = null)
-            => Client.PostAsync($"/api/v1/invoices/{invoice}/payments", new { amount, method }, token, new Dictionary<string, string> { ["Idempotency-Key"] = key ?? $"key-{Guid.NewGuid():N}" });
+            => Client.PostAsync($"/api/v1/invoices/{invoice}/payments", new { amount, method, reference = method is "BankTransfer" or "Cheque" ? $"REF-{Guid.NewGuid():N}"[..16] : null }, token, new Dictionary<string, string> { ["Idempotency-Key"] = key ?? $"key-{Guid.NewGuid():N}" });
 
         private sealed record Totals(int Invoices, decimal Billed, decimal Paid, int Payments, decimal Collected);
 
