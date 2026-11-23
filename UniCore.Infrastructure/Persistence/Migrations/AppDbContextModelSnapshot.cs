@@ -1666,6 +1666,13 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Fixed");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -2187,6 +2194,9 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int?>("Credits")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -2194,6 +2204,9 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
+
+                    b.Property<Guid?>("EnrollmentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FeeDefinitionId")
                         .HasColumnType("uniqueidentifier");
@@ -2234,6 +2247,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AcademicSemesterId", "Status");
 
+                    b.HasIndex("EnrollmentId", "FeeDefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_StudentCharges_Enrollment")
+                        .HasFilter("[EnrollmentId] IS NOT NULL AND [Status] <> 'Cancelled'");
+
                     b.HasIndex("StudentId", "ServiceReference")
                         .IsUnique()
                         .HasDatabaseName("UX_StudentCharges_ServiceReference")
@@ -2242,7 +2260,7 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("StudentId", "AcademicSemesterId", "FeeDefinitionId")
                         .IsUnique()
                         .HasDatabaseName("UX_StudentCharges_Live")
-                        .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL");
+                        .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL AND [EnrollmentId] IS NULL");
 
                     b.ToTable("StudentCharges", "finance");
                 });
