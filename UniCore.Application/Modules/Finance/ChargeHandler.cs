@@ -36,7 +36,7 @@ namespace UniCore.Application.Modules.Finance
             cancellationToken);
 
         // Most specific first: program + semester, program only, semester only, global.
-        private static FeeStructure? Pick(IReadOnlyList<FeeStructure> structures, Guid programId, Guid semesterId)
+        internal static FeeStructure? Pick(IReadOnlyList<FeeStructure> structures, Guid programId, Guid semesterId)
             => structures.FirstOrDefault(s => s.AcademicProgramId == programId && s.AcademicSemesterId == semesterId)
             ?? structures.FirstOrDefault(s => s.AcademicProgramId == programId && s.AcademicSemesterId == null)
             ?? structures.FirstOrDefault(s => s.AcademicProgramId == null && s.AcademicSemesterId == semesterId)
@@ -87,6 +87,9 @@ namespace UniCore.Application.Modules.Finance
                 : await _definitions.ListAsync(new FeeDefinitionsByIdsSpecification(definitionIds), cancellationToken);
             var names = definitionList.ToDictionary(d => d.Id, d => d.Name);
 
+            // Per-credit fees are charged per enrollment (EnrollmentChargeHandler), never in bulk.
+            var perCredit = definitionList.Where(d => d.Basis == FeeBasis.PerCredit).Select(d => d.Id).ToHashSet();
+
             var processed = 0;
             var withoutStructure = 0;
             var created = 0;
@@ -123,6 +126,11 @@ namespace UniCore.Application.Modules.Finance
 
                     foreach (var item in structure.Items)
                     {
+                        if (perCredit.Contains(item.FeeDefinitionId))
+                        {
+                            continue;
+                        }
+
                         if (existingKeys.Contains((student.Id, item.FeeDefinitionId)))
                         {
                             alreadyExisting++;

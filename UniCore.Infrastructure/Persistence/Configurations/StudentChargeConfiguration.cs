@@ -36,8 +36,15 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             // Service charges have no semester, so they are outside this index.
             builder.HasIndex(c => new { c.StudentId, c.AcademicSemesterId, c.FeeDefinitionId })
                 .IsUnique()
-                .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL")
+                .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL AND [EnrollmentId] IS NULL")
                 .HasDatabaseName("UX_StudentCharges_Live");
+
+            // A per-credit charge belongs to one enrollment (several enrollments of a student share a fee and a semester, so they
+            // are outside the index above). One live charge per enrollment per fee makes the enrollment handler idempotent.
+            builder.HasIndex(c => new { c.EnrollmentId, c.FeeDefinitionId })
+                .IsUnique()
+                .HasFilter("[EnrollmentId] IS NOT NULL AND [Status] <> 'Cancelled'")
+                .HasDatabaseName("UX_StudentCharges_Enrollment");
 
             // One live service charge per student per request: this is what makes IStudentChargeService idempotent.
             builder.HasIndex(c => new { c.StudentId, c.ServiceReference })

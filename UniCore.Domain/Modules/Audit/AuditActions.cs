@@ -52,6 +52,7 @@ namespace UniCore.Domain.Modules.Audit
         public const string FeeStructureArchived = "FEE_STRUCTURE_ARCHIVED";
         public const string ChargesGenerated = "CHARGES_GENERATED";
         public const string StudentChargeCancelled = "STUDENT_CHARGE_CANCELLED";
+        public const string EnrollmentChargeNeedsReview = "ENROLLMENT_CHARGE_NEEDS_REVIEW";
         public const string InvoiceIssued = "INVOICE_ISSUED";
         public const string PaymentRecorded = "PAYMENT_RECORDED";
         public const string InvoiceCancelled = "INVOICE_CANCELLED";

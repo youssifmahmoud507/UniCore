@@ -17,6 +17,7 @@ namespace UniCore.Infrastructure.Persistence.Configurations
             builder.Property(d => d.Name).IsRequired().HasMaxLength(FeeDefinition.MaxNameLength);
             builder.Property(d => d.Description).HasMaxLength(FeeDefinition.MaxDescriptionLength);
             builder.Property(d => d.DefaultAmount).HasMoneyConversion();
+            builder.Property(d => d.Basis).IsRequired().HasMaxLength(20).HasDefaultValue(FeeBasis.Fixed);
             builder.Property(d => d.IsActive).IsRequired();
             builder.Property(d => d.CreatedAt).IsRequired();
 

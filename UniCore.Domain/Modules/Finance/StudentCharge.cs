@@ -21,6 +21,8 @@ namespace UniCore.Domain.Modules.Finance
         public Guid? FeeStructureItemId { get; private set; }
         public Guid FeeDefinitionId { get; private set; }
         public string? ServiceReference { get; private set; }
+        public Guid? EnrollmentId { get; private set; }
+        public int? Credits { get; private set; }
         public string Description { get; private set; } = string.Empty;
         public Money Amount { get; private set; }
         public DateOnly DueDate { get; private set; }
@@ -63,6 +65,34 @@ namespace UniCore.Domain.Modules.Finance
                 Status = ChargeStatus.Pending,
                 CreatedAt = now
             };
+        }
+
+        // A per-credit fee for one enrollment: the amount is the price of one credit times the credits of the course.
+        public static Result<StudentCharge> CreateForEnrollment(Guid studentId, Guid academicSemesterId, Guid feeStructureItemId, Guid feeDefinitionId, Guid enrollmentId, int credits, string? description, Money pricePerCredit, DateOnly dueDate, DateTimeOffset now)
+        {
+            if (enrollmentId == Guid.Empty || credits <= 0)
+            {
+                return FinanceErrors.ChargeDataInvalid;
+            }
+
+            var total = pricePerCredit.Multiply(credits);
+
+            if (!total.TryGetValue(out var amount))
+            {
+                return Result<StudentCharge>.Fail(total.Errors);
+            }
+
+            var built = Create(studentId, academicSemesterId, feeStructureItemId, feeDefinitionId, description, amount, dueDate, now);
+
+            if (!built.TryGetValue(out var charge))
+            {
+                return built;
+            }
+
+            charge.EnrollmentId = enrollmentId;
+            charge.Credits = credits;
+
+            return charge;
         }
 
         // A fee for one service request. The reference is the id of that request in the module that owns it.

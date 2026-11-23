@@ -23,11 +23,12 @@ namespace UniCore.Domain.Modules.Finance
         public string Name { get; private set; } = string.Empty;
         public string? Description { get; private set; }
         public Money DefaultAmount { get; private set; }
+        public FeeBasis Basis { get; private set; }
         public bool IsActive { get; private set; }
         public DateTimeOffset CreatedAt { get; private set; }
         public DateTimeOffset? UpdatedAt { get; private set; }
 
-        public static Result<FeeDefinition> Create(Guid universityId, string? code, string? name, string? description, Money defaultAmount, DateTimeOffset now)
+        public static Result<FeeDefinition> Create(Guid universityId, string? code, string? name, string? description, Money defaultAmount, DateTimeOffset now, FeeBasis basis = FeeBasis.Fixed)
         {
             if (universityId == Guid.Empty)
             {
@@ -56,6 +57,7 @@ namespace UniCore.Domain.Modules.Finance
                 Name = clean.Name,
                 Description = clean.Description,
                 DefaultAmount = defaultAmount,
+                Basis = basis,
                 IsActive = true,
                 CreatedAt = now
             };
