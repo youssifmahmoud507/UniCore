@@ -17,7 +17,7 @@ namespace UniCore.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.14")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -2408,6 +2408,80 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Grades", "grading", t =>
                         {
                             t.HasCheckConstraint("CK_Grades_Percentage", "[Percentage] IS NULL OR ([Percentage] >= 0 AND [Percentage] <= 100)");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeChangeRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssessmentComponentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("NewScore")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<decimal>("OldScore")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradeId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_GradeChangeRequests_PendingPerGrade")
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("GradeChangeRequests", "grading", t =>
+                        {
+                            t.HasCheckConstraint("CK_GradeChangeRequests_Scores", "[OldScore] >= 0 AND [OldScore] <= 1000 AND [NewScore] >= 0 AND [NewScore] <= 1000");
                         });
                 });
 
@@ -5044,6 +5118,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("GradeScaleId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeChangeRequest", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Grading.Grade", null)
+                        .WithMany()
+                        .HasForeignKey("GradeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeComponentScore", b =>
