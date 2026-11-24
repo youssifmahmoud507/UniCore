@@ -34,6 +34,8 @@ namespace UniCore.Domain.Modules.Audit
         public const string ScopeRemoved = "SCOPE_REMOVED";
         public const string StudentCreated = "STUDENT_CREATED";
         public const string StudentAdmitted = "STUDENT_ADMITTED";
+        public const string AdmissionStudentCreated = "ADMISSION_STUDENT_CREATED";
+        public const string AdmissionStudentFailed = "ADMISSION_STUDENT_FAILED";
         public const string StudentAccountCreated = "STUDENT_ACCOUNT_CREATED";
         public const string StudentAccountFailed = "STUDENT_ACCOUNT_PROVISION_FAILED";
         public const string StudentStatusChanged = "STUDENT_STATUS_CHANGED";

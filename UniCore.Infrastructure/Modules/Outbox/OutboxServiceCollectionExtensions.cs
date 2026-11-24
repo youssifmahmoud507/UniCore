@@ -2,6 +2,7 @@
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Modules.Students;
 using UniCore.Domain.Common.Events;
+using UniCore.Domain.Modules.Admissions;
 using UniCore.Domain.Modules.Students;
 
 namespace UniCore.Infrastructure.Modules.Outbox
@@ -22,6 +23,10 @@ namespace UniCore.Infrastructure.Modules.Outbox
 
             // Consumers of domain events.
             services.AddScoped<IDomainEventHandler<StudentAdmitted>, StudentAdmittedAuditHandler>();
+
+            // An accepted admission becomes a person, a student and a login account.
+            services.AddScoped<AdmissionAcceptedStudentHandler>();
+            services.AddScoped<IDomainEventHandler<AdmissionApplicationAccepted>, AdmissionAcceptedHandler>();
 
             // Replaced by the Hangfire-backed signal in AddBackgroundJobs.
             services.AddSingleton<IOutboxSignal, NoOpOutboxSignal>();
