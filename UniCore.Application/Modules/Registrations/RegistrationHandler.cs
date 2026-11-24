@@ -48,9 +48,9 @@ namespace UniCore.Application.Modules.Registrations
 
         private static string Describe(Registration r) => $"Student={r.StudentId};Semester={r.AcademicSemesterId};Status={r.Status};Credits={r.RegisteredCredits}";
 
-        private async Task<Result> CommitAsync(Registration registration, string action, string? before, string extra, RequestInfo request, CancellationToken cancellationToken)
+        private async Task<Result> CommitAsync(Registration registration, string action, string? before, string extra, RequestInfo request, CancellationToken cancellationToken, Guid? actor = null)
         {
-            var entry = new AuditEntry(action, _user.UserId, "Registration", registration.Id.ToString(), request.IpAddress, request.UserAgent, before, Describe(registration) + extra);
+            var entry = new AuditEntry(action, actor ?? _user.UserId, "Registration", registration.Id.ToString(), request.IpAddress, request.UserAgent, before, Describe(registration) + extra);
             return await ChangeSupport.CommitAsync(_unitOfWork, _audit, entry, cancellationToken);
         }
 
@@ -390,6 +390,32 @@ namespace UniCore.Application.Modules.Registrations
                 return Result<RegistrationSummary>.Fail(loaded.Errors);
             }
 
+            return await LeaveCoreAsync(context, enrollmentIds, withdraw, enforceWindow: true, actor: null, request, cancellationToken);
+        }
+
+        // A withdrawal that the WITHDRAWAL_REQUEST workflow approved (department head, dean, registrar). The approvers are the
+        // authority, so there is no permission or scope check and no window check here: the window was checked when the student
+        // asked, and a request must not fail because the approvals took longer. The state rules (active student, registered
+        // enrollment, corequisites) still apply.
+        public async Task<Result<RegistrationSummary>> WithdrawApprovedAsync(Guid registrationId, Guid enrollmentId, Guid approvedByUserId, RequestInfo request, CancellationToken cancellationToken = default)
+        {
+            var registration = await _registrations.FirstOrDefaultAsync(new RegistrationByIdSpecification(registrationId, tracking: true), cancellationToken);
+            if (registration is null)
+            {
+                return RegistrationsErrors.RegistrationNotFound;
+            }
+
+            var student = await _students.FirstOrDefaultAsync(new StudentByIdSpecification(registration.StudentId), cancellationToken);
+            if (student is null)
+            {
+                return RegistrationsErrors.StudentNotFound;
+            }
+
+            return await LeaveCoreAsync(new ChangeContext(registration, student, true), [enrollmentId], withdraw: true, enforceWindow: false, approvedByUserId, request, cancellationToken);
+        }
+
+        private async Task<Result<RegistrationSummary>> LeaveCoreAsync(ChangeContext context, IReadOnlyList<Guid> enrollmentIds, bool withdraw, bool enforceWindow, Guid? actor, RequestInfo request, CancellationToken cancellationToken)
+        {
             var registration = context.Registration;
 
             if (!registration.AcceptsChanges)
@@ -420,10 +446,13 @@ namespace UniCore.Application.Modules.Registrations
                 }
             }
 
-            var window = await RequireWindowAsync(registration.AcademicSemesterId, registrationWindowOnly: false, cancellationToken, withdraw);
-            if (window.IsFailure)
+            if (enforceWindow)
             {
-                return Result<RegistrationSummary>.Fail(window.Errors);
+                var window = await RequireWindowAsync(registration.AcademicSemesterId, registrationWindowOnly: false, cancellationToken, withdraw);
+                if (window.IsFailure)
+                {
+                    return Result<RegistrationSummary>.Fail(window.Errors);
+                }
             }
 
             if (context.Student.AcademicStatus != StudentAcademicStatus.Active)
@@ -462,7 +491,7 @@ namespace UniCore.Application.Modules.Registrations
             _registrations.Update(registration);
 
             var action = withdraw ? RegistrationsAuditActions.EnrollmentWithdrawn : RegistrationsAuditActions.EnrollmentDropped;
-            var committed = await CommitAsync(registration, action, before, ";Enrollments=" + string.Join(',', left.Select(e => e.Id)), request, cancellationToken);
+            var committed = await CommitAsync(registration, action, before, ";Enrollments=" + string.Join(',', left.Select(e => e.Id)), request, cancellationToken, actor);
 
             return committed.IsFailure ? Result<RegistrationSummary>.Fail(committed.Errors) : RegistrationMapper.ToSummary(registration);
         }
