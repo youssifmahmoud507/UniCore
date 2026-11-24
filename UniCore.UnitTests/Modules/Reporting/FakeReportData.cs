@@ -13,6 +13,10 @@ namespace UniCore.UnitTests.Modules.Reporting
         public List<DocumentStat> Documents { get; } = [];
         public List<DeliveryStat> Deliveries { get; } = [];
         public List<AuditStat> Audit { get; } = [];
+        public List<SectionEnrollmentFact> Sections { get; } = [];
+        public List<StudentStatusStat> StudentStatuses { get; } = [];
+        public List<AcademicRequestStat> AcademicRequests { get; } = [];
+        public Guid? SectionSemester { get; private set; }
         public Error? Fail { get; set; }
 
         // What the last call asked for.
@@ -69,6 +73,16 @@ namespace UniCore.UnitTests.Modules.Reporting
             AuditRange = (from, toExclusive);
             return Task.FromResult(Answer(Audit));
         }
+
+        public Task<Result<IReadOnlyList<SectionEnrollmentFact>>> GetSectionEnrollmentsAsync(Guid? semesterId, CancellationToken cancellationToken = default)
+        {
+            SectionSemester = semesterId;
+            return Task.FromResult(Answer(Sections));
+        }
+
+        public Task<Result<IReadOnlyList<StudentStatusStat>>> GetStudentStatusStatsAsync(CancellationToken cancellationToken = default) => Task.FromResult(Answer(StudentStatuses));
+
+        public Task<Result<IReadOnlyList<AcademicRequestStat>>> GetPendingAcademicRequestsAsync(CancellationToken cancellationToken = default) => Task.FromResult(Answer(AcademicRequests));
     }
 
 

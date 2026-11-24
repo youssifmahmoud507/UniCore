@@ -21,7 +21,9 @@ namespace UniCore.UnitTests.Modules.Reporting
                 new WorkflowRequestsReport(env.Data, scopes, env.Clock),
                 new DocumentsByTypeReport(env.Data),
                 new NotificationDeliveryReport(env.Data, env.Clock),
-                new AuditActivityReport(env.Data, env.Clock)
+                new AuditActivityReport(env.Data, env.Clock),
+                new EnrollmentBySectionReport(env.Data, scopes),
+                new StudentsByStatusReport(env.Data, scopes)
             ];
         }
 
@@ -36,7 +38,8 @@ namespace UniCore.UnitTests.Modules.Reporting
                 new RequestsDashboardWidget(env.Data, scopes, env.Clock),
                 new DocumentsDashboardWidget(env.Data, env.Clock),
                 new SecurityDashboardWidget(env.Data, env.Clock),
-                new NotificationsDashboardWidget(env.Data, env.Clock)
+                new NotificationsDashboardWidget(env.Data, env.Clock),
+                new AcademicDashboardWidget(env.Data, scopes)
             ];
         }
 
@@ -115,6 +118,8 @@ namespace UniCore.UnitTests.Modules.Reporting
             env.Data.Documents.Add(new DocumentStat("T", "Type", false, UniCore.Domain.Modules.Documents.DocumentStatus.Active, 1, 100));
             env.Data.Deliveries.Add(new DeliveryStat(UniCore.Domain.Modules.Notifications.NotificationChannel.Email, UniCore.Domain.Modules.Notifications.NotificationDeliveryStatus.Sent, 1));
             env.Data.Audit.Add(new AuditStat("X", 1, ReportingEnv.Now));
+            env.Data.Sections.Add(new SectionEnrollmentFact(Guid.NewGuid(), Guid.NewGuid(), "CS101", "Intro", "A", 30, 12));
+            env.Data.StudentStatuses.Add(new StudentStatusStat(UniCore.Domain.Modules.Students.StudentAcademicStatus.Active, Guid.NewGuid(), 5));
             var collections = new ReportArguments(new Dictionary<string, object> { ["from"] = new DateOnly(2026, 11, 1), ["to"] = new DateOnly(2026, 11, 8) });
 
             foreach (var provider in Providers(env))

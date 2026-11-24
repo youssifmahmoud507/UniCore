@@ -21,6 +21,8 @@ namespace UniCore.Infrastructure.Modules.Reporting
             services.AddScoped<IReportProvider, DocumentsByTypeReport>();
             services.AddScoped<IReportProvider, NotificationDeliveryReport>();
             services.AddScoped<IReportProvider, AuditActivityReport>();
+            services.AddScoped<IReportProvider, EnrollmentBySectionReport>();
+            services.AddScoped<IReportProvider, StudentsByStatusReport>();
             services.AddScoped<ReportCatalog>();
 
             services.AddSingleton<IReportExporter, CsvReportExporter>();
@@ -33,6 +35,7 @@ namespace UniCore.Infrastructure.Modules.Reporting
             services.AddScoped<IDashboardWidget, DocumentsDashboardWidget>();
             services.AddScoped<IDashboardWidget, SecurityDashboardWidget>();
             services.AddScoped<IDashboardWidget, NotificationsDashboardWidget>();
+            services.AddScoped<IDashboardWidget, AcademicDashboardWidget>();
             services.AddScoped<DashboardHandler>();
 
             return services;
