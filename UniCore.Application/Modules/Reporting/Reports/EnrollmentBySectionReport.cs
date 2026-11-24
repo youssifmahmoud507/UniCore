@@ -1,6 +1,7 @@
 using UniCore.Application.Modules.Identity;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Identity;
+using UniCore.Domain.Modules.Reporting;
 
 namespace UniCore.Application.Modules.Reporting.Reports
 {
