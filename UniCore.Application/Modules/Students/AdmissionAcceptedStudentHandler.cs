@@ -10,6 +10,7 @@ using UniCore.Domain.Modules.Audit;
 using UniCore.Domain.Modules.Calendar;
 using UniCore.Domain.Modules.Curriculum;
 using UniCore.Domain.Modules.People;
+using UniCore.Domain.Modules.Students;
 using UniCore.Domain.Modules.University;
 
 namespace UniCore.Application.Modules.Students
