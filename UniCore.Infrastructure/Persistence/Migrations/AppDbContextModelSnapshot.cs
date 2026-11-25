@@ -4025,6 +4025,70 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Complaints", "studentservices");
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.StudentServices.GradeAppeal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.HasIndex("Status", "SubmittedAt");
+
+                    b.HasIndex("StudentId", "GradeId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_GradeAppeals_OneOpenPerStudentAndGrade")
+                        .HasFilter("[Status] IN ('Pending', 'Returned')");
+
+                    b.HasIndex("StudentId", "SubmittedAt");
+
+                    b.ToTable("GradeAppeals", "studentservices");
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.StudentServices.TranscriptRequest", b =>
                 {
                     b.Property<Guid>("Id")

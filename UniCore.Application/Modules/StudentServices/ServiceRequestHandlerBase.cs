@@ -8,6 +8,7 @@ using UniCore.Application.Modules.Workflow;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Identity;
 using UniCore.Domain.Modules.StudentServices;
+using UniCore.Domain.Modules.Students;
 using UniCore.Domain.Modules.Workflow;
 
 namespace UniCore.Application.Modules.StudentServices
@@ -160,7 +161,8 @@ namespace UniCore.Application.Modules.StudentServices
         // The shared submit sequence. `create` builds the request; `charge` (optional) takes the fee and records it on the request.
         protected async Task<Result<ServiceRequestSummary>> SubmitCoreAsync(
             Guid studentId, Specification<T>? openOne, Func<Guid, DateTimeOffset, Result<T>> create,
-            Func<T, CancellationToken, Task<Result>>? charge, RequestInfo info, CancellationToken cancellationToken)
+            Func<T, CancellationToken, Task<Result>>? charge, RequestInfo info, CancellationToken cancellationToken,
+            Func<Student, CancellationToken, Task<Result>>? validate = null)
         {
             if (_user.UserId is not { } userId)
             {
@@ -168,9 +170,19 @@ namespace UniCore.Application.Modules.StudentServices
             }
 
             var student = await _access.AuthorizeStudentAsync(Permissions.Requests.Submit, studentId, hideRefusal: false, cancellationToken);
-            if (!student.TryGetValue(out _))
+            if (!student.TryGetValue(out var authorized))
             {
                 return Result<ServiceRequestSummary>.Fail(student.Errors);
+            }
+
+            // The kind's own checks (the grade named by the request, for example).
+            if (validate is not null)
+            {
+                var valid = await validate(authorized, cancellationToken);
+                if (valid.IsFailure)
+                {
+                    return Result<ServiceRequestSummary>.Fail(valid.Errors);
+                }
             }
 
             if (openOne is not null && await _requests.AnyAsync(openOne, cancellationToken))

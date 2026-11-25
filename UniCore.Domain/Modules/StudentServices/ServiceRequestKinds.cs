@@ -8,11 +8,13 @@ namespace UniCore.Domain.Modules.StudentServices
         public const string TranscriptReference = "TranscriptRequest";
         public const string ComplaintReference = "Complaint";
         public const string AppealReference = "Appeal";
+        public const string GradeAppealReference = "GradeAppeal";
 
         public const string CertificateDefinition = "CERTIFICATE_REQUEST";
         public const string TranscriptDefinition = "TRANSCRIPT_REQUEST";
         public const string ComplaintDefinition = "COMPLAINT";
         public const string AppealDefinition = "APPEAL";
+        public const string GradeAppealDefinition = "GRADE_APPEAL";
 
         // Codes of the fees in the finance catalog (Developer 2 seeds or creates them).
         public const string CertificateFeeCode = "CERTIFICATE";

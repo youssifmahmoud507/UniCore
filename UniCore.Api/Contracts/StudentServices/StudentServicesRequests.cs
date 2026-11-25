@@ -9,4 +9,6 @@ namespace UniCore.Api.Contracts.StudentServices
     public sealed record SubmitComplaintRequest(ComplaintCategory? Category, string? Subject, string? Details);
 
     public sealed record SubmitAppealRequest(AppealTarget? Target, string? Subject, string? Reason);
+
+    public sealed record SubmitGradeAppealRequest(Guid? GradeId, string? Reason);
 }

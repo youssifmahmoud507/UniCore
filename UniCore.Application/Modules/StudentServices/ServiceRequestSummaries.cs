@@ -29,6 +29,11 @@ namespace UniCore.Application.Modules.StudentServices
             ["target"] = r.Target.ToString(), ["subject"] = r.Subject, ["reason"] = r.Reason,
         });
 
+        public static ServiceRequestSummary ToSummary(GradeAppeal r) => Build(r, ServiceRequestKinds.GradeAppealReference, new Dictionary<string, string?>
+        {
+            ["gradeId"] = r.GradeId.ToString(), ["reason"] = r.Reason,
+        });
+
         private static ServiceRequestSummary Build(ServiceRequest r, string kind, Dictionary<string, string?> details)
             => new(r.Id, kind, r.StudentId, r.Status, r.WorkflowInstanceId, r.SubmittedAt, r.UpdatedAt, r.DecidedAt, r.DecidedByUserId, r.DecisionNote, details);
     }

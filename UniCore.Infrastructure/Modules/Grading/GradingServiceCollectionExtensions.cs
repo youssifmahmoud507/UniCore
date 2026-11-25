@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Modules.Grading;
+using UniCore.Domain.Modules.Registrations;
 using UniCore.Application.Modules.Assessments;
 using UniCore.Application.Modules.Calendar;
 
@@ -15,6 +17,8 @@ namespace UniCore.Infrastructure.Modules.Grading
             services.AddScoped<GradeEntryHandler>();
             services.AddScoped<GradeWorkflowHandler>();
             services.AddScoped<GradeQueryHandler>();
+            services.AddScoped<IOrphanGradeService, OrphanGradeService>();
+            services.AddScoped<IDomainEventHandler<EnrollmentDropped>, OrphanGradeHandler>();
             services.AddScoped<IGradeReadService, GradeReadService>();
             services.AddScoped<IAssessmentGradeUsage, GradeAssessmentUsage>();
             services.AddScoped<ISemesterCloseGuard, GradesSemesterCloseGuard>();

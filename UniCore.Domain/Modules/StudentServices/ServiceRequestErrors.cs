@@ -14,5 +14,7 @@ namespace UniCore.Domain.Modules.StudentServices
         public static readonly Error InvalidState = Error.BusinessRule("SERVICE_REQUEST_INVALID_STATE", "The request is not in a state that allows this.");
         public static readonly Error WorkflowAlreadyAttached = Error.BusinessRule("SERVICE_REQUEST_WORKFLOW_ATTACHED", "The request already belongs to a workflow.");
         public static readonly Error ActorRequired = Error.Forbidden("SERVICE_REQUEST_ACTOR_REQUIRED", "A signed-in user is required.");
+
+        public static readonly Error GradeNotFound = Error.NotFound("SERVICE_REQUEST_GRADE_NOT_FOUND", "The published grade was not found for this student.");
     }
 }
