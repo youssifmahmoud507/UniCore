@@ -26,6 +26,15 @@ namespace UniCore.Application.Modules.Reporting
         Task<Result<IReadOnlyList<DeliveryStat>>> GetDeliveryStatsAsync(DateTimeOffset from, DateTimeOffset toExclusive, CancellationToken cancellationToken = default);
 
         Task<Result<IReadOnlyList<AuditStat>>> GetAuditStatsAsync(DateTimeOffset from, DateTimeOffset toExclusive, CancellationToken cancellationToken = default);
+
+        // The seats of every section that is not cancelled, optionally of one semester.
+        Task<Result<IReadOnlyList<SectionEnrollmentFact>>> GetSectionEnrollmentsAsync(Guid? semesterId, CancellationToken cancellationToken = default);
+
+        // Students counted by academic status and department (already grouped).
+        Task<Result<IReadOnlyList<StudentStatusStat>>> GetStudentStatusStatsAsync(CancellationToken cancellationToken = default);
+
+        // Pending withdrawal and leave requests counted by department of the student.
+        Task<Result<IReadOnlyList<AcademicRequestStat>>> GetPendingAcademicRequestsAsync(CancellationToken cancellationToken = default);
     }
 
 

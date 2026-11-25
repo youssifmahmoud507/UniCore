@@ -17,7 +17,7 @@ namespace UniCore.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateFeeDefinitionRequest request, [FromServices] FeeCatalogHandler handler, CancellationToken cancellationToken)
         {
-            var command = new CreateFeeDefinitionCommand(request.UniversityId ?? Guid.Empty, request.Code, request.Name, request.Description, request.DefaultAmount);
+            var command = new CreateFeeDefinitionCommand(request.UniversityId ?? Guid.Empty, request.Code, request.Name, request.Description, request.DefaultAmount, request.Basis);
 
             var result = await handler.CreateAsync(command, this.GetRequestInfo(), cancellationToken);
 

@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using UniCore.Application.Common.Abstractions;
+using UniCore.Application.Modules.Grading;
+using UniCore.Application.Modules.StudentRequests;
 using UniCore.Application.Modules.Workflow;
 using UniCore.Domain.Common.Results;
+using UniCore.Domain.Modules.Workflow;
 
 namespace UniCore.Infrastructure.Modules.Workflow
 {
@@ -13,6 +17,20 @@ namespace UniCore.Infrastructure.Modules.Workflow
             services.AddScoped<WorkflowDefinitionHandler>();
             services.AddScoped<WorkflowQueryHandler>();
             services.AddScoped<WorkflowDefinitionSeeder>();
+
+            // The grade change request (Developer 2) is approved by a workflow and applies the correction when it completes.
+            services.AddScoped<GradeChangeHandler>();
+            services.AddScoped<GradeChangeWorkflowHandlers>();
+            services.AddScoped<IDomainEventHandler<WorkflowCompleted>, GradeChangeWorkflowCompletedHandler>();
+            services.AddScoped<IDomainEventHandler<WorkflowRejected>, GradeChangeWorkflowRejectedHandler>();
+            services.AddScoped<IDomainEventHandler<WorkflowCancelled>, GradeChangeWorkflowCancelledHandler>();
+
+            // Withdrawal and leave requests: a student asks, the workflow approves, completion applies it.
+            services.AddScoped<StudentRequestHandler>();
+            services.AddScoped<StudentRequestWorkflowHandlers>();
+            services.AddScoped<IDomainEventHandler<WorkflowCompleted>, StudentRequestWorkflowCompletedHandler>();
+            services.AddScoped<IDomainEventHandler<WorkflowRejected>, StudentRequestWorkflowRejectedHandler>();
+            services.AddScoped<IDomainEventHandler<WorkflowCancelled>, StudentRequestWorkflowCancelledHandler>();
 
             return services;
         }

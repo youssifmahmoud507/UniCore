@@ -5,6 +5,7 @@ using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Modules.Finance;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Finance;
+using UniCore.Domain.Modules.Registrations;
 using UniCore.Domain.Modules.University;
 using UniCore.Infrastructure.Persistence;
 
@@ -47,6 +48,11 @@ namespace UniCore.Infrastructure.Modules.Finance
             services.AddScoped<BulkInvoiceHandler>();
             services.AddScoped<MyFinanceHandler>();
             services.AddSingleton<IInvoiceBatchRunner, InvoiceBatchRunner>();
+
+            // Per-credit fees: a seat taken is charged, a seat given up is released.
+            services.AddScoped<EnrollmentChargeHandler>();
+            services.AddScoped<IDomainEventHandler<EnrollmentCreated>, EnrollmentCreatedChargeHandler>();
+            services.AddScoped<IDomainEventHandler<EnrollmentDropped>, EnrollmentDroppedChargeHandler>();
 
             return services;
         }

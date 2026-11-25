@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Modules.Idempotency;
@@ -5,6 +7,7 @@ using UniCore.Application.Modules.Identity;
 using UniCore.Application.Modules.Reporting;
 using UniCore.Application.Modules.Reporting.Dashboard;
 using UniCore.Infrastructure.Modules.Caching;
+using UniCore.Infrastructure.Persistence;
 using UniCore.IntegrationTests.Infrastructure;
 
 namespace UniCore.IntegrationTests.Api
@@ -49,6 +52,19 @@ namespace UniCore.IntegrationTests.Api
 
             Assert.NotNull(provider);
             Assert.IsType<CachedUserAccessProvider>(provider);
+        }
+
+        // Without this interceptor a role or permission change would not clear the cached access of the users it affects.
+        [Fact]
+        public void CacheInvalidationInterceptor_is_wired_into_AppDbContext()
+        {
+            using var scope = fixture.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var core = db.GetService<IDbContextOptions>().FindExtension<CoreOptionsExtension>();
+
+            Assert.NotNull(core);
+            Assert.Contains(core.Interceptors ?? [], interceptor => interceptor is CacheInvalidationInterceptor);
         }
 
         [Fact]

@@ -1668,6 +1668,13 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Fixed");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -2189,6 +2196,9 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int?>("Credits")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -2196,6 +2206,9 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
+
+                    b.Property<Guid?>("EnrollmentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FeeDefinitionId")
                         .HasColumnType("uniqueidentifier");
@@ -2236,6 +2249,11 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AcademicSemesterId", "Status");
 
+                    b.HasIndex("EnrollmentId", "FeeDefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_StudentCharges_Enrollment")
+                        .HasFilter("[EnrollmentId] IS NOT NULL AND [Status] <> 'Cancelled'");
+
                     b.HasIndex("StudentId", "ServiceReference")
                         .IsUnique()
                         .HasDatabaseName("UX_StudentCharges_ServiceReference")
@@ -2244,7 +2262,7 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("StudentId", "AcademicSemesterId", "FeeDefinitionId")
                         .IsUnique()
                         .HasDatabaseName("UX_StudentCharges_Live")
-                        .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL");
+                        .HasFilter("[Status] <> 'Cancelled' AND [AcademicSemesterId] IS NOT NULL AND [EnrollmentId] IS NULL");
 
                     b.ToTable("StudentCharges", "finance");
                 });
@@ -2412,6 +2430,80 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Grades", "grading", t =>
                         {
                             t.HasCheckConstraint("CK_Grades_Percentage", "[Percentage] IS NULL OR ([Percentage] >= 0 AND [Percentage] <= 100)");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeChangeRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssessmentComponentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("NewScore")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<decimal>("OldScore")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradeId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_GradeChangeRequests_PendingPerGrade")
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("GradeChangeRequests", "grading", t =>
+                        {
+                            t.HasCheckConstraint("CK_GradeChangeRequests_Scores", "[OldScore] >= 0 AND [OldScore] <= 1000 AND [NewScore] >= 0 AND [NewScore] <= 1000");
                         });
                 });
 
@@ -3596,6 +3688,140 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_ScheduleSlots_Time", "[StartTime] < [EndTime]");
                         });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.StudentRequests.LeaveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("ExpectedReturnDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestedByUserId");
+
+                    b.HasIndex("StudentId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_LeaveRequests_PendingPerStudent")
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("LeaveRequests", "requests", t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaveRequests_Dates", "[ExpectedReturnDate] > [StartDate]");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.StudentRequests.WithdrawalRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EnrollmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("RegistrationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WorkflowInstanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnrollmentId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_WithdrawalRequests_PendingPerEnrollment")
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("RegistrationId");
+
+                    b.HasIndex("RequestedByUserId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("WorkflowInstanceId");
+
+                    b.ToTable("WithdrawalRequests", "requests");
                 });
 
             modelBuilder.Entity("UniCore.Domain.Modules.Students.Student", b =>
@@ -5118,6 +5344,15 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeChangeRequest", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Grading.Grade", null)
+                        .WithMany()
+                        .HasForeignKey("GradeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UniCore.Domain.Modules.Grading.GradeComponentScore", b =>
                 {
                     b.HasOne("UniCore.Domain.Modules.Grading.Grade", null)
@@ -5387,6 +5622,30 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                         .WithMany("Slots")
                         .HasForeignKey("ScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.StudentRequests.LeaveRequest", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.StudentRequests.WithdrawalRequest", b =>
+                {
+                    b.HasOne("UniCore.Domain.Modules.Registrations.Registration", null)
+                        .WithMany()
+                        .HasForeignKey("RegistrationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UniCore.Domain.Modules.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

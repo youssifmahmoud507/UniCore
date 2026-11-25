@@ -212,7 +212,7 @@ namespace UniCore.IntegrationTests.EndToEnd
             var seeded = await Client.GetAsync("/api/v1/workflow-definitions?isActive=true&pageSize=100", student);
             Assert.Equal(200, seeded.Code);
             var codes = seeded.Prop("items").EnumerateArray().Select(i => i.GetProperty("code").GetString()).ToList();
-            foreach (var code in new[] { "CERTIFICATE_REQUEST", "TRANSCRIPT_REQUEST", "WITHDRAWAL_REQUEST", "LEAVE_REQUEST", "COMPLAINT", "APPEAL", "GRADE_APPEAL" })
+            foreach (var code in new[] { "CERTIFICATE_REQUEST", "TRANSCRIPT_REQUEST", "WITHDRAWAL_REQUEST", "LEAVE_REQUEST", "COMPLAINT", "APPEAL", "GRADE_APPEAL", "GRADE_CHANGE" })
             {
                 Assert.Contains(code, codes);
             }

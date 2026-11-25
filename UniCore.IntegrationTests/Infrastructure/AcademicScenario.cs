@@ -25,6 +25,47 @@ namespace UniCore.IntegrationTests.Infrastructure
 
         private static string Short(int length = 8) => Guid.NewGuid().ToString("N")[..length].ToUpperInvariant();
 
+        private static DateOnly SemesterStart => Today.AddDays(-100);
+
+        private static DateOnly SemesterEnd => Today.AddDays(300);
+
+        // The windows of the shared semester. The three arguments let a test move the registration and add/drop windows.
+        public static object Windows(DateOnly? registrationStart = null, DateOnly? registrationEnd = null, DateOnly? addDropEnd = null) => new
+        {
+            registrationStart = registrationStart ?? Today.AddDays(-50),
+            registrationEnd = registrationEnd ?? Today.AddDays(100),
+            addDropStart = registrationStart ?? Today.AddDays(-50),
+            addDropEnd = addDropEnd ?? Today.AddDays(110),
+            withdrawalDeadline = Today.AddDays(200),
+            // Exams are over and grades are open and publishable today (the deadline day is inclusive).
+            midtermStart = Today.AddDays(-60),
+            midtermEnd = Today.AddDays(-50),
+            finalExamStart = Today.AddDays(-20),
+            finalExamEnd = Today.AddDays(-10),
+            gradeSubmissionDeadline = Today,
+            gradePublicationDate = Today
+        };
+
+        // Runs the body with other registration windows on the shared semester and puts the normal ones back afterwards.
+        // Safe because every API test is in one collection, so tests run one after the other.
+        public static async Task WithWindowsAsync(TestApi api, string admin, object windows, Func<Task> body)
+        {
+            var calendar = await EnsureCalendarAsync(api, admin);
+
+            var moved = await api.Client.PutAsync($"/api/v1/semesters/{calendar.SemesterId}", new { startDate = SemesterStart, endDate = SemesterEnd, windows }, admin);
+            Assert.Equal(200, moved.Code);
+
+            try
+            {
+                await body();
+            }
+            finally
+            {
+                var restored = await api.Client.PutAsync($"/api/v1/semesters/{calendar.SemesterId}", new { startDate = SemesterStart, endDate = SemesterEnd, windows = Windows() }, admin);
+                Assert.Equal(200, restored.Code);
+            }
+        }
+
         // One year and one semester whose registration window contains today, created once per test run.
         public static async Task<Calendar> EnsureCalendarAsync(TestApi api, string admin)
         {
@@ -46,28 +87,14 @@ namespace UniCore.IntegrationTests.Infrastructure
                 var term = await client.PostAsync("/api/v1/academic-terms", new { code = $"R{Short(6)}", name = "Registration term", sortOrder = 1 }, admin);
                 Assert.Equal(201, term.Code);
 
-                var windows = new
-                {
-                    registrationStart = Today.AddDays(-50),
-                    registrationEnd = Today.AddDays(100),
-                    addDropStart = Today.AddDays(-50),
-                    addDropEnd = Today.AddDays(110),
-                    withdrawalDeadline = Today.AddDays(200),
-                    // Exams are over and grades are open and publishable today (the deadline day is inclusive).
-                    midtermStart = Today.AddDays(-60),
-                    midtermEnd = Today.AddDays(-50),
-                    finalExamStart = Today.AddDays(-20),
-                    finalExamEnd = Today.AddDays(-10),
-                    gradeSubmissionDeadline = Today,
-                    gradePublicationDate = Today
-                };
+                var windows = Windows();
 
                 var semester = await client.PostAsync("/api/v1/semesters", new
                 {
                     academicYearId = year.GuidOf("id"),
                     academicTermId = term.GuidOf("id"),
-                    startDate = Today.AddDays(-100),
-                    endDate = Today.AddDays(300),
+                    startDate = SemesterStart,
+                    endDate = SemesterEnd,
                     windows
                 }, admin);
                 Assert.Equal(201, semester.Code);

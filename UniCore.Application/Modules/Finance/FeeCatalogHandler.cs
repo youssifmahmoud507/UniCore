@@ -74,7 +74,7 @@ namespace UniCore.Application.Modules.Finance
                 return FinanceErrors.FeeCodeAlreadyExists;
             }
 
-            var created = FeeDefinition.Create(command.UniversityId, code, command.Name, command.Description, amount, _clock.UtcNow);
+            var created = FeeDefinition.Create(command.UniversityId, code, command.Name, command.Description, amount, _clock.UtcNow, command.Basis ?? FeeBasis.Fixed);
             if (!created.TryGetValue(out var definition))
             {
                 return Result<FeeDefinitionDto>.Fail(created.Errors);
@@ -88,7 +88,7 @@ namespace UniCore.Application.Modules.Finance
                 return Result<FeeDefinitionDto>.Fail(saved.Errors);
             }
 
-            await AuditAsync(AuditActions.FeeDefinitionCreated, definition.Id, request, null, $"{definition.Code} {definition.DefaultAmount}", cancellationToken);
+            await AuditAsync(AuditActions.FeeDefinitionCreated, definition.Id, request, null, $"{definition.Code} {definition.Basis} {definition.DefaultAmount}", cancellationToken);
 
             return FinanceMapper.ToDto(definition);
         }

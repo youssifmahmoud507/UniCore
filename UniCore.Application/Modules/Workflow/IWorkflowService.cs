@@ -10,6 +10,10 @@ namespace UniCore.Application.Modules.Workflow
         // The caller becomes the requester. Fails with WORKFLOW_ALREADY_ACTIVE if the request already has a live workflow.
         Task<Result<WorkflowInstanceDto>> StartAsync(StartWorkflowCommand command, RequestInfo? request = null, CancellationToken cancellationToken = default);
 
+        // For a request module that has ALREADY authorized the caller with its own permission (for example GradeChanges.Request in the
+        // department of the grade). Same as StartAsync without the Requests.Submit check, which only students hold.
+        Task<Result<WorkflowInstanceDto>> StartAuthorizedAsync(StartWorkflowCommand command, RequestInfo? request = null, CancellationToken cancellationToken = default);
+
         Task<Result<WorkflowInstanceDto>> ApproveAsync(Guid instanceId, string? comment, RequestInfo? request = null, CancellationToken cancellationToken = default);
 
         Task<Result<WorkflowInstanceDto>> RejectAsync(Guid instanceId, string? comment, RequestInfo? request = null, CancellationToken cancellationToken = default);

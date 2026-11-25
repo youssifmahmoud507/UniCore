@@ -30,7 +30,7 @@ namespace UniCore.Api.Controllers
             => (await handler.GetAsync(id, cancellationToken)).ToActionResult(HttpContext);
 
         // Takes one seat. The Idempotency-Key header is required: repeating the call with the same key and body
-        // returns the first answer (header Idempotent-Replayed: true) and never takes a second seat.
+        // returns the first answer (header Idempotency-Replayed: true) and never takes a second seat.
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, [FromServices] RegistrationHandler handler, CancellationToken cancellationToken)
         {
@@ -42,7 +42,7 @@ namespace UniCore.Api.Controllers
             {
                 if (outcome.IsReplay)
                 {
-                    Response.Headers["Idempotent-Replayed"] = "true";
+                    Response.Headers[UniCore.Api.Filters.IdempotencyFilter.ReplayedHeaderName] = "true";
                     return Ok(outcome);
                 }
 

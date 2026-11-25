@@ -16,7 +16,8 @@ namespace UniCore.Application.Modules.Workflow
             new("LEAVE_REQUEST", "Leave request", [new("Department head", RoleNames.DepartmentHead), new("Dean", RoleNames.Dean)]),
             new("COMPLAINT", "Complaint", [new("Department head", RoleNames.DepartmentHead), new("Dean", RoleNames.Dean)]),
             new("APPEAL", "Appeal", [new("Department head", RoleNames.DepartmentHead), new("Dean", RoleNames.Dean)]),
-            new("GRADE_APPEAL", "Grade appeal", [new("Department head", RoleNames.DepartmentHead), new("Dean", RoleNames.Dean)])
+            new("GRADE_APPEAL", "Grade appeal", [new("Department head", RoleNames.DepartmentHead), new("Dean", RoleNames.Dean)]),
+            new("GRADE_CHANGE", "Grade change", [new("Department head", RoleNames.DepartmentHead), new("Dean", RoleNames.Dean)])
         ];
     }
 
