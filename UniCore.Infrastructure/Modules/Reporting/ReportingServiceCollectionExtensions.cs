@@ -13,6 +13,7 @@ namespace UniCore.Infrastructure.Modules.Reporting
         {
             services.AddScoped<IReportDataSource, ReportDataSource>();
             services.AddScoped<IReportScopeResolver, ReportScopeResolver>();
+            services.AddScoped<IAcademicReportData, AcademicReportDataSource>();
 
             services.AddScoped<IReportProvider, FinanceInvoiceSummaryReport>();
             services.AddScoped<IReportProvider, FinanceOutstandingBalancesReport>();
@@ -21,6 +22,10 @@ namespace UniCore.Infrastructure.Modules.Reporting
             services.AddScoped<IReportProvider, DocumentsByTypeReport>();
             services.AddScoped<IReportProvider, NotificationDeliveryReport>();
             services.AddScoped<IReportProvider, AuditActivityReport>();
+            services.AddScoped<IReportProvider, EnrollmentStatsReport>();
+            services.AddScoped<IReportProvider, GradeDistributionReport>();
+            services.AddScoped<IReportProvider, GpaStatsReport>();
+            services.AddScoped<IReportProvider, AttendanceStatsReport>();
             services.AddScoped<IReportProvider, EnrollmentBySectionReport>();
             services.AddScoped<IReportProvider, StudentsByStatusReport>();
             services.AddScoped<ReportCatalog>();

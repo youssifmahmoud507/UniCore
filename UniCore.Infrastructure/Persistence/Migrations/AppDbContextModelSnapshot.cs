@@ -626,6 +626,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Status", "SessionDate");
+
                     b.HasIndex("CourseSectionId", "SessionDate", "StartTime")
                         .IsUnique();
 
@@ -2421,6 +2423,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseSectionId", "Status");
 
+                    b.HasIndex("Status", "PublishedAt");
+
                     b.HasIndex("StudentId", "AcademicSemesterId");
 
                     b.ToTable("Grades", "grading", t =>
@@ -2600,6 +2604,72 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_GradeScaleBands_Min", "[MinPercentage] >= 0 AND [MinPercentage] <= 100");
 
                             t.HasCheckConstraint("CK_GradeScaleBands_Points", "[GradePoints] >= 0 AND [GradePoints] <= 5");
+                        });
+                });
+
+            modelBuilder.Entity("UniCore.Domain.Modules.Graduation.GraduationApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("CumulativeGpa")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("EarnedCredits")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Standing")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StudyPlanVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_GraduationApplications_OneActivePerStudent")
+                        .HasFilter("[Status] IN ('Submitted', 'Approved')");
+
+                    b.HasIndex("Status", "SubmittedAt");
+
+                    b.ToTable("GraduationApplications", "graduation", t =>
+                        {
+                            t.HasCheckConstraint("CK_GraduationApplications_Figures", "([CumulativeGpa] IS NULL OR ([CumulativeGpa] >= 0 AND [CumulativeGpa] <= 5)) AND ([EarnedCredits] IS NULL OR [EarnedCredits] >= 0)");
                         });
                 });
 
@@ -3375,6 +3445,8 @@ namespace UniCore.Infrastructure.Persistence.Migrations
                     b.HasIndex("CourseId");
 
                     b.HasIndex("CourseVersionId");
+
+                    b.HasIndex("RegisteredAt");
 
                     b.HasIndex("CourseSectionId", "Status");
 

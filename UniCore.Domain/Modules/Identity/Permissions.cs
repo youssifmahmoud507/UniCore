@@ -98,6 +98,13 @@
             public const string Issue = "Transcripts.Issue";
         }
 
+        public static class Graduation
+        {
+            public const string Read = "Graduation.Read";
+            public const string Apply = "Graduation.Apply";
+            public const string Decide = "Graduation.Decide";
+        }
+
         public static class Grades
         {
             public const string Read = "Grades.Read";
@@ -178,6 +185,15 @@
             public const string Export = "Reports.Export";
         }
 
+        // One permission per academic report; each is checked together with Reports.Read.
+        public static class AcademicReports
+        {
+            public const string Enrollment = "AcademicReports.Enrollment";
+            public const string Grades = "AcademicReports.Grades";
+            public const string Gpa = "AcademicReports.Gpa";
+            public const string Attendance = "AcademicReports.Attendance";
+        }
+
         public static readonly IReadOnlyList<PermissionDefinition> All =
         [
         new PermissionDefinition(Users.Read, "Identity", "View user accounts"),
@@ -214,6 +230,9 @@
         new PermissionDefinition(Assessments.Manage, "Assessment", "Define the grading scheme of a section"),
         new PermissionDefinition(Transcripts.Read, "Transcript", "View GPA, academic history and transcripts"),
         new PermissionDefinition(Transcripts.Issue, "Transcript", "Issue official transcripts"),
+        new PermissionDefinition(Graduation.Read, "Graduation", "View graduation eligibility and applications"),
+        new PermissionDefinition(Graduation.Apply, "Graduation", "Apply for graduation"),
+        new PermissionDefinition(Graduation.Decide, "Graduation", "Approve or reject graduation applications"),
         new PermissionDefinition(Grades.Read, "Grading", "View grades"),
         new PermissionDefinition(Grades.Enter, "Grading", "Enter grades"),
         new PermissionDefinition(Grades.Review, "Grading", "Review submitted grades"),
@@ -236,6 +255,10 @@
         new PermissionDefinition(Settings.Manage, "Platform", "Manage system settings"),
         new PermissionDefinition(Reports.Read, "Platform", "View reports"),
         new PermissionDefinition(Reports.Export, "Platform", "Export reports to CSV, Excel and PDF files"),
+        new PermissionDefinition(AcademicReports.Enrollment, "Reports", "Run the enrollment statistics report"),
+        new PermissionDefinition(AcademicReports.Grades, "Reports", "Run the grade distribution report"),
+        new PermissionDefinition(AcademicReports.Gpa, "Reports", "Run the GPA statistics report"),
+        new PermissionDefinition(AcademicReports.Attendance, "Reports", "Run the attendance statistics report"),
         new PermissionDefinition(Fees.Manage, "Finance", "Manage fee definitions and fee structures"),
         new PermissionDefinition(Scholarships.Manage, "Finance", "Manage scholarships and award them to students"),
     ];

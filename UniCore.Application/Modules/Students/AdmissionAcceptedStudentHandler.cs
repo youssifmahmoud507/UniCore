@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Common.Repositories;
 using UniCore.Application.Common.Specifications;

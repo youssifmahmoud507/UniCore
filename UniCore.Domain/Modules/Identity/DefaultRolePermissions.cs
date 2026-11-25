@@ -7,6 +7,7 @@
         private static readonly string[] StudentSet =
         [
         Permissions.Registration.Read, Permissions.Registration.Register, Permissions.Scheduling.Read, Permissions.Grades.Read, Permissions.Transcripts.Read,
+        Permissions.Graduation.Read, Permissions.Graduation.Apply,
         Permissions.Attendance.Read, Permissions.Attendance.SubmitExcuse,
         Permissions.Finance.Read, Permissions.Requests.Submit, Permissions.Requests.Read,
         Permissions.Documents.Read, Permissions.Documents.Upload
@@ -25,9 +26,10 @@
         Permissions.Courses.Read, Permissions.Courses.Manage, Permissions.Registration.Read,
         Permissions.Scheduling.Read, Permissions.Attendance.Read, Permissions.Attendance.ReviewExcuse, Permissions.Attendance.Manage,
         Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read, Permissions.Assessments.Manage,
-        Permissions.Grades.Read, Permissions.Grades.Review, Permissions.GradeChanges.Request, Permissions.Transcripts.Read,
+        Permissions.Grades.Read, Permissions.Grades.Review, Permissions.GradeChanges.Request, Permissions.Transcripts.Read, Permissions.Graduation.Read,
         Permissions.Requests.Read, Permissions.Requests.Process,
-        Permissions.Documents.Read, Permissions.Reports.Read
+        Permissions.Documents.Read, Permissions.Reports.Read,
+        Permissions.AcademicReports.Enrollment, Permissions.AcademicReports.Grades, Permissions.AcademicReports.Gpa, Permissions.AcademicReports.Attendance
     ];
 
         private static readonly string[] DeanSet =
@@ -50,9 +52,10 @@
         Permissions.Curriculum.Manage, Permissions.Registration.Read, Permissions.Registration.Manage,
         Permissions.Scheduling.Read, Permissions.Scheduling.Manage, Permissions.Attendance.Read,
         Permissions.Exams.Read, Permissions.Exams.Manage, Permissions.Assessments.Read,
-        Permissions.Grades.Read, Permissions.Grades.Publish, Permissions.Transcripts.Read, Permissions.Transcripts.Issue,
+        Permissions.Grades.Read, Permissions.Grades.Publish, Permissions.Transcripts.Read, Permissions.Transcripts.Issue, Permissions.Graduation.Read, Permissions.Graduation.Decide,
         Permissions.Requests.Read, Permissions.Requests.Process,
-        Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read
+        Permissions.Documents.Read, Permissions.Documents.Manage, Permissions.Reports.Read,
+        Permissions.AcademicReports.Enrollment, Permissions.AcademicReports.Grades, Permissions.AcademicReports.Gpa, Permissions.AcademicReports.Attendance
     ];
 
         private static readonly string[] FinanceOfficerSet =
