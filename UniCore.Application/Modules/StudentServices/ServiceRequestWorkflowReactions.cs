@@ -20,7 +20,7 @@ namespace UniCore.Application.Modules.StudentServices
     //  - the request is no longer Pending (cancelled meanwhile) -> ignored.
     public sealed class ServiceRequestWorkflowReactions(
         IAggregateRepository<CertificateRequest> certificates, IAggregateRepository<TranscriptRequest> transcripts,
-        IAggregateRepository<Complaint> complaints, IAggregateRepository<Appeal> appeals,
+        IAggregateRepository<Complaint> complaints, IAggregateRepository<Appeal> appeals, IAggregateRepository<GradeAppeal> gradeAppeals,
         IAggregateRepository<WorkflowInstance> instances, ITranscriptSnapshotService snapshots,
         IUnitOfWork unitOfWork, IClock clock, IAuditWriter audit)
     {
@@ -28,6 +28,7 @@ namespace UniCore.Application.Modules.StudentServices
         private readonly IAggregateRepository<TranscriptRequest> _transcripts = transcripts;
         private readonly IAggregateRepository<Complaint> _complaints = complaints;
         private readonly IAggregateRepository<Appeal> _appeals = appeals;
+        private readonly IAggregateRepository<GradeAppeal> _gradeAppeals = gradeAppeals;
         private readonly IAggregateRepository<WorkflowInstance> _instances = instances;
         private readonly ITranscriptSnapshotService _snapshots = snapshots;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -46,6 +47,8 @@ namespace UniCore.Application.Modules.StudentServices
                 ServiceRequestKinds.ComplaintReference => await ApplyAsync(_complaints, e.ReferenceId, e.InstanceId, e.OccurredAt, ServiceRequestStatus.Approved,
                     r => r.Approve(decidedBy, _clock.UtcNow), ServiceRequestAuditActions.Approved, decidedBy, cancellationToken),
                 ServiceRequestKinds.AppealReference => await ApplyAsync(_appeals, e.ReferenceId, e.InstanceId, e.OccurredAt, ServiceRequestStatus.Approved,
+                    r => r.Approve(decidedBy, _clock.UtcNow), ServiceRequestAuditActions.Approved, decidedBy, cancellationToken),
+                ServiceRequestKinds.GradeAppealReference => await ApplyAsync(_gradeAppeals, e.ReferenceId, e.InstanceId, e.OccurredAt, ServiceRequestStatus.Approved,
                     r => r.Approve(decidedBy, _clock.UtcNow), ServiceRequestAuditActions.Approved, decidedBy, cancellationToken),
                 _ => Result.Ok(),
             };
@@ -72,6 +75,7 @@ namespace UniCore.Application.Modules.StudentServices
                 ServiceRequestKinds.TranscriptReference => await ApplyAsync(_transcripts, id, instanceId, occurredAt, target, change, action, actor, cancellationToken),
                 ServiceRequestKinds.ComplaintReference => await ApplyAsync(_complaints, id, instanceId, occurredAt, target, change, action, actor, cancellationToken),
                 ServiceRequestKinds.AppealReference => await ApplyAsync(_appeals, id, instanceId, occurredAt, target, change, action, actor, cancellationToken),
+                ServiceRequestKinds.GradeAppealReference => await ApplyAsync(_gradeAppeals, id, instanceId, occurredAt, target, change, action, actor, cancellationToken),
                 _ => Result.Ok(),
             };
 

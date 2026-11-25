@@ -54,4 +54,10 @@ namespace UniCore.Application.Modules.StudentServices.Specifications
         public OpenTranscriptOfStudentSpecification(Guid studentId)
             => SetCriteria(r => r.StudentId == studentId && (r.Status == ServiceRequestStatus.Pending || r.Status == ServiceRequestStatus.Returned));
     }
+
+    public sealed class OpenAppealOfGradeSpecification : Specification<GradeAppeal>
+    {
+        public OpenAppealOfGradeSpecification(Guid studentId, Guid gradeId)
+            => SetCriteria(r => r.StudentId == studentId && r.GradeId == gradeId && (r.Status == ServiceRequestStatus.Pending || r.Status == ServiceRequestStatus.Returned));
+    }
 }

@@ -86,4 +86,18 @@ namespace UniCore.Infrastructure.Modules.StudentServices.Configurations
             builder.Property(r => r.Reason).IsRequired().HasMaxLength(ServiceRequest.TextMaxLength);
         }
     }
+
+    public sealed class GradeAppealConfiguration : IEntityTypeConfiguration<GradeAppeal>
+    {
+        public void Configure(EntityTypeBuilder<GradeAppeal> builder)
+        {
+            ServiceRequestColumns.Map(builder, "GradeAppeals");
+
+            builder.Property(r => r.GradeId).IsRequired();
+            builder.Property(r => r.Reason).IsRequired().HasMaxLength(ServiceRequest.TextMaxLength);
+
+            builder.HasIndex(r => new { r.StudentId, r.GradeId }).IsUnique().HasDatabaseName("UX_GradeAppeals_OneOpenPerStudentAndGrade")
+                .HasFilter("[Status] IN ('Pending', 'Returned')");
+        }
+    }
 }

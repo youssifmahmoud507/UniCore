@@ -15,6 +15,7 @@ namespace UniCore.Infrastructure.Modules.StudentServices
             services.AddScoped<TranscriptRequestHandler>();
             services.AddScoped<ComplaintHandler>();
             services.AddScoped<AppealHandler>();
+            services.AddScoped<GradeAppealHandler>();
 
             // The request modules mirror the workflow engine's outcome.
             services.AddScoped<ServiceRequestWorkflowReactions>();

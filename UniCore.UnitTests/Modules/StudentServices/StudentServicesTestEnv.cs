@@ -1,10 +1,12 @@
-﻿using UniCore.Application.Common.Abstractions;
+using UniCore.Application.Common.Abstractions;
 using UniCore.Application.Modules.Finance;
+using UniCore.Application.Modules.Grading;
 using UniCore.Application.Modules.StudentServices;
 using UniCore.Application.Modules.Transcripts;
 using UniCore.Application.Modules.Workflow;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Finance;
+using UniCore.Domain.Modules.Grading;
 using UniCore.Domain.Modules.Identity;
 using UniCore.Domain.Modules.StudentServices;
 using UniCore.Domain.Modules.Students;
@@ -83,6 +85,18 @@ namespace UniCore.UnitTests.Modules.StudentServices
             => new(id, Guid.NewGuid(), "DEF", 1, Guid.NewGuid(), null, null, null, referenceType, referenceId, Status, 1, "Step 1", "Registrar", 1, clock.UtcNow, null, [], []);
     }
 
+    // IGradeReadService answered from a list the test fills.
+    internal sealed class FakeGradeRead : IGradeReadService
+    {
+        public List<GradeRecordInfo> Published { get; } = [];
+
+        public Task<Result<IReadOnlyList<GradeRecordInfo>>> GetPublishedGradesAsync(Guid studentId, Guid? semesterId = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(Result<IReadOnlyList<GradeRecordInfo>>.Ok([.. Published]));
+
+        public void Publish(Guid gradeId)
+            => Published.Add(new GradeRecordInfo(gradeId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 3, 70m, "C-", 1.7m, true, GradeStatus.Published, DateTimeOffset.UtcNow));
+    }
+
     // IStudentChargeService: idempotent by (student, reference) like the real one; can be told to fail.
     internal sealed class FakeCharges : IStudentChargeService
     {
@@ -140,12 +154,15 @@ namespace UniCore.UnitTests.Modules.StudentServices
         public FakeAggregateRepository<TranscriptRequest> Transcripts { get; } = new();
         public FakeAggregateRepository<Complaint> Complaints { get; } = new();
         public FakeAggregateRepository<Appeal> Appeals { get; } = new();
+        public FakeAggregateRepository<GradeAppeal> GradeAppeals { get; } = new();
+        public FakeGradeRead GradeRead { get; } = new();
         public FakeAggregateRepository<WorkflowInstance> Instances { get; } = new();
 
         public CertificateRequestHandler CertificateHandler { get; }
         public TranscriptRequestHandler TranscriptHandler { get; }
         public ComplaintHandler ComplaintHandler { get; }
         public AppealHandler AppealHandler { get; }
+        public GradeAppealHandler GradeAppealHandler { get; }
         public ServiceRequestWorkflowReactions Reactions { get; }
 
         public AcademicProgram Program { get; }
@@ -161,7 +178,8 @@ namespace UniCore.UnitTests.Modules.StudentServices
             TranscriptHandler = new TranscriptRequestHandler(access, Transcripts, Workflows, Charges, Rbac.User, Rbac.Uow, Clock, Rbac.Audit);
             ComplaintHandler = new ComplaintHandler(access, Complaints, Workflows, Rbac.User, Rbac.Uow, Clock, Rbac.Audit);
             AppealHandler = new AppealHandler(access, Appeals, Workflows, Rbac.User, Rbac.Uow, Clock, Rbac.Audit);
-            Reactions = new ServiceRequestWorkflowReactions(Certificates, Transcripts, Complaints, Appeals, Instances, Snapshots, Rbac.Uow, Clock, Rbac.Audit);
+            GradeAppealHandler = new GradeAppealHandler(access, GradeAppeals, Workflows, GradeRead, Rbac.User, Rbac.Uow, Clock, Rbac.Audit);
+            Reactions = new ServiceRequestWorkflowReactions(Certificates, Transcripts, Complaints, Appeals, GradeAppeals, Instances, Snapshots, Rbac.Uow, Clock, Rbac.Audit);
         }
 
         public Student SeedStudent()
