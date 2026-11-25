@@ -22,7 +22,11 @@ namespace UniCore.Api.Controllers
 
         [HttpPost("students/{studentId:guid}/applications")]
         public async Task<IActionResult> Apply(Guid studentId, [FromServices] GraduationApplicationHandler handler, CancellationToken cancellationToken)
-            => (await handler.ApplyAsync(studentId, this.GetRequestInfo(), cancellationToken)).ToActionResult(HttpContext);
+        {
+            var result = await handler.ApplyAsync(studentId, this.GetRequestInfo(), cancellationToken);
+
+            return result.ToActionResult(HttpContext, summary => Created($"/api/v1/graduation/applications/{summary.Id}", summary));
+        }
 
         [HttpGet("students/{studentId:guid}/applications")]
         public async Task<IActionResult> ListOfStudent(Guid studentId, [FromServices] GraduationApplicationHandler handler, CancellationToken cancellationToken)
