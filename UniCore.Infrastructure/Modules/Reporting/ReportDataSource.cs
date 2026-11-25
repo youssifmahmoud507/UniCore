@@ -4,6 +4,10 @@ using System.Data.Common;
 using UniCore.Application.Modules.Reporting;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Audit;
+using UniCore.Domain.Modules.Courses;
+using UniCore.Domain.Modules.Offerings;
+using UniCore.Domain.Modules.StudentRequests;
+using UniCore.Domain.Modules.University;
 using UniCore.Domain.Modules.Documents;
 using UniCore.Domain.Modules.Finance;
 using UniCore.Domain.Modules.Notifications;
@@ -146,6 +150,80 @@ namespace UniCore.Infrastructure.Modules.Reporting
             });
 
         // Database trouble is a Result, never an exception, and the details stay in the log.
+        public Task<Result<IReadOnlyList<SectionEnrollmentFact>>> GetSectionEnrollmentsAsync(Guid? semesterId, CancellationToken cancellationToken = default) => ReadAsync<SectionEnrollmentFact>(async () =>
+            {
+                var sections = _db.Set<CourseSection>().AsNoTracking().Where(s => s.Status != CourseSectionStatus.Cancelled);
+                var offerings = _db.Set<CourseOffering>().AsNoTracking().AsQueryable();
+
+                if (semesterId is { } semester)
+                {
+                    offerings = offerings.Where(o => o.AcademicSemesterId == semester);
+                }
+
+                var rows = await (
+                    from s in sections
+                    join o in offerings on s.CourseOfferingId equals o.Id
+                    join v in _db.Set<CourseVersion>().AsNoTracking() on o.CourseVersionId equals v.Id
+                    join c in _db.Set<Course>().AsNoTracking() on v.CourseId equals c.Id
+                    select new { c.DepartmentId, o.AcademicSemesterId, CourseCode = c.Code, CourseTitle = v.Title, s.SectionCode, s.Capacity, Enrolled = s.EnrolledCount })
+                    .Take(MaxSourceRows + 1).ToListAsync(cancellationToken);
+
+                if (rows.Count > MaxSourceRows)
+                {
+                    return ReportingErrors.SourceTooLarge;
+                }
+
+                return Result<IReadOnlyList<SectionEnrollmentFact>>.Ok([.. rows.Select(r => new SectionEnrollmentFact(r.DepartmentId, r.AcademicSemesterId, r.CourseCode, r.CourseTitle, r.SectionCode, r.Capacity, r.Enrolled))]);
+            });
+
+        // The department of a student is the department of the program they are in now (the open program history).
+        private sealed record StudentDepartment(Guid StudentId, Guid DepartmentId);
+
+        private IQueryable<StudentDepartment> CurrentDepartments() =>
+            from h in _db.Set<StudentProgramHistory>().AsNoTracking()
+            where h.EndDate == null
+            join p in _db.Set<AcademicProgram>().AsNoTracking() on h.AcademicProgramId equals p.Id
+            select new StudentDepartment(h.StudentId, p.DepartmentId);
+
+        public Task<Result<IReadOnlyList<StudentStatusStat>>> GetStudentStatusStatsAsync(CancellationToken cancellationToken = default) => ReadAsync<StudentStatusStat>(async () =>
+            {
+                var students = await _db.Set<Student>().AsNoTracking().Select(s => new { s.Id, s.AcademicStatus }).Take(MaxSourceRows + 1).ToListAsync(cancellationToken);
+
+                if (students.Count > MaxSourceRows)
+                {
+                    return ReportingErrors.SourceTooLarge;
+                }
+
+                var departments = (await CurrentDepartments().ToListAsync(cancellationToken)).GroupBy(d => d.StudentId).ToDictionary(g => g.Key, g => g.First().DepartmentId);
+
+                return Result<IReadOnlyList<StudentStatusStat>>.Ok([.. students
+                    .GroupBy(s => (s.AcademicStatus, Department: departments.TryGetValue(s.Id, out var department) ? (Guid?)department : null))
+                    .Select(g => new StudentStatusStat(g.Key.AcademicStatus, g.Key.Department, g.Count()))]);
+            });
+
+        public Task<Result<IReadOnlyList<AcademicRequestStat>>> GetPendingAcademicRequestsAsync(CancellationToken cancellationToken = default) => ReadAsync<AcademicRequestStat>(async () =>
+            {
+                var withdrawals = await _db.Set<WithdrawalRequest>().AsNoTracking().Where(r => r.Status == AcademicRequestStatus.Pending).Select(r => r.StudentId).Take(MaxSourceRows + 1).ToListAsync(cancellationToken);
+                var leaves = await _db.Set<LeaveRequest>().AsNoTracking().Where(r => r.Status == AcademicRequestStatus.Pending).Select(r => r.StudentId).Take(MaxSourceRows + 1).ToListAsync(cancellationToken);
+
+                if (withdrawals.Count > MaxSourceRows || leaves.Count > MaxSourceRows)
+                {
+                    return ReportingErrors.SourceTooLarge;
+                }
+
+                var wanted = withdrawals.Concat(leaves).Distinct().ToArray();
+                var departments = wanted.Length == 0
+                    ? []
+                    : (await CurrentDepartments().Where(d => wanted.Contains(d.StudentId)).ToListAsync(cancellationToken)).GroupBy(d => d.StudentId).ToDictionary(g => g.Key, g => g.First().DepartmentId);
+
+                Guid? DepartmentOf(Guid studentId) => departments.TryGetValue(studentId, out var department) ? department : null;
+
+                var stats = withdrawals.GroupBy(DepartmentOf).Select(g => new AcademicRequestStat("Withdrawal", g.Key, g.Count()))
+                    .Concat(leaves.GroupBy(DepartmentOf).Select(g => new AcademicRequestStat("Leave", g.Key, g.Count())));
+
+                return Result<IReadOnlyList<AcademicRequestStat>>.Ok([.. stats]);
+            });
+
         private async Task<Result<IReadOnlyList<T>>> ReadAsync<T>(Func<Task<Result<IReadOnlyList<T>>>> read)
         {
             try

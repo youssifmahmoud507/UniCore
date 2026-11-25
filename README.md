@@ -65,9 +65,11 @@ The API starts at `https://localhost:7094` and `http://localhost:5087`. Scalar U
 docker compose up -d
 ```
 
-This builds and starts the API container along with SQL Server, Redis, and Mailpit. The API is available at `http://localhost:8080`.
+This builds and starts the API container along with SQL Server, Redis, and Mailpit. The API is available at `http://localhost:8080` (set `API_PORT` in `.env` if that port is taken, for example `API_PORT=8081`).
 
-> **Note:** You must run `dotnet ef database update` before the first `docker compose up` with the api service, or the API will fail to start because the database does not exist yet.
+> **Note:** `docker compose up` runs the `migrate` service first (an EF Core migrations bundle built by the `migrations` stage of the Dockerfile). It creates or updates the database and exits; the API starts only after it succeeded. You do not need to run `dotnet ef database update` for the compose stack. Look at its result with `docker compose logs migrate`.
+
+After the stack is up, `./scripts/smoke.sh` (Git Bash, WSL or Linux) checks the real container: health, the seeded admin login and a read of each main module. It reads `.env` and `API_PORT`; use `BASE_URL=http://host:port` for another address.
 
 ## Environment Variables
 
@@ -139,7 +141,7 @@ dotnet test UniCore.IntegrationTests
 | `sqlserver` | 1433 | SQL Server 2022 Developer |
 | `redis` | 6379 (localhost only) | Cache (not source of truth) |
 | `mailpit` | 1025 (SMTP), 8025 (UI) | Local email testing |
-| `api` | 8080 | UniCore API |
+| `api` | 8080 (`API_PORT`) | UniCore API |
 
 ## Project Structure
 

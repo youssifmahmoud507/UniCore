@@ -42,6 +42,22 @@ namespace UniCore.Application.Modules.Workflow
                 return Result<WorkflowInstanceDto>.Fail(auth.Errors);
             }
 
+            return await StartCoreAsync(command, userId, request, cancellationToken);
+        }
+
+        // The calling module has authorized the caller already; only a signed-in user is needed to be the requester.
+        public async Task<Result<WorkflowInstanceDto>> StartAuthorizedAsync(StartWorkflowCommand command, RequestInfo? request = null, CancellationToken cancellationToken = default)
+        {
+            if (!_user.IsAuthenticated || _user.UserId is not { } userId)
+            {
+                return Error.Unauthorized();
+            }
+
+            return await StartCoreAsync(command, userId, request, cancellationToken);
+        }
+
+        private async Task<Result<WorkflowInstanceDto>> StartCoreAsync(StartWorkflowCommand command, Guid userId, RequestInfo? request, CancellationToken cancellationToken)
+        {
             var code = WorkflowDefinition.NormalizeCode(command.DefinitionCode);
             var referenceType = command.ReferenceType?.Trim();
 

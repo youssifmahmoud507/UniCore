@@ -91,6 +91,9 @@ namespace UniCore.Infrastructure.Modules.Grading.Configurations
             builder.HasIndex(g => g.EnrollmentId).IsUnique();
             builder.HasIndex(g => new { g.CourseSectionId, g.Status });
             builder.HasIndex(g => new { g.StudentId, g.AcademicSemesterId });
+
+            // The grade and GPA reports read Published/Locked grades by the day they were published.
+            builder.HasIndex(g => new { g.Status, g.PublishedAt });
         }
     }
 

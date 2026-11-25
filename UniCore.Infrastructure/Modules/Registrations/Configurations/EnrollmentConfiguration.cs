@@ -37,6 +37,9 @@ namespace UniCore.Infrastructure.Modules.Registrations.Configurations
             // Roster queries and "who holds a seat of this section".
             builder.HasIndex(e => new { e.CourseSectionId, e.Status });
             builder.HasIndex(e => e.CourseId);
+
+            // The enrollment statistics report filters by the day the seat was taken.
+            builder.HasIndex(e => e.RegisteredAt);
         }
     }
 }

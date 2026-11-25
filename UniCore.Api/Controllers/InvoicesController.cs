@@ -44,7 +44,7 @@ namespace UniCore.Api.Controllers
             {
                 if (outcome.IsReplay)
                 {
-                    Response.Headers["Idempotent-Replayed"] = "true";
+                    Response.Headers[UniCore.Api.Filters.IdempotencyFilter.ReplayedHeaderName] = "true";
                     return Ok(outcome.Payment);
                 }
 

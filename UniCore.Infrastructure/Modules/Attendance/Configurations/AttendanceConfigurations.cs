@@ -65,6 +65,9 @@ namespace UniCore.Infrastructure.Modules.Attendance.Configurations
 
             builder.HasIndex(s => new { s.CourseSectionId, s.SessionDate, s.StartTime }).IsUnique();
 
+            // The attendance report reads closed sessions by date.
+            builder.HasIndex(s => new { s.Status, s.SessionDate });
+
             builder.HasMany(s => s.Records).WithOne().HasForeignKey(r => r.AttendanceSessionId).IsRequired().OnDelete(DeleteBehavior.Cascade);
             builder.Navigation(s => s.Records).UsePropertyAccessMode(PropertyAccessMode.Field);
         }

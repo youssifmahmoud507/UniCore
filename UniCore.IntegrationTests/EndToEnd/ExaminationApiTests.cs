@@ -1,6 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using UniCore.Domain.Modules.University;
-using UniCore.Infrastructure.Persistence;
 using UniCore.IntegrationTests.Infrastructure;
 
 namespace UniCore.IntegrationTests.EndToEnd
@@ -10,9 +7,6 @@ namespace UniCore.IntegrationTests.EndToEnd
     [Collection(ApiCollection.Name)]
     public sealed class ExaminationApiTests(ApiFixture fixture)
     {
-        private static readonly SemaphoreSlim BuildingLock = new(1, 1);
-        private static Guid _buildingId;
-
         private readonly TestApi _api = fixture.Api;
         private readonly ApiFixture _fixture = fixture;
 
@@ -25,57 +19,7 @@ namespace UniCore.IntegrationTests.EndToEnd
 
         private static string Short(int length = 8) => Guid.NewGuid().ToString("N")[..length].ToUpperInvariant();
 
-        private async Task<Guid> BuildingAsync(string admin)
-        {
-            await BuildingLock.WaitAsync();
-            try
-            {
-                if (_buildingId != Guid.Empty)
-                {
-                    return _buildingId;
-                }
-
-                var university = await Client.PostAsync("/api/v1/universities", new { code = $"U{Short(7)}", name = $"Exam University {Short(8)}", description = "x", email = "u@uni.test", phone = "0100000000", website = "https://uni.test" }, admin);
-                Assert.Equal(201, university.Code);
-
-                var campus = await Client.PostAsync("/api/v1/campuses", new
-                {
-                    universityId = university.GuidOf("id"),
-                    code = $"CP{Short(6)}",
-                    name = "Exam Campus",
-                    address = new { street = "1 Main Street", city = "Cairo", state = "Cairo", postalCode = "11511", country = "Egypt" },
-                    timeZone = "UTC"
-                }, admin);
-                Assert.Equal(201, campus.Code);
-
-                var building = Building.Create(campus.GuidOf("id"), $"B{Short(6)}", "Exam Building").Value;
-
-                using var scope = _fixture.Services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Set<Building>().Add(building);
-                await db.SaveChangesAsync();
-
-                _buildingId = building.Id;
-                return _buildingId;
-            }
-            finally
-            {
-                BuildingLock.Release();
-            }
-        }
-
-        private async Task<Guid> RoomAsync(string admin, int capacity)
-        {
-            var buildingId = await BuildingAsync(admin);
-            var room = Room.Create(buildingId, $"R{Short(8)}", null, capacity, RoomType.ExamHall).Value;
-
-            using var scope = _fixture.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.Set<Room>().Add(room);
-            await db.SaveChangesAsync();
-
-            return room.Id;
-        }
+        private Task<Guid> RoomAsync(string admin, int capacity) => RoomSeed.RoomAsync(_fixture, _api, admin, capacity);
 
         private async Task<Guid> SessionAsync(string admin, Guid semesterId, DateOnly? start = null, DateOnly? end = null)
         {
