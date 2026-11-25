@@ -6,6 +6,7 @@ using UniCore.Domain.Modules.Attendance;
 using UniCore.Domain.Modules.Examination;
 using UniCore.Domain.Modules.Finance;
 using UniCore.Domain.Modules.Grading;
+using UniCore.Domain.Modules.Graduation;
 using UniCore.Domain.Modules.Registrations;
 using UniCore.Domain.Modules.Scheduling;
 using UniCore.Domain.Modules.Transcripts;
@@ -50,6 +51,7 @@ namespace UniCore.Infrastructure.Modules.Notifications
             services.AddScoped<IDomainEventHandler<EnrollmentCreated>, EnrollmentCreatedNotificationHandler>();
             services.AddScoped<IDomainEventHandler<EnrollmentDropped>, EnrollmentDroppedNotificationHandler>();
             services.AddScoped<IDomainEventHandler<TranscriptIssued>, TranscriptIssuedNotificationHandler>();
+            services.AddScoped<IDomainEventHandler<GraduationApproved>, GraduationApprovedNotificationHandler>();
 
             return services;
         }

@@ -6,6 +6,7 @@ using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Assessments;
 using UniCore.Domain.Modules.Attendance;
 using UniCore.Domain.Modules.Examination;
+using UniCore.Domain.Modules.Graduation;
 using UniCore.Domain.Modules.Grading;
 using UniCore.Domain.Modules.Registrations;
 using UniCore.Domain.Modules.Scheduling;
@@ -119,5 +120,16 @@ namespace UniCore.Application.Modules.Notifications
     {
         public Task<Result> HandleAsync(TranscriptIssued e, CancellationToken cancellationToken = default)
             => notifier.NotifyStudentAsync(e.StudentId, NotificationTypes.TranscriptIssued, "Official transcript issued", "An official transcript was issued for you. You can read it in your academic record.", "TranscriptSnapshot", e.SnapshotId, e.EventId, cancellationToken);
+    }
+
+    public sealed class GraduationApprovedNotificationHandler(AcademicNotifier notifier) : IDomainEventHandler<GraduationApproved>
+    {
+        public Task<Result> HandleAsync(GraduationApproved e, CancellationToken cancellationToken = default)
+        {
+            var gpa = e.CumulativeGpa.ToString("0.00", CultureInfo.InvariantCulture);
+            var text = $"Congratulations! Your graduation was approved on {e.GraduationDate:yyyy-MM-dd} with {e.EarnedCredits} credits and a cumulative GPA of {gpa}.";
+
+            return notifier.NotifyStudentAsync(e.StudentId, NotificationTypes.GraduationApproved, "Graduation approved", text, "GraduationApplication", e.ApplicationId, e.EventId, cancellationToken);
+        }
     }
 }
