@@ -56,5 +56,33 @@ namespace UniCore.Application.Modules.Notifications
 
             return Result.Ok();
         }
+
+        // One notification per student for all the sections together (a student in three of the sections is told once).
+        public async Task<Result> NotifySectionsAsync(IEnumerable<Guid> sectionIds, string type, string title, string content, string referenceType, Guid referenceId, Guid eventId, CancellationToken cancellationToken)
+        {
+            var studentIds = new HashSet<Guid>();
+
+            foreach (var sectionId in sectionIds.Distinct())
+            {
+                var roster = await _enrollments.GetRosterAsync(sectionId, cancellationToken);
+                if (!roster.TryGetValue(out var entries))
+                {
+                    return Result.Fail(roster.Errors);
+                }
+
+                studentIds.UnionWith(entries.Select(e => e.StudentId));
+            }
+
+            foreach (var studentId in studentIds)
+            {
+                var sent = await _students.NotifyAsync(studentId, type, title, content, referenceType, referenceId, eventId, cancellationToken);
+                if (sent.IsFailure)
+                {
+                    return sent;
+                }
+            }
+
+            return Result.Ok();
+        }
     }
 }

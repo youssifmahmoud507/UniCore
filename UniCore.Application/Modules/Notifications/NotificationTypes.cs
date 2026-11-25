@@ -22,6 +22,7 @@ namespace UniCore.Application.Modules.Notifications
         public const string EnrollmentConfirmed = "ENROLLMENT_CONFIRMED";
         public const string EnrollmentDropped = "ENROLLMENT_DROPPED";
         public const string TranscriptIssued = "TRANSCRIPT_ISSUED";
+        public const string SchedulePublished = "SCHEDULE_PUBLISHED";
 
         public sealed record TypeInfo(string Code, string Name, bool Mandatory);
 
@@ -29,7 +30,8 @@ namespace UniCore.Application.Modules.Notifications
         new(AttendanceWarning, "Your attendance in a course fell to a warning level", true), new(GradePublished, "A grade was published", false), new(GradeCorrected, "A published grade was corrected", false),
         new(AssessmentPublished, "The grading scheme of a course was published", false), new(AssessmentCancelled, "The grading scheme of a course was cancelled", false),
         new(ExamPublished, "An exam was scheduled", false), new(ExamCancelled, "An exam was cancelled", false),
-        new(EnrollmentConfirmed, "You were registered in a course", false), new(EnrollmentDropped, "You were removed from a course", false), new(TranscriptIssued, "An official transcript was issued", false)];
+        new(EnrollmentConfirmed, "You were registered in a course", false), new(EnrollmentDropped, "You were removed from a course", false), new(TranscriptIssued, "An official transcript was issued", false),
+        new(SchedulePublished, "The timetable of your courses was published", false)];
 
         public static TypeInfo? Find(string? code)
         {

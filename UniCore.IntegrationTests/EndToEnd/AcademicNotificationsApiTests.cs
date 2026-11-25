@@ -199,6 +199,47 @@ namespace UniCore.IntegrationTests.EndToEnd
             Assert.False(await HasAsync(stayingToken, "GRADE_PUBLISHED"));
         }
 
+        [Fact]
+        public async Task A_published_timetable_is_told_once_to_the_students_of_the_scheduled_sections_only()
+        {
+            var admin = await _api.AdminTokenAsync();
+            var setup = await AcademicScenario.BuildAsync(_api, admin, courseCount: 2);
+            var scheduled = await AcademicScenario.AdmitAsync(_api, admin, setup, createAccount: true);
+            var other = await AcademicScenario.AdmitAsync(_api, admin, setup, createAccount: true);
+            var scheduledToken = await _api.LoginTokenAsync(scheduled.Number, TestApi.DefaultPassword);
+            var otherToken = await _api.LoginTokenAsync(other.Number, TestApi.DefaultPassword);
+            var semester = setup.Calendar.SemesterId;
+
+            // The first student takes both courses, the second only the one that is not in the timetable.
+            Assert.Equal(201, (await Client.PostAsync("/api/v1/registrations", new { studentId = scheduled.Id, academicSemesterId = semester, courseSectionId = setup.Courses[0].SectionId }, admin, TestApi.NewIdempotencyKey())).Code);
+            Assert.Equal(201, (await Client.PostAsync("/api/v1/registrations", new { studentId = scheduled.Id, academicSemesterId = semester, courseSectionId = setup.Courses[1].SectionId }, admin, TestApi.NewIdempotencyKey())).Code);
+            Assert.Equal(201, (await Client.PostAsync("/api/v1/registrations", new { studentId = other.Id, academicSemesterId = semester, courseSectionId = setup.Courses[1].SectionId }, admin, TestApi.NewIdempotencyKey())).Code);
+
+            var schedule = await Client.PostAsync("/api/v1/schedules", new { academicSemesterId = semester, name = $"Timetable {Guid.NewGuid():N}"[..20] }, admin);
+            Assert.Equal(201, schedule.Code);
+            var scheduleId = schedule.GuidOf("id");
+
+            var added = await Client.PostAsync($"/api/v1/schedules/{scheduleId}/slots", new { dayOfWeek = "Tuesday", startTime = "09:00", endTime = "11:00" }, admin);
+            Assert.Equal(200, added.Code);
+            var slotId = added.Prop("slots").EnumerateArray().Single().GetProperty("id").GetGuid();
+
+            var room = await RoomSeed.RoomAsync(_fixture, _api, admin, capacity: 40);
+            Assert.Equal(201, (await Client.PostAsync($"/api/v1/schedules/{scheduleId}/meetings", new { courseSectionId = setup.Courses[0].SectionId, scheduleSlotId = slotId, roomId = room }, admin)).Code);
+
+            // Meetings are added to a draft: nobody is told yet.
+            await Processor.ProcessBatchAsync(200);
+            Assert.False(await HasAsync(scheduledToken, "SCHEDULE_PUBLISHED"));
+
+            Assert.Equal(200, (await Client.PostAsync($"/api/v1/schedules/{scheduleId}/publish", null, admin)).Code);
+
+            await ContentOfAsync(scheduledToken, "SCHEDULE_PUBLISHED", n => n.GetProperty("referenceId").ValueKind != JsonValueKind.Null && n.GetProperty("referenceId").GetGuid() == scheduleId);
+
+            // Once, although the student is in two sections, and not the student whose course is not in the timetable.
+            await Processor.ProcessBatchAsync(200);
+            Assert.Single(OfType(await MineAsync(scheduledToken), "SCHEDULE_PUBLISHED"));
+            Assert.False(await HasAsync(otherToken, "SCHEDULE_PUBLISHED"));
+        }
+
         private async Task<string> TokenAsync(string prefix, string role, ScopeType scopeType, Guid? scopeId)
         {
             var user = await _api.CreateUserAsync(prefix, role, scopeType, scopeId);

@@ -1,11 +1,14 @@
 using System.Globalization;
 using UniCore.Application.Common.Abstractions;
+using UniCore.Application.Common.Repositories;
+using UniCore.Application.Modules.Scheduling.Specifications;
 using UniCore.Domain.Common.Results;
 using UniCore.Domain.Modules.Assessments;
 using UniCore.Domain.Modules.Attendance;
 using UniCore.Domain.Modules.Examination;
 using UniCore.Domain.Modules.Grading;
 using UniCore.Domain.Modules.Registrations;
+using UniCore.Domain.Modules.Scheduling;
 using UniCore.Domain.Modules.Transcripts;
 
 namespace UniCore.Application.Modules.Notifications
@@ -73,6 +76,22 @@ namespace UniCore.Application.Modules.Notifications
     {
         public Task<Result> HandleAsync(ExamCancelled e, CancellationToken cancellationToken = default)
             => notifier.NotifySectionAsync(e.CourseSectionId, NotificationTypes.ExamCancelled, "Exam cancelled", course => $"The {e.ExamType} exam of {course} was cancelled.", e.EventId, cancellationToken);
+    }
+
+    // A timetable is told to the students once it is PUBLISHED, not when a meeting is added (meetings are added to a draft). Only
+    // the students of the sections that have a meeting in it; one notification each. Instructors are not told yet.
+    public sealed class SchedulePublishedNotificationHandler(AcademicNotifier notifier, IAggregateRepository<CourseSectionSchedule> meetings) : IDomainEventHandler<SchedulePublished>
+    {
+        public const string ReferenceType = "Schedule";
+
+        public async Task<Result> HandleAsync(SchedulePublished e, CancellationToken cancellationToken = default)
+        {
+            var found = await meetings.ListAsync(new MeetingsOfScheduleSpecification(e.ScheduleId), cancellationToken);
+
+            return await notifier.NotifySectionsAsync(
+                found.Select(m => m.CourseSectionId), NotificationTypes.SchedulePublished, "Timetable published",
+                "The timetable of your courses was published. Open your schedule to see the days, times and rooms.", ReferenceType, e.ScheduleId, e.EventId, cancellationToken);
+        }
     }
 
     public sealed class EnrollmentCreatedNotificationHandler(AcademicNotifier notifier) : IDomainEventHandler<EnrollmentCreated>

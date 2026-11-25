@@ -7,6 +7,7 @@ using UniCore.Domain.Modules.Examination;
 using UniCore.Domain.Modules.Finance;
 using UniCore.Domain.Modules.Grading;
 using UniCore.Domain.Modules.Registrations;
+using UniCore.Domain.Modules.Scheduling;
 using UniCore.Domain.Modules.Transcripts;
 using UniCore.Domain.Modules.Workflow;
 
@@ -24,6 +25,7 @@ namespace UniCore.Infrastructure.Modules.Notifications
             services.AddScoped<WorkflowNotifier>();
             services.AddScoped<StudentNotifier>();
             services.AddScoped<AcademicNotifier>();
+            services.AddScoped<IDomainEventHandler<SchedulePublished>, SchedulePublishedNotificationHandler>();
 
             // Consumers of domain events (delivered by the outbox). Register this module AFTER AddPlatformModules,
             // so the financial-hold handlers of the same events run first.
