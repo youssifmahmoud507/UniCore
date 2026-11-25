@@ -92,7 +92,7 @@ namespace UniCore.Domain.Modules.Registrations
             }
 
             UpdatedAt = now;
-            RaiseDomainEvent(new EnrollmentCreated(Guid.NewGuid(), now, Id, enrollment.Id, StudentId, courseSectionId, AcademicSemesterId, credits));
+            RaiseDomainEvent(new EnrollmentCreated(Guid.NewGuid(), now, Id, enrollment.Id, StudentId, courseSectionId, courseId, AcademicSemesterId, credits));
             return enrollment;
         }
 
@@ -130,7 +130,7 @@ namespace UniCore.Domain.Modules.Registrations
             }
 
             UpdatedAt = now;
-            RaiseDomainEvent(new EnrollmentDropped(Guid.NewGuid(), now, Id, enrollment.Id, StudentId, enrollment.CourseSectionId, AcademicSemesterId, enrollment.Credits, withdraw));
+            RaiseDomainEvent(new EnrollmentDropped(Guid.NewGuid(), now, Id, enrollment.Id, StudentId, enrollment.CourseSectionId, enrollment.CourseId, AcademicSemesterId, enrollment.Credits, withdraw));
             return enrollment;
         }
 
@@ -170,7 +170,7 @@ namespace UniCore.Domain.Modules.Registrations
             {
                 enrollment.MarkDropped(now);
                 dropped.Add(enrollment);
-                RaiseDomainEvent(new EnrollmentDropped(Guid.NewGuid(), now, Id, enrollment.Id, StudentId, enrollment.CourseSectionId, AcademicSemesterId, enrollment.Credits, false));
+                RaiseDomainEvent(new EnrollmentDropped(Guid.NewGuid(), now, Id, enrollment.Id, StudentId, enrollment.CourseSectionId, enrollment.CourseId, AcademicSemesterId, enrollment.Credits, false));
             }
 
             Status = RegistrationStatus.Cancelled;

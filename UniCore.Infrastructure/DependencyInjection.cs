@@ -15,6 +15,7 @@ using UniCore.Infrastructure.Modules.Assessments;
 using UniCore.Infrastructure.Modules.Grading;
 using UniCore.Infrastructure.Modules.Transcripts;
 using UniCore.Infrastructure.Modules.Graduation;
+using UniCore.Infrastructure.Modules.StudentServices;
 using UniCore.Infrastructure.Modules.Scheduling;
 using UniCore.Infrastructure.Modules.Audit;
 using UniCore.Infrastructure.Modules.Courses;
@@ -87,6 +88,7 @@ namespace UniCore.Infrastructure
             services.AddGradingModule();
             services.AddTranscriptsModule();
             services.AddGraduationModule();
+            services.AddStudentServicesModule();
             services.AddRegistrationsModule();
             services.AddScoped<IStudentAccountProvisioner, StudentAccountProvisioner>();
             services.AddScoped<StudentAdmissionService>();
